@@ -1,9 +1,9 @@
-# Project Name
+# Synaptik
 
-Description
+Event library for `@sektek` projects
 
 ## Installation
 
 ```sh
-npm install @sektek/project-name
+npm install @sektek/synaptik
 ```
