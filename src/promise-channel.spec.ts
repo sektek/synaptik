@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { Event } from './types/event.js';
+import { Event } from './types/index.js';
 import { EventBuilder } from './event-builder.js';
 import { PromiseChannel } from './promise-channel.js';
 

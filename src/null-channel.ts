@@ -1,5 +1,4 @@
-import { Event } from './types/event.js';
-import { EventChannel } from './types/event-channel.js';
+import { Event, EventChannel } from './types/index.js';
 import { EventEmitter } from 'events';
 
 /**

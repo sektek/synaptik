@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Event } from './types/event.js';
+import { Event } from './types/index.js';
 import { TransformToBuildOpts } from './util/transform-to-build-options.js';
 import { isBrowser } from './util/is-browser.js';
 

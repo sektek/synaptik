@@ -1,6 +1,6 @@
-import { Event } from './types/event.js';
-import { EventEmitter } from 'stream';
-import { EventHandler } from './types/event-handler.js';
+import { EventEmitter } from 'events';
+
+import { Event, EventHandler } from './types/index.js';
 
 /**
  * An EventHandler function that does nothing.
