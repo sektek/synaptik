@@ -4,7 +4,7 @@ export type EventServiceOptions = {
   /**
    * The name of the service.
    */
-  name: string;
+  name?: string;
 };
 
 const SERVICE_NAME_IDS = new Map<string, number>();
