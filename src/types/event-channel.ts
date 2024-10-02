@@ -10,9 +10,9 @@ import { EventHandlerFn } from './event-handler.js';
  */
 export type EventChannelFn<T extends Event> = EventHandlerFn<T, void>;
 
-export interface EventChannelEvents<T extends Event> {
+export interface EventChannelEvents<T extends Event = Event> {
   'event:received': (event: T) => void;
-  'event:delivered': (event: T) => void;
+  'event:delivered': (event: Event) => void;
 }
 
 /**
@@ -22,7 +22,7 @@ export interface EventChannelEvents<T extends Event> {
  *
  * @typeParam T - The event type that the channel can send.
  */
-export interface EventChannel<T extends Event> {
+export interface EventChannel<T extends Event = Event> {
   send: EventChannelFn<T>;
   on<E extends keyof EventChannelEvents<T>>(
     event: E,

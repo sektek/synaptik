@@ -9,10 +9,10 @@ import { EventHandlerFn } from './event-handler.js';
  * @typeParam T - The inbound event type.
  * @typeParam R - The returned event type.
  */
-export type EventProcessorFn<T extends Event, R extends Event> = EventHandlerFn<
-  T,
-  R
->;
+export type EventProcessorFn<
+  T extends Event = Event,
+  R extends Event = Event,
+> = EventHandlerFn<T, R>;
 
 /**
  * A class implementing the EventProcessor interface is an EventHandler that
@@ -23,7 +23,10 @@ export type EventProcessorFn<T extends Event, R extends Event> = EventHandlerFn<
  * @typeParam T - The inbound event type.
  * @typeParam R - The returned event type.
  */
-export interface EventProcessor<T extends Event, R extends Event> {
+export interface EventProcessor<
+  T extends Event = Event,
+  R extends Event = Event,
+> {
   /**
    * Process an event.
    * @param event - The event to process.
