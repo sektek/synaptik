@@ -2,16 +2,8 @@ import _ from 'lodash';
 
 import { Event } from './types/index.js';
 import { TransformToBuildOpts } from './util/transform-to-build-options.js';
-import { isBrowser } from './util/is-browser.js';
 
-let randomUUID: () => string;
-
-if (isBrowser()) {
-  // eslint-disable-next-line no-undef
-  randomUUID = window.crypto.randomUUID;
-} else {
-  randomUUID = (await import('crypto')).randomUUID;
-}
+const randomUUID = globalThis.crypto.randomUUID.bind(globalThis.crypto);
 
 type EventHeadersBuildOpts<T extends Event = Event> = TransformToBuildOpts<
   Omit<T, 'data' | 'type'>
