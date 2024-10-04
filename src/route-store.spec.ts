@@ -1,8 +1,7 @@
 import { expect } from 'chai';
-import { fake, stub } from 'sinon';
+import { fake } from 'sinon';
 
 import { EventBuilder } from './event-builder.js';
-import { NullHandler } from './null-handler.js';
 import { RouteStore } from './route-store.js';
 
 describe('RouteStore', function () {
