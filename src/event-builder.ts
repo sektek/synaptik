@@ -1,4 +1,4 @@
-import _, { head } from 'lodash';
+import _ from 'lodash';
 
 import { Event } from './types/index.js';
 import { TransformToBuildOpts } from './util/transform-to-build-options.js';
@@ -149,16 +149,9 @@ export class EventBuilder<T extends Event = Event> {
   }
 
   #dataFromEvent(event: Event): EventDataBuildOpts<T> {
-    const result: Record<string, unknown> = {};
-
-    this.#copyableData.reduce((acc, key: string) => {
-      if (event.data[key] !== undefined) {
-        acc[key] = event.data[key];
-      }
-      return acc;
-    }, result);
-
-    return result as EventDataBuildOpts<T>;
+    return _.cloneDeep(
+      _.pick(event.data, this.#copyableData),
+    ) as EventDataBuildOpts<T>;
   }
 
   #headersFromEvent(event: Event): EventHeadersBuildOpts<T> {
