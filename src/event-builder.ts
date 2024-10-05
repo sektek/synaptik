@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { head } from 'lodash';
 
 import { Event } from './types/index.js';
 import { TransformToBuildOpts } from './util/transform-to-build-options.js';
@@ -58,6 +58,61 @@ export class EventBuilder<T extends Event = Event> {
       ...(opts.headers ?? {}),
     } as EventHeadersBuildOpts<T>;
     this.#copyableData = opts.copyableData ?? [];
+  }
+
+  /**
+   * Clones an existing event with a new id. The parentId will be set to the
+   * parentId of the original event or the original event's id if the parentId
+   * is not set.
+   */
+  static clone<T extends Event = Event>(event: T): T {
+    return EventBuilder.from(event).create();
+  }
+
+  /**
+   * Creates a new EventBuilder from an existing event. The new builder will
+   * be set to create an event of the same type as the original event. The
+   * parentId will be set to the parentId of the original event or the original
+   * event's id if the parentId is not set. All data attributes and headers
+   * will be copied from the original event.
+   *
+   * @param event The event to create the builder from.
+   * @returns A new EventBuilder with the data from the provided event
+   */
+  static from<T extends Event = Event>(event: T): EventBuilder<T> {
+    const headers = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
+    headers.parentId = event.parentId ?? event.id;
+    headers.id = randomUUID;
+
+    return new EventBuilder<T>({
+      data: _.cloneDeep(event.data) as EventDataBuildOpts<T>,
+      headers,
+      type: event.type,
+    });
+  }
+
+  /**
+   * Creates a new EventBuilder with the provided options. This is a static
+   * version of the with() method.
+   *
+   * @param opts The options to use when creating the event.
+   * @returns A new EventBuilder with the provided options.
+   */
+  static with<T extends Event = Event>(
+    opts: EventBuilderOptions<T>,
+  ): EventBuilder<T> {
+    return new EventBuilder<T>(opts);
+  }
+
+  /**
+   * Creates a new Event with the provided options. This is a static version
+   * of the create() method. It can only be used to create events of type
+   * 'Event'.
+   *
+   * @returns {Event} An empty event with only the id set.
+   */
+  static create(createOps: EventDataBuildOpts = {}): Event {
+    return new EventBuilder({ data: createOps }).create();
   }
 
   /**

@@ -157,4 +157,97 @@ describe('EventBuilder', function () {
       expect(event2.parentId).to.equal(event.id);
     });
   });
+
+  describe('clone() method', function () {
+    it('should create a new event with a new id', function () {
+      const event = new EventBuilder().create();
+      const event2 = EventBuilder.clone(event);
+      expect(event2.id).to.not.equal(event.id);
+    });
+
+    it('should copy parentId from event to parentId', function () {
+      const event = new EventBuilder().create();
+      const event2 = EventBuilder.clone(event);
+      expect(event2.parentId).to.equal(event.id);
+    });
+
+    it('should copy data from event', function () {
+      const event = new EventBuilder().create({ value: 'test' });
+      const event2 = EventBuilder.clone(event);
+      expect(event2.data.value).to.equal('test');
+    });
+
+    it('should copy the type from the event', function () {
+      const TestEventBuilder = new EventBuilder<TestEvent>({
+        type: 'TestEvent',
+      });
+      const event = TestEventBuilder.create({ value: 'test' });
+      const event2 = EventBuilder.clone(event);
+      expect(event2.type).to.equal(event.type);
+    });
+  });
+
+  describe('static from() method', function () {
+    it('should copy id from event to parentId', function () {
+      const event = EventBuilder.create();
+      const event2 = EventBuilder.from(event).create();
+      expect(event2.parentId).to.equal(event.id);
+    });
+
+    it('should copy parentId from event to parentId', function () {
+      const event = EventBuilder.with({
+        headers: { parentId: 'test' },
+      }).create();
+      const event2 = EventBuilder.from(event).create();
+      expect(event2.parentId).to.equal('test');
+    });
+
+    it('should copy data from event', function () {
+      const event = EventBuilder.create({ value: 'test' });
+      const event2 = EventBuilder.from(event).create();
+      expect(event2.data.value).to.equal('test');
+    });
+
+    it('should copy the type from the event', function () {
+      const TestEventBuilder = new EventBuilder<TestEvent>({
+        type: 'TestEvent',
+      });
+      const event = TestEventBuilder.create({ value: 'test' });
+      const event2 = EventBuilder.from(event).create();
+      expect(event2.type).to.equal(event.type);
+    });
+  });
+
+  describe('static with() method', function () {
+    it('should create an EventBuilder with the provided options', function () {
+      const eventBuilder = EventBuilder.with({
+        data: { value: 'test' },
+        headers: { id: 'test' },
+        type: 'TestEvent',
+      });
+      const event = eventBuilder.create();
+      expect(event.data.value).to.equal('test');
+      expect(event.id).to.equal('test');
+      expect(event.type).to.equal('TestEvent');
+    });
+  });
+
+  describe('static create() method', function () {
+    it('should create an event', function () {
+      const event = EventBuilder.create();
+      expect(event.type).to.equal('Event');
+    });
+
+    it('should create an event with a uuid id', function () {
+      const event = EventBuilder.create();
+      expect(event.id).to.match(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
+    });
+
+    it('should allow attributes to be set', function () {
+      const event = EventBuilder.create({ value: 'test' });
+      expect(event.data.value).to.equal('test');
+    });
+  });
 });
