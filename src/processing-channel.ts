@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 import {
   AbstractEventService,
   EventServiceOptions,
@@ -11,6 +13,7 @@ import {
   EventProcessor,
   EventProcessorFn,
 } from './types/index.js';
+import { EventBuilder } from './event-builder.js';
 import { getEventHandlerComponent } from './util/get-event-handler-component.js';
 import { getEventProcessorComponent } from './util/get-event-processor-component.js';
 
@@ -63,7 +66,9 @@ export class ProcessingChannel<T extends Event = Event, R extends Event = T>
 
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
-    const processedEvent = await this.#processor(event);
+
+    const processorEvent = EventBuilder.clone(event);
+    const processedEvent = await this.#processor(processorEvent);
     await this.#handler(processedEvent);
     this.emit('event:delivered', processedEvent);
   }
