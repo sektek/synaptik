@@ -1,10 +1,11 @@
+import { getComponent } from '@sektek/utility-belt';
+
 import {
   AbstractEventService,
   EventServiceOptions,
 } from './abstract-event-service.js';
 import { Event, EventChannel } from './types/index.js';
 import { RouteProvider, RouteProviderFn } from './types/route-provider.js';
-import { getRouteProviderComponent } from './util/get-route-provider-component.js';
 
 type EventRouterOptions<T extends Event = Event> = EventServiceOptions & {
   routeProvider: RouteProvider<T> | RouteProviderFn<T>;
@@ -22,7 +23,7 @@ export class EventRouter<T extends Event = Event>
 
   constructor(options: EventRouterOptions<T>) {
     super(options);
-    this.#routeProvider = getRouteProviderComponent<T>(options.routeProvider);
+    this.#routeProvider = getComponent(options.routeProvider, 'get');
   }
 
   async send(event: T): Promise<void> {
