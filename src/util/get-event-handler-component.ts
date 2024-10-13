@@ -4,7 +4,7 @@ import { isEventHandler } from './is-event-handler.js';
 import { isEventProcessor } from './is-event-processor.js';
 
 export const getEventHandlerComponent = <T extends Event = Event>(
-  obj: unknown,
+  obj: unknown | null | undefined,
   defaultHandler?: EventHandler<T> | EventHandlerFn<T>,
 ): EventHandlerFn<T> => {
   if (isEventChannel<T>(obj)) {
