@@ -17,6 +17,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@sektek/utility-belt": "^1.0.0",
     "lodash": "^4.17.21",
     "tslib": "^2.7.0"
   },
