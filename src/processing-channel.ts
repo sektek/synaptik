@@ -1,3 +1,5 @@
+import { getComponent } from '@sektek/utility-belt';
+
 import {
   AbstractEventService,
   EventServiceOptions,
@@ -12,8 +14,6 @@ import {
   EventProcessorFn,
 } from './types/index.js';
 import { EventBuilder } from './event-builder.js';
-import { getEventHandlerComponent } from './util/get-event-handler-component.js';
-import { getEventProcessorComponent } from './util/get-event-processor-component.js';
 
 export type ProcessingChannelOptions<
   T extends Event,
@@ -58,8 +58,12 @@ export class ProcessingChannel<T extends Event = Event, R extends Event = T>
 
   constructor(options: ProcessingChannelOptions<T, R>) {
     super(options);
-    this.#processor = getEventProcessorComponent<T, R>(options.processor);
-    this.#handler = getEventHandlerComponent<R>(options.handler);
+    this.#processor = getComponent(options.processor, 'process');
+    this.#handler = getComponent(options.handler, [
+      'handle',
+      'process',
+      'send',
+    ]);
   }
 
   async send(event: T): Promise<void> {

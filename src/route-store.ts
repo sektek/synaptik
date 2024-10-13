@@ -1,3 +1,5 @@
+import { getComponent } from '@sektek/utility-belt';
+
 import {
   AbstractEventService,
   EventServiceOptions,
@@ -12,7 +14,6 @@ import {
 } from './types/index.js';
 import { NullHandler } from './null-handler.js';
 import { getEventHandlerComponent } from './util/get-event-handler-component.js';
-import { getRouteDeciderComponent } from './util/get-route-decider-component.js';
 
 type RouteRecord<T extends Event = Event> = Record<string, Route<T>>;
 
@@ -36,7 +37,7 @@ export class RouteStore<T extends Event = Event>
 
   constructor(opts: RouteStoreOptions<T>) {
     super(opts);
-    this.#routeDecider = getRouteDeciderComponent(opts.routeDecider);
+    this.#routeDecider = getComponent(opts.routeDecider, 'get');
     this.#defaultRoute = getEventHandlerComponent(
       opts.defaultRoute,
       new NullHandler(),
