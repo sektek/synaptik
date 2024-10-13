@@ -1,8 +1,9 @@
+import { Component } from '@sektek/utility-belt';
 import { Event } from './event.js';
 import { EventHandlerFn } from './event-handler.js';
 
 /**
- * And EventChannel Function is an event handler that specifically should
+ * An EventChannel Function is an event handler that specifically should
  * be used to carry events from one component to the next. Often used as
  * outbound gateways for transporting events between systems.
  *
@@ -33,3 +34,8 @@ export interface EventChannel<T extends Event = Event> {
     ...args: Parameters<EventChannelEvents<T>[E]>
   ): boolean;
 }
+
+export type EventChannelComponent<T extends Event = Event> = Component<
+  EventChannel<T>,
+  'send'
+>;

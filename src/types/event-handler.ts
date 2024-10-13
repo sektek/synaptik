@@ -1,3 +1,4 @@
+import { Component } from '@sektek/utility-belt';
 import { Event } from './event.js';
 
 export type EventHandlerReturnType = Event | unknown | void;
@@ -43,3 +44,8 @@ export interface EventHandler<T extends Event = Event> {
     ...args: Parameters<EventHandlerEvents<T>[E]>
   ): boolean;
 }
+
+export type EventHandlerComponent<T extends Event = Event> = Component<
+  EventHandler<T>,
+  'handle'
+>;
