@@ -1,9 +1,9 @@
 {
-  "name": "Project Name",
+  "name": "Synaptik",
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "workspaceFolder": "/workspaces/project-name",
+  "workspaceFolder": "/workspaces/synaptik",
   "shutdownAction": "none",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
@@ -40,6 +40,6 @@
   },
   "remoteEnv": {
     "HOST_PROJECT_PATH": "${localWorkspaceFolder}",
-    "GH_TOKEN": "${localEnv:GH_TOKEN}",
+    "GH_TOKEN": "${localEnv:GH_TOKEN}"
   }
 }
