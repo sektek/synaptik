@@ -12,7 +12,7 @@ export type EventHandlerReturnType = Event | unknown | void;
 export type EventHandlerFn<
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
-> = (event: T) => Promise<R>;
+> = (event: T) => R | PromiseLike<R>;
 
 export interface EventHandlerEvents<
   T extends Event = Event,

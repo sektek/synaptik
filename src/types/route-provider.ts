@@ -1,17 +1,16 @@
-import { EventHandler, EventHandlerFn } from './event-handler.js';
+// import { EventHandler, EventHandlerFn } from './event-handler.js';
 
 import { Event } from './event.js';
-import { EventChannel } from './event-channel.js';
+// import { EventChannel } from './event-channel.js';
+import { EventEndpointComponent } from './event-endpoint.js';
+import { EventHandlerFn } from './event-handler.js';
 
 export type RouteFn<T extends Event = Event> = EventHandlerFn<
   T,
   unknown | void
 >;
 
-export type Route<T extends Event = Event> =
-  | EventChannel<T>
-  | EventHandler<T>
-  | RouteFn<T>;
+export type Route<T extends Event = Event> = EventEndpointComponent<T>;
 
 /**
  * A function that provides one or more event handlers for a given event.
