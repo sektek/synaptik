@@ -1,3 +1,4 @@
+export * from './abstract-event-service.js';
 export * from './event-builder.js';
 export * from './event-router.js';
 export * from './null-channel.js';

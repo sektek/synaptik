@@ -13,7 +13,7 @@ import {
   RouteProvider,
 } from './types/index.js';
 import { NullHandler } from './null-handler.js';
-import { getEventHandlerComponent } from './util/get-event-handler-component.js';
+import { getRouteComponent } from './util/index.js';
 
 type RouteRecord<T extends Event = Event> = Record<string, Route<T>>;
 
@@ -38,7 +38,7 @@ export class RouteStore<T extends Event = Event>
   constructor(opts: RouteStoreOptions<T>) {
     super(opts);
     this.#routeDecider = getComponent(opts.routeDecider, 'get');
-    this.#defaultRoute = getEventHandlerComponent(
+    this.#defaultRoute = getRouteComponent(
       opts.defaultRoute,
       new NullHandler(),
     );
@@ -50,7 +50,7 @@ export class RouteStore<T extends Event = Event>
   }
 
   add(name: string, route: Route<T>): void {
-    this.routes.set(name, getEventHandlerComponent(route));
+    this.routes.set(name, getRouteComponent(route));
   }
 
   remove(names: string | string[]): void {
