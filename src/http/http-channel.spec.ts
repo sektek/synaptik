@@ -6,11 +6,11 @@ import { EventBuilder } from '../event-builder.js';
 import { HttpChannel } from './http-channel.js';
 
 describe('HttpChannel', function () {
-  setup(function () {
+  beforeEach(function () {
     nock('http://example.com').post('/api').reply(200);
   });
 
-  teardown(function () {
+  afterEach(function () {
     nock.cleanAll();
   });
 

@@ -9,7 +9,7 @@ import { HttpProcessor } from './http-processor.js';
 use(sinonChai);
 
 describe('HttpProcessor', function () {
-  setup(function () {
+  beforeEach(function () {
     this.context = {};
     this.context.responseEvent = EventBuilder.create({ key: 'value' });
     this.context.scope = nock('http://test.local/')
@@ -17,7 +17,7 @@ describe('HttpProcessor', function () {
       .reply(200, JSON.stringify(this.context.responseEvent));
   });
 
-  teardown(function () {
+  afterEach(function () {
     delete this.context;
     nock.cleanAll();
   });
@@ -25,7 +25,8 @@ describe('HttpProcessor', function () {
   it('should return the response event', async function () {
     const processor = new HttpProcessor({
       url: 'http://test.local/',
-      deserializer: () => this.context.responseEvent,
+      deserializer: async (response: Response) =>
+        JSON.parse(await response.text()),
     });
     const event = new EventBuilder().create();
     const response = await processor.process(event);
