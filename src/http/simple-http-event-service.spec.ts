@@ -149,4 +149,40 @@ describe('SimpleHttpEventService', function () {
     expect(response.ok).to.be.true;
     expect(scope.isDone()).to.be.true;
   });
+
+  it('should emit request:created with the event and the request', async function () {
+    const scope = nock('http://test.local').post('/').reply(200, 'OK');
+
+    const service = new SimpleHttpEventService({
+      url: 'http://test.local',
+    });
+
+    const event = EventBuilder.create();
+    const listener = (e: Event, r: Request) => {
+      expect(e).to.equal(event);
+      expect(r.url).to.equal('http://test.local/');
+    };
+    service.on('request:created', listener);
+
+    await service.perform(event);
+    expect(scope.isDone()).to.be.true;
+  });
+
+  it('should emit response:received with the event and the response', async function () {
+    const scope = nock('http://test.local').post('/').reply(200, 'OK');
+
+    const service = new SimpleHttpEventService({
+      url: 'http://test.local',
+    });
+
+    const event = EventBuilder.create();
+    const listener = (e: Event, r: Response) => {
+      expect(e).to.equal(event);
+      expect(r.ok).to.be.true;
+    };
+    service.on('response:received', listener);
+
+    await service.perform(event);
+    expect(scope.isDone()).to.be.true;
+  });
 });
