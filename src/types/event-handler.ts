@@ -20,6 +20,7 @@ export interface EventHandlerEvents<
 > {
   'event:received': (event: T) => void;
   'event:processed': (event: T, result: R) => void;
+  'event:error': (event: T, err: Error) => void;
 }
 
 /**

@@ -14,6 +14,7 @@ export type EventChannelFn<T extends Event> = EventHandlerFn<T, void>;
 export interface EventChannelEvents<T extends Event = Event> {
   'event:received': (event: T) => void;
   'event:delivered': (event: Event) => void;
+  'event:error': (event: Event, err: Error) => void;
 }
 
 /**
