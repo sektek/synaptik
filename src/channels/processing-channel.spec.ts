@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { fake } from 'sinon';
 
-import { Event } from './types/index.js';
-import { EventBuilder } from './event-builder.js';
+import { Event } from '../types/index.js';
+import { EventBuilder } from '../event-builder.js';
 import { ProcessingChannel } from './processing-channel.js';
 
 describe('ProcessingChannel', function () {

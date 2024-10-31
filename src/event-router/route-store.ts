@@ -3,17 +3,17 @@ import { getComponent } from '@sektek/utility-belt';
 import {
   AbstractEventService,
   EventServiceOptions,
-} from './abstract-event-service.js';
+} from '../abstract-event-service.js';
 import {
-  Event,
   Route,
   RouteDecider,
   RouteDeciderFn,
   RouteFn,
   RouteProvider,
 } from './types/index.js';
-import { NullHandler } from './null-handler.js';
-import { getRouteComponent } from './util/index.js';
+import { Event } from '../types/index.js';
+import { NullHandler } from '../null-handler.js';
+import { getRouteComponent } from './get-route-component.js';
 
 type RouteRecord<T extends Event = Event> = Record<string, Route<T>>;
 

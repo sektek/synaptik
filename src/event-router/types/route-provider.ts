@@ -1,9 +1,8 @@
-// import { EventHandler, EventHandlerFn } from './event-handler.js';
-
-import { Event } from './event.js';
-// import { EventChannel } from './event-channel.js';
-import { EventEndpointComponent } from './event-endpoint.js';
-import { EventHandlerFn } from './event-handler.js';
+import {
+  Event,
+  EventEndpointComponent,
+  EventHandlerFn,
+} from '../../types/index.js';
 
 export type RouteFn<T extends Event = Event> = EventHandlerFn<
   T,

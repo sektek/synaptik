@@ -1,4 +1,4 @@
-import { Event } from './event.js';
+import { Event } from '../../types/index.js';
 
 /**
  * A function that provides one or more route names for a given event.

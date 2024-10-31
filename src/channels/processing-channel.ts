@@ -3,7 +3,7 @@ import { getComponent } from '@sektek/utility-belt';
 import {
   AbstractEventService,
   EventServiceOptions,
-} from './abstract-event-service.js';
+} from '../abstract-event-service.js';
 import {
   Event,
   EventChannel,
@@ -12,8 +12,8 @@ import {
   EventHandlerFn,
   EventProcessor,
   EventProcessorFn,
-} from './types/index.js';
-import { EventBuilder } from './event-builder.js';
+} from '../types/index.js';
+import { EventBuilder } from '../event-builder.js';
 
 export type ProcessingChannelOptions<
   T extends Event,

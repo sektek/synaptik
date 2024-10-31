@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { EventBuilder } from './event-builder.js';
+import { EventBuilder } from '../event-builder.js';
 import { NullChannel } from './null-channel.js';
 
 describe('NullChannel', function () {

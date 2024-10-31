@@ -1,4 +1,5 @@
-import { Event, RouteFn } from './types/index.js';
+import { Event } from '../types/index.js';
+import { RouteFn } from './types/index.js';
 import { RouteStore } from './route-store.js';
 
 /**

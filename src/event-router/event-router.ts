@@ -3,9 +3,9 @@ import { getComponent } from '@sektek/utility-belt';
 import {
   AbstractEventService,
   EventServiceOptions,
-} from './abstract-event-service.js';
-import { Event, EventChannel } from './types/index.js';
-import { RouteProvider, RouteProviderFn } from './types/route-provider.js';
+} from '../abstract-event-service.js';
+import { Event, EventChannel } from '../types/index.js';
+import { RouteProvider, RouteProviderFn } from './types/index.js';
 
 type EventRouterOptions<T extends Event = Event> = EventServiceOptions & {
   routeProvider: RouteProvider<T> | RouteProviderFn<T>;

@@ -1,6 +1,7 @@
 import { getComponent } from '@sektek/utility-belt';
 
-import { Event, Route, RouteFn } from '../types/index.js';
+import { Route, RouteFn } from './types/index.js';
+import { Event } from '../types/index.js';
 
 export const getRouteComponent = <T extends Event = Event>(
   route: Route<T> | null | undefined,

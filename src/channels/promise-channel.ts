@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { Event, EventChannel } from './types/index.js';
+import { Event, EventChannel } from '../types/index.js';
 
 /**
  * An EventChannel class that resolves a promise when an event is sent to it.

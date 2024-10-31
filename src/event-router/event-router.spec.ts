@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { fake } from 'sinon';
 
-import { EventBuilder } from './event-builder.js';
+import { EventBuilder } from '../event-builder.js';
 import { EventRouter } from './event-router.js';
 
 describe('EventRouter', function () {

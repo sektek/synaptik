@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { EventBuilder } from './event-builder.js';
+import { EventBuilder } from '../event-builder.js';
 import { SingleUseRouteStore } from './single-use-route-store.js';
 
 describe('SingleUseRouteStore', function () {
