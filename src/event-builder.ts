@@ -81,7 +81,7 @@ export class EventBuilder<T extends Event = Event> {
    */
   static from<T extends Event = Event>(event: T): EventBuilder<T> {
     const headers = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
-    headers.parentId = event.parentId ?? event.id;
+    headers.parentId ??= event.id;
     headers.id = randomUUID;
 
     return new EventBuilder<T>({
@@ -155,10 +155,10 @@ export class EventBuilder<T extends Event = Event> {
   }
 
   #headersFromEvent(event: Event): EventHeadersBuildOpts<T> {
-    const result: Record<string, unknown> = {};
+    const result = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
 
     if (!this.#headers.parentId) {
-      result.parentId = event.id;
+      result.parentId ??= event.id;
     }
 
     return result as EventHeadersBuildOpts<T>;

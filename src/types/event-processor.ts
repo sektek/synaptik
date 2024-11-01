@@ -1,3 +1,5 @@
+import { Component } from '@sektek/utility-belt';
+
 import { Event } from './event.js';
 import { EventHandlerFn } from './event-handler.js';
 
@@ -34,3 +36,8 @@ export interface EventProcessor<
    */
   process: EventProcessorFn<T, R>;
 }
+
+export type EventProcessorComponent<
+  T extends Event = Event,
+  R extends Event = Event,
+> = Component<EventProcessor<T, R>, 'process'>;
