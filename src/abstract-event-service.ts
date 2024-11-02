@@ -1,5 +1,7 @@
 import EventEmitter from 'events';
 
+import { EventService } from './types/event-service.js';
+
 export type EventServiceOptions = {
   /**
    * The name of the service.
@@ -16,7 +18,10 @@ const generateName = (prefix: string): string => {
   return `${prefix}#${id}`;
 };
 
-export abstract class AbstractEventService extends EventEmitter {
+export abstract class AbstractEventService
+  extends EventEmitter
+  implements EventService
+{
   #name: string;
 
   constructor(opts: EventServiceOptions) {

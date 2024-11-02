@@ -1,5 +1,6 @@
 import { Component } from '@sektek/utility-belt';
 import { Event } from './event.js';
+import { EventService } from './event-service.js';
 
 export type EventHandlerReturnType = Event | unknown | void;
 
@@ -29,7 +30,7 @@ export interface EventHandlerEvents<
  *
  * @typeParam T - The type of event that the handler can process.
  */
-export interface EventHandler<T extends Event = Event> {
+export interface EventHandler<T extends Event = Event> extends EventService {
   /**
    * Handle an event.
    * @param event - The event to handle.

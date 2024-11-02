@@ -5,3 +5,4 @@ export * from './event-endpoint.js';
 export * from './event-handler.js';
 export * from './event-predicate.js';
 export * from './event-processor.js';
+export * from './event-service.js';

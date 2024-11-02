@@ -61,12 +61,14 @@ export class FilterChannel<T extends Event = Event>
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
     try {
-      if (this.#filter(event)) {
-        this.emit('event:delivered', event);
+      if (await this.#filter(event)) {
+        this.emit('event:accepted', event);
         await this.#handler(event);
+        this.emit('event:delivered', event);
       } else {
         this.emit('event:rejected', event);
         await this.#rejectionHandler(event);
+        this.emit('event:delivered', event);
       }
     } catch (err) {
       this.emit('event:error', event, err);

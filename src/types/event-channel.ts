@@ -1,6 +1,7 @@
 import { Component } from '@sektek/utility-belt';
 import { Event } from './event.js';
 import { EventHandlerFn } from './event-handler.js';
+import { EventService } from './event-service.js';
 
 /**
  * An EventChannel Function is an event handler that specifically should
@@ -24,7 +25,7 @@ export interface EventChannelEvents<T extends Event = Event> {
  *
  * @typeParam T - The event type that the channel can send.
  */
-export interface EventChannel<T extends Event = Event> {
+export interface EventChannel<T extends Event = Event> extends EventService {
   send: EventChannelFn<T>;
   on<E extends keyof EventChannelEvents<T>>(
     event: E,

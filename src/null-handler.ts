@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { Event, EventHandler } from './types/index.js';
+import { Event, EventHandler, EventService } from './types/index.js';
 
 /**
  * An EventHandler function that does nothing.
@@ -14,7 +14,7 @@ export const NullHandlerFn = () => Promise<void>;
  */
 export class NullHandler<T extends Event = Event>
   extends EventEmitter
-  implements EventHandler<T>
+  implements EventHandler<T>, EventService
 {
   static handle(): Promise<void> {
     return Promise.resolve();
@@ -24,5 +24,9 @@ export class NullHandler<T extends Event = Event>
     this.emit('event:received', event);
     this.emit('event:processed', event, undefined);
     return Promise.resolve();
+  }
+
+  get name(): string {
+    return 'NullHandler';
   }
 }
