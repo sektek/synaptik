@@ -27,7 +27,7 @@ export interface ProcessingChannelEvents<
   'event:delivered': (event: R) => void;
 }
 
-interface ProcessingChannel<T extends Event, R extends Event>
+interface ProcessingChannelEventEmitter<T extends Event, R extends Event>
   extends EventChannel<T> {
   on<E extends keyof ProcessingChannelEvents<T, R>>(
     event: E,
@@ -48,7 +48,7 @@ interface ProcessingChannel<T extends Event, R extends Event>
  */
 export class ProcessingChannel<T extends Event = Event, R extends Event = T>
   extends AbstractEventHandlingService<R>
-  implements ProcessingChannel<T, R>
+  implements ProcessingChannelEventEmitter<T, R>
 {
   #processor: EventProcessorFn<T, R>;
 
