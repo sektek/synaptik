@@ -1,9 +1,12 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { fake } from 'sinon';
 
 import { Event } from '../types/index.js';
 import { EventBuilder } from '../event-builder.js';
 import { ProcessingChannel } from './processing-channel.js';
+
+use(chaiAsPromised);
 
 describe('ProcessingChannel', function () {
   it('should process an event before sending it to the handler', async function () {
@@ -83,5 +86,21 @@ describe('ProcessingChannel', function () {
     const args = listener.firstCall.args;
     expect(args[0].data.processed).to.be.true;
     expect(args[0]).to.not.equal(event);
+  });
+
+  it('should emit an event when an error occurs', async function () {
+    const error = new Error('Test error');
+    const processor = fake.throws(error);
+    const handler = fake();
+    const event = await new EventBuilder().create();
+    const listener = (event: Event, err: Error) => {
+      expect(event).to.equal(event);
+      expect(err).to.equal(error);
+    };
+
+    const channel = new ProcessingChannel({ processor, handler });
+    channel.on('event:error', listener);
+
+    expect(channel.send(event)).to.be.rejectedWith(error);
   });
 });

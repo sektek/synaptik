@@ -1,15 +1,13 @@
 import { getComponent } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventHandlingService,
+  EventHandlingServiceOptions,
+} from '../abstract-event-handling-service.js';
 import {
   Event,
   EventChannel,
   EventChannelEvents,
-  EventHandler,
-  EventHandlerFn,
   EventProcessor,
   EventProcessorFn,
 } from '../types/index.js';
@@ -18,9 +16,8 @@ import { EventBuilder } from '../event-builder.js';
 export type ProcessingChannelOptions<
   T extends Event,
   R extends Event,
-> = EventServiceOptions & {
+> = EventHandlingServiceOptions<R> & {
   processor: EventProcessor<T, R> | EventProcessorFn<T, R>;
-  handler: EventHandler<R> | EventHandlerFn<R>;
 };
 
 export interface ProcessingChannelEvents<
@@ -50,28 +47,27 @@ interface ProcessingChannnel<T extends Event, R extends Event>
  * @typeParam R - The type of event that this channel sends.
  */
 export class ProcessingChannel<T extends Event = Event, R extends Event = T>
-  extends AbstractEventService
+  extends AbstractEventHandlingService<R>
   implements ProcessingChannnel<T, R>
 {
   #processor: EventProcessorFn<T, R>;
-  #handler: EventHandlerFn<R>;
 
-  constructor(options: ProcessingChannelOptions<T, R>) {
-    super(options);
-    this.#processor = getComponent(options.processor, 'process');
-    this.#handler = getComponent(options.handler, [
-      'handle',
-      'process',
-      'send',
-    ]);
+  constructor(opts: ProcessingChannelOptions<T, R>) {
+    super(opts);
+    this.#processor = getComponent(opts.processor, 'process');
   }
 
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
 
-    const processorEvent = EventBuilder.clone(event);
-    const processedEvent = await this.#processor(processorEvent);
-    await this.#handler(processedEvent);
-    this.emit('event:delivered', processedEvent);
+    try {
+      const processorEvent = await EventBuilder.clone(event);
+      const processedEvent = await this.#processor(processorEvent);
+      await this.handler(processedEvent);
+      this.emit('event:delivered', processedEvent);
+    } catch (err) {
+      this.emit('event:error', event, err);
+      throw err;
+    }
   }
 }
