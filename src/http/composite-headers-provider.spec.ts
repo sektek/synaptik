@@ -12,7 +12,7 @@ describe('CompositeHeadersProvider', function () {
       provider2,
     );
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const headers = await compositeProvider.get(event);
 
     expect(headers.get('Content-Type')).to.equal('application/json');

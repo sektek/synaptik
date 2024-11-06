@@ -14,7 +14,7 @@ describe('SingleUseRouteStore', function () {
       routes: { route1 },
     });
 
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     const routes = await store.get(event);
     expect(routes).to.have.lengthOf(1);

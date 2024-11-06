@@ -8,7 +8,7 @@ import { ALLOW_ALL, DENY_ALL } from '../types/event-predicate.js';
 
 describe('FilterChannel', function () {
   it('should send the event to the event handler when the filter returns true', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const handler = fake();
     const channel = new FilterChannel({
       filter: ALLOW_ALL,
@@ -21,7 +21,7 @@ describe('FilterChannel', function () {
   });
 
   it('should emit an event:received event when getting an event', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const handler = fake();
     const callback = fake();
     const channel = new FilterChannel({ filter: ALLOW_ALL, handler }).on(
@@ -35,7 +35,7 @@ describe('FilterChannel', function () {
   });
 
   it('should emit an event:delivered event when event is accepted', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const handler = fake();
     const callback = fake();
     const channel = new FilterChannel({ filter: ALLOW_ALL, handler }).on(
@@ -49,7 +49,7 @@ describe('FilterChannel', function () {
   });
 
   it('should emit an event:delivered event when event is rejected', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const handler = fake();
     const callback = fake();
     const channel = new FilterChannel({ filter: DENY_ALL, handler }).on(
@@ -63,7 +63,7 @@ describe('FilterChannel', function () {
   });
 
   it('should send the event to the rejection handler when the filter returns false', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const rejectionHandler = fake();
     const channel = new FilterChannel({
       filter: DENY_ALL,
@@ -77,7 +77,7 @@ describe('FilterChannel', function () {
   });
 
   it('should emit an event:rejected event when the filter returns false', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const handler = fake();
     const callback = fake();
     const channel = new FilterChannel({ filter: DENY_ALL, handler }).on(
@@ -91,7 +91,7 @@ describe('FilterChannel', function () {
   });
 
   it('should emit an event:error event when the handler throws an error', async function () {
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const error = new Error('test');
     const handler = fake.throws(error);
     const callback = fake();

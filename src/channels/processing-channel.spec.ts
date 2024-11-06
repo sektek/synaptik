@@ -13,7 +13,7 @@ describe('ProcessingChannel', function () {
     };
     const handler = fake();
     const channel = new ProcessingChannel({ processor, handler });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     await channel.send(event);
 
@@ -28,7 +28,7 @@ describe('ProcessingChannel', function () {
     };
     const handler = fake();
     const channel = new ProcessingChannel({ processor, handler });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     await channel.send(event);
 
@@ -45,7 +45,7 @@ describe('ProcessingChannel', function () {
     };
     const handler = fake();
     const channel = new ProcessingChannel({ processor, handler });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     await channel.send(event);
 
@@ -56,7 +56,7 @@ describe('ProcessingChannel', function () {
     const processor = async (event: Event) => event;
     const handler = fake();
     const channel = new ProcessingChannel({ processor, handler });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     const listener = fake();
     channel.on('event:received', listener);
@@ -73,7 +73,7 @@ describe('ProcessingChannel', function () {
     };
     const handler = fake();
     const channel = new ProcessingChannel({ processor, handler });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     const listener = fake();
     channel.on('event:delivered', listener);

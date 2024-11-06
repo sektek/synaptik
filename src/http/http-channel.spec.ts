@@ -19,7 +19,7 @@ describe('HttpChannel', function () {
     const listener = fake();
     channel.on('event:received', listener);
 
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     await channel.send(event);
 
     expect(listener.calledOnceWith(event)).to.be.true;
@@ -30,7 +30,7 @@ describe('HttpChannel', function () {
     const listener = fake();
     channel.on('event:delivered', listener);
 
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     await channel.send(event);
 
     expect(listener.calledOnceWith(event)).to.be.true;

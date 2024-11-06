@@ -61,7 +61,7 @@ export class ProcessingChannel<T extends Event = Event, R extends Event = T>
     this.emit('event:received', event);
 
     try {
-      const processorEvent = EventBuilder.clone(event);
+      const processorEvent = await EventBuilder.clone(event);
       const processedEvent = await this.#processor(processorEvent);
       await this.handler(processedEvent);
       this.emit('event:delivered', processedEvent);

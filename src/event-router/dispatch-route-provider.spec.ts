@@ -10,7 +10,7 @@ describe('DispatchRouteProvider', function () {
     );
   });
 
-  it ('should return the provided routes', async function () {
+  it('should return the provided routes', async function () {
     const route1 = fake();
     const route2 = fake();
     const routeProvider = new DispatchRouteProvider({
