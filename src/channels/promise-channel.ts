@@ -43,4 +43,8 @@ export class PromiseChannel<T extends Event = Event>
     this.resolve(value);
     this.emit('event:delivered', value);
   }
+
+  get name(): string {
+    return 'PromiseChannel';
+  }
 }
