@@ -62,10 +62,12 @@ export class SimpleHttpEventService<T extends Event = Event>
     const contentType = opts.contentType ?? 'application/json';
     if (opts.headersProvider && opts.contentType) {
       this.#headersProvider = getComponent(
-        new CompositeHeadersProvider<T>(
-          opts.headersProvider,
-          contentTypeHeadersProvider(contentType),
-        ) as HeadersProviderComponent<T>,
+        new CompositeHeadersProvider<T>({
+          providers: [
+            opts.headersProvider,
+            contentTypeHeadersProvider(contentType),
+          ],
+        }) as HeadersProviderComponent<T>,
         'get',
       );
     } else {
