@@ -9,9 +9,9 @@ import { HttpProcessor } from './http-processor.js';
 use(sinonChai);
 
 describe('HttpProcessor', function () {
-  beforeEach(function () {
+  beforeEach(async function () {
     this.context = {};
-    this.context.responseEvent = EventBuilder.create({ key: 'value' });
+    this.context.responseEvent = await EventBuilder.create({ key: 'value' });
     this.context.scope = nock('http://test.local/')
       .post('/')
       .reply(200, JSON.stringify(this.context.responseEvent));
@@ -28,7 +28,7 @@ describe('HttpProcessor', function () {
       deserializer: async (response: Response) =>
         JSON.parse(await response.text()),
     });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     const response = await processor.process(event);
 
     expect(response).to.deep.equal(this.context.responseEvent);
@@ -40,7 +40,7 @@ describe('HttpProcessor', function () {
     const listener = fake();
     processor.on('event:processed', listener);
 
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     await processor.process(event);
 
     expect(listener.calledOnceWith(match(this.context.responseEvent))).to.be
@@ -53,7 +53,7 @@ describe('HttpProcessor', function () {
     const listener = fake();
     processor.on('event:processed', listener);
 
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
     await processor.process(event);
 
     expect(listener).to.have.been.calledOnceWith(this.context.responseEvent);

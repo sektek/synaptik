@@ -1,17 +1,15 @@
+import { BuilderOptions, builderRender } from '@sektek/utility-belt';
 import _ from 'lodash';
 
 import { Event } from './types/index.js';
-import { TransformToBuildOpts } from './util/transform-to-build-options.js';
 
 const randomUUID = globalThis.crypto.randomUUID.bind(globalThis.crypto);
 
-type EventHeadersBuildOpts<T extends Event = Event> = TransformToBuildOpts<
+type EventHeadersBuildOpts<T extends Event = Event> = BuilderOptions<
   Omit<T, 'data' | 'type'>
 >;
 
-type EventDataBuildOpts<T extends Event = Event> = TransformToBuildOpts<
-  T['data']
->;
+type EventDataBuildOpts<T extends Event = Event> = BuilderOptions<T['data']>;
 
 export type EventBuilderOptions<T extends Event = Event> = {
   data?: EventDataBuildOpts<T>;
@@ -19,10 +17,6 @@ export type EventBuilderOptions<T extends Event = Event> = {
   headers?: EventHeadersBuildOpts<T>;
   type?: string;
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isFunction = (value: unknown): value is () => any =>
-  typeof value === 'function';
 
 /**
  * A builder for creating events.
@@ -65,8 +59,8 @@ export class EventBuilder<T extends Event = Event> {
    * parentId of the original event or the original event's id if the parentId
    * is not set.
    */
-  static clone<T extends Event = Event>(event: T): T {
-    return EventBuilder.from(event).create();
+  static async clone<T extends Event = Event>(event: T): Promise<T> {
+    return await EventBuilder.from(event).create();
   }
 
   /**
@@ -81,7 +75,7 @@ export class EventBuilder<T extends Event = Event> {
    */
   static from<T extends Event = Event>(event: T): EventBuilder<T> {
     const headers = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
-    headers.parentId = event.parentId ?? event.id;
+    headers.parentId ??= event.id;
     headers.id = randomUUID;
 
     return new EventBuilder<T>({
@@ -111,8 +105,8 @@ export class EventBuilder<T extends Event = Event> {
    *
    * @returns {Event} An empty event with only the id set.
    */
-  static create(createOps: EventDataBuildOpts = {}): Event {
-    return new EventBuilder({ data: createOps }).create();
+  static async create(createOps: EventDataBuildOpts = {}): Promise<Event> {
+    return await new EventBuilder({ data: createOps }).create();
   }
 
   /**
@@ -155,10 +149,10 @@ export class EventBuilder<T extends Event = Event> {
   }
 
   #headersFromEvent(event: Event): EventHeadersBuildOpts<T> {
-    const result: Record<string, unknown> = {};
+    const result = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
 
     if (!this.#headers.parentId) {
-      result.parentId = event.id;
+      result.parentId ??= event.id;
     }
 
     return result as EventHeadersBuildOpts<T>;
@@ -169,48 +163,19 @@ export class EventBuilder<T extends Event = Event> {
    * and allowing additional attributes to be provided to override
    * the builder's data. Only event data attributes can be overridden.
    *
-   * @param createOps The data to use when creating the event.
+   * @param createOpts The data to use when creating the event.
    * @returns The created event.
    */
-  create(createOps: EventDataBuildOpts<T> = {}): T {
+  async create(createOpts: EventDataBuildOpts<T> = {}): Promise<T> {
     const result: Record<string, unknown> = {
-      ...this.#renderHeaders(),
-      data: this.#renderData(_.merge(this.#data, createOps)),
+      ...(await builderRender(this.#headers)),
+      type: this.#type,
+      data: (await builderRender(
+        _.merge({}, this.#data, createOpts),
+      )) satisfies T['data'],
     };
 
     return result as T;
-  }
-
-  #renderHeaders(): Partial<T> {
-    const result: Record<string, unknown> = {
-      type: this.#type ?? 'Event',
-    };
-    Object.keys(this.#headers || {}).reduce(
-      (acc: Record<string, unknown>, key: string) => {
-        if (this.#headers?.[key] !== undefined) {
-          acc[key] = isFunction(this.#headers?.[key])
-            ? (this.#headers[key] as () => unknown)()
-            : this.#headers?.[key];
-        }
-        return acc;
-      },
-      result,
-    );
-
-    return result as Partial<T>;
-  }
-
-  #renderData(data: EventDataBuildOpts<T>): Partial<T['data']> {
-    const result: Record<string, unknown> = {};
-
-    Object.keys(data || {}).reduce((acc, key: string) => {
-      if (data?.[key] !== undefined) {
-        acc[key] = isFunction(data?.[key]) ? data[key]() : data?.[key];
-      }
-      return acc;
-    }, result);
-
-    return result as Partial<T['data']>;
   }
 
   private get eventBuilderOptions(): EventBuilderOptions<T> {

@@ -9,7 +9,7 @@ describe('RouteStore', function () {
     const routeDecider = async () => 'route';
     const route = async () => {};
     const routeStore = new RouteStore({ routeDecider, routes: { route } });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     const result = await routeStore.get(event);
     expect(result).to.deep.equal([route]);
@@ -23,7 +23,7 @@ describe('RouteStore', function () {
       routes: {},
       defaultRoute,
     });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     const result = await routeStore.get(event);
     expect(result).to.deep.equal([defaultRoute]);
@@ -37,7 +37,7 @@ describe('RouteStore', function () {
       routeDecider,
       routes: { route1, route2 },
     });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     const result = await routeStore.get(event);
     expect(result).to.deep.equal([route1, route2]);
@@ -46,7 +46,7 @@ describe('RouteStore', function () {
   it('should pass the event to the route decider', async function () {
     const routeDecider = fake();
     const routeStore = new RouteStore({ routeDecider });
-    const event = new EventBuilder().create();
+    const event = await new EventBuilder().create();
 
     await routeStore.get(event);
     expect(routeDecider.calledOnceWith(event)).to.be.true;
