@@ -1,19 +1,34 @@
 import { getComponent } from '@sektek/utility-belt';
 
 import {
+  AbstractEventService,
+  EventServiceOptions,
+} from '../abstract-event-service.js';
+import { Event } from '../types/index.js';
+
+import {
   HeadersProvider,
   HeadersProviderComponent,
   HeadersProviderFn,
 } from './types/index.js';
-import { Event } from '../types/index.js';
+
+export type CompositeHeadersProviderOptions<T extends Event = Event> =
+  EventServiceOptions & {
+    providers: HeadersProviderComponent<T> | HeadersProviderComponent<T>[];
+  };
 
 export class CompositeHeadersProvider<T extends Event = Event>
+  extends AbstractEventService
   implements HeadersProvider<T>
 {
   #providers: HeadersProviderFn<T>[];
 
-  constructor(...providers: HeadersProviderComponent<T>[]) {
-    this.#providers = providers.map(provider => getComponent(provider, 'get'));
+  constructor(opts: CompositeHeadersProviderOptions<T>) {
+    super(opts);
+
+    this.#providers = [opts.providers]
+      .flat()
+      .map(provider => getComponent(provider, 'get'));
   }
 
   async get(event: T): Promise<Headers> {
