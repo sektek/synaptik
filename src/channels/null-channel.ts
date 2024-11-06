@@ -1,4 +1,4 @@
-import { Event, EventChannel } from '../types/index.js';
+import { Event, EventChannel, EventService } from '../types/index.js';
 import { EventEmitter } from 'events';
 
 /**
@@ -9,7 +9,7 @@ import { EventEmitter } from 'events';
  */
 export class NullChannel<T extends Event = Event>
   extends EventEmitter
-  implements EventChannel<T>
+  implements EventChannel<T>, EventService
 {
   static send(): Promise<void> {
     return Promise.resolve();
@@ -18,5 +18,9 @@ export class NullChannel<T extends Event = Event>
   send(event: T): Promise<void> {
     this.emit('event:received', event);
     return Promise.resolve();
+  }
+
+  get name(): string {
+    return 'NullHandler';
   }
 }
