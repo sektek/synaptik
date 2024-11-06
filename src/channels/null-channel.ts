@@ -21,6 +21,6 @@ export class NullChannel<T extends Event = Event>
   }
 
   get name(): string {
-    return 'NullHandler';
+    return 'NullChannel';
   }
 }
