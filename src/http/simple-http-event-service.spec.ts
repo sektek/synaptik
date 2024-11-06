@@ -34,7 +34,7 @@ describe('SimpleHttpEventService', function () {
       url: 'http://test.local',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const response = await service.perform(event);
     expect(response.ok).to.be.true;
   });
@@ -46,7 +46,7 @@ describe('SimpleHttpEventService', function () {
       url: 'http://test.local/',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
 
     expect(service.perform(event)).to.be.rejectedWith(
       'Unexpected status code: 500',
@@ -64,7 +64,7 @@ describe('SimpleHttpEventService', function () {
       urlProvider: () => 'http://test.local/event',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const response = await service.perform(event);
     expect(response.ok).to.be.true;
     expect(scope.isDone()).to.be.true;
@@ -82,7 +82,7 @@ describe('SimpleHttpEventService', function () {
       method: 'GET',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const response = await service.perform(event);
     expect(response.ok).to.be.true;
     expect(scope.isDone()).to.be.true;
@@ -103,7 +103,7 @@ describe('SimpleHttpEventService', function () {
       expect(request.headers.get('Content-Type')).to.equal('application/xml');
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const response = await service.perform(event);
     expect(response.ok).to.be.true;
     expect(scope.isDone()).to.be.true;
@@ -121,7 +121,7 @@ describe('SimpleHttpEventService', function () {
       headersProvider: () => ({ 'Content-Type': 'application/xml' }),
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const response = await service.perform(event);
     expect(response.ok).to.be.true;
     expect(scope.isDone()).to.be.true;
@@ -144,7 +144,7 @@ describe('SimpleHttpEventService', function () {
       contentType: 'text/plain',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const response = await service.perform(event);
     expect(response.ok).to.be.true;
     expect(scope.isDone()).to.be.true;
@@ -157,7 +157,7 @@ describe('SimpleHttpEventService', function () {
       url: 'http://test.local',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const listener = (e: Event, r: Request) => {
       expect(e).to.equal(event);
       expect(r.url).to.equal('http://test.local/');
@@ -175,7 +175,7 @@ describe('SimpleHttpEventService', function () {
       url: 'http://test.local',
     });
 
-    const event = EventBuilder.create();
+    const event = await EventBuilder.create();
     const listener = (e: Event, r: Response) => {
       expect(e).to.equal(event);
       expect(r.ok).to.be.true;
