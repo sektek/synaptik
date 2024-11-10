@@ -1,5 +1,7 @@
-import { EventEmitter } from 'events';
-
+import {
+  AbstractEventService,
+  EventServiceOptions,
+} from '../abstract-event-service.js';
 import { Event, EventChannel } from '../types/index.js';
 
 /**
@@ -9,15 +11,15 @@ import { Event, EventChannel } from '../types/index.js';
  * @template T The type of event to send.
  */
 export class PromiseChannel<T extends Event = Event>
-  extends EventEmitter
+  extends AbstractEventService
   implements EventChannel<T>
 {
   private promise: Promise<T>;
   resolve?: (value: T | PromiseLike<T>) => void;
   reject?: (reason?: unknown) => void;
 
-  constructor() {
-    super();
+  constructor(opts: EventServiceOptions = {}) {
+    super(opts);
     this.promise = new Promise<T>((resolve, reject) => {
       this.resolve = resolve;
       this.reject = reject;
