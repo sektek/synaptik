@@ -24,7 +24,7 @@ export abstract class AbstractEventService
 {
   #name: string;
 
-  constructor(opts: EventServiceOptions) {
+  constructor(opts: EventServiceOptions = {}) {
     super();
     this.#name = opts.name ?? generateName(this.constructor.name);
   }
