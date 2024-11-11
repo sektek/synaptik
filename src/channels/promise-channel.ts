@@ -1,8 +1,21 @@
+import { EventEmittingService } from '@sektek/utility-belt';
+
 import {
   AbstractEventService,
   EventServiceOptions,
 } from '../abstract-event-service.js';
-import { Event, EventChannel } from '../types/index.js';
+import { Event, EventChannel, EventChannelEvents } from '../types/index.js';
+
+type PromiseState = 'pending' | 'fulfilled' | 'rejected';
+const EVENT_ERROR = 'event:error';
+
+type PromiseChannelEvents<T extends Event = Event> = EventChannelEvents<T> & {
+  'channel:stateChange': (state: PromiseState) => void;
+};
+
+export type PromiseChannelOptions = EventServiceOptions & {
+  timeout: number;
+};
 
 /**
  * An EventChannel class that resolves a promise when an event is sent to it.
@@ -12,22 +25,44 @@ import { Event, EventChannel } from '../types/index.js';
  */
 export class PromiseChannel<T extends Event = Event>
   extends AbstractEventService
-  implements EventChannel<T>
+  implements EventChannel<T>, EventEmittingService<PromiseChannelEvents<T>>
 {
-  private promise: Promise<T>;
-  resolve?: (value: T | PromiseLike<T>) => void;
-  reject?: (reason?: unknown) => void;
+  #timeout: number;
+  #promise: Promise<T>;
+  #state: PromiseState = 'pending';
+  #resolve?: (value: T | PromiseLike<T>) => void;
+  #reject?: (reason?: unknown) => void;
 
-  constructor(opts: EventServiceOptions = {}) {
+  constructor(opts: PromiseChannelOptions = { timeout: 0 }) {
     super(opts);
-    this.promise = new Promise<T>((resolve, reject) => {
-      this.resolve = resolve;
-      this.reject = reject;
+    this.#timeout = opts.timeout;
+    this.#promise = new Promise<T>((resolve, reject) => {
+      this.#resolve = (value: T | PromiseLike<T>) => {
+        this.#state = 'fulfilled';
+        resolve(value);
+      };
+      this.#reject = (reason?: unknown) => {
+        this.#state = 'rejected';
+        if (reason instanceof Error) {
+          this.emit(EVENT_ERROR, reason);
+        } else {
+          this.emit(EVENT_ERROR, new Error('Promise rejected'));
+        }
+        reject(reason);
+      };
     });
   }
 
-  get(): Promise<T> {
-    return this.promise;
+  async get(): Promise<T> {
+    if (this.#timeout > 0) {
+      setTimeout(() => {
+        if (this.#state === 'pending') {
+          this.#reject?.(new Error('Promise timed out'));
+        }
+      }, this.#timeout);
+    }
+
+    return this.#promise;
   }
 
   /**
@@ -39,14 +74,33 @@ export class PromiseChannel<T extends Event = Event>
    */
   async send(value: T) {
     this.emit('event:received', value);
-    if (!this.resolve) {
-      throw new Error('Promise not initialized');
+
+    if (this.#state !== 'pending') {
+      const error = new Error('Promise already resolved');
+      this.emit(EVENT_ERROR, error);
+      throw error;
     }
-    this.resolve(value);
+
+    if (!this.#resolve) {
+      const error = new Error('Promise not initialized');
+      this.emit(EVENT_ERROR, error);
+      throw error;
+    }
+
+    this.#resolve(value);
     this.emit('event:delivered', value);
   }
 
-  get name(): string {
-    return 'PromiseChannel';
+  get state(): PromiseState {
+    return this.#state;
+  }
+
+  set state(state: PromiseState) {
+    if (this.#state !== 'pending') {
+      throw new Error('Promise already resolved');
+    }
+    this.emit('channel:stateChange', state);
+
+    this.#state = state;
   }
 }
