@@ -1,4 +1,4 @@
-import { getComponent } from '@sektek/utility-belt';
+import { EventEmittingService, getComponent } from '@sektek/utility-belt';
 
 import {
   AbstractEventHandlingService,
@@ -6,7 +6,6 @@ import {
 } from '../abstract-event-handling-service.js';
 import {
   Event,
-  EventChannel,
   EventChannelEvents,
   EventProcessor,
   EventProcessorFn,
@@ -20,24 +19,12 @@ export type ProcessingChannelOptions<
   processor: EventProcessor<T, R> | EventProcessorFn<T, R>;
 };
 
-export interface ProcessingChannelEvents<
+export type ProcessingChannelEvents<
   T extends Event = Event,
   R extends Event = Event,
-> extends EventChannelEvents<T> {
+> = EventChannelEvents<T> & {
   'event:delivered': (event: R) => void;
-}
-
-interface ProcessingChannelEventEmitter<T extends Event, R extends Event>
-  extends EventChannel<T> {
-  on<E extends keyof ProcessingChannelEvents<T, R>>(
-    event: E,
-    listener: ProcessingChannelEvents<T, R>[E],
-  ): this;
-  emit<E extends keyof ProcessingChannelEvents<T, R>>(
-    event: E,
-    ...args: Parameters<ProcessingChannelEvents<T, R>[E]>
-  ): boolean;
-}
+};
 
 /**
  * A channel that performs processing on an event prior to send it to
@@ -48,7 +35,7 @@ interface ProcessingChannelEventEmitter<T extends Event, R extends Event>
  */
 export class ProcessingChannel<T extends Event = Event, R extends Event = T>
   extends AbstractEventHandlingService<R>
-  implements ProcessingChannelEventEmitter<T, R>
+  implements EventEmittingService<ProcessingChannelEvents<T, R>>
 {
   #processor: EventProcessorFn<T, R>;
 

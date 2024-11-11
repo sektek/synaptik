@@ -1,4 +1,4 @@
-import { Component } from '@sektek/utility-belt';
+import { Component, EventEmittingService } from '@sektek/utility-belt';
 import { Event } from './event.js';
 import { EventHandlerFn } from './event-handler.js';
 import { EventService } from './event-service.js';
@@ -12,11 +12,11 @@ import { EventService } from './event-service.js';
  */
 export type EventChannelFn<T extends Event> = EventHandlerFn<T, void>;
 
-export interface EventChannelEvents<T extends Event = Event> {
+export type EventChannelEvents<T extends Event = Event> = {
   'event:received': (event: T) => void;
   'event:delivered': (event: Event) => void;
   'event:error': (event: Event, err: Error) => void;
-}
+};
 
 /**
  * An EventChannel is an event handler that specifically should be used to
@@ -25,16 +25,10 @@ export interface EventChannelEvents<T extends Event = Event> {
  *
  * @typeParam T - The event type that the channel can send.
  */
-export interface EventChannel<T extends Event = Event> extends EventService {
+export interface EventChannel<T extends Event = Event>
+  extends EventService,
+    EventEmittingService<EventChannelEvents<T>> {
   send: EventChannelFn<T>;
-  on<E extends keyof EventChannelEvents<T>>(
-    event: E,
-    listener: EventChannelEvents<T>[E],
-  ): this;
-  emit<E extends keyof EventChannelEvents<T>>(
-    event: E,
-    ...args: Parameters<EventChannelEvents<T>[E]>
-  ): boolean;
 }
 
 export type EventChannelComponent<T extends Event = Event> = Component<
