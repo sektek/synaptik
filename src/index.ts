@@ -5,4 +5,5 @@ export * from './event-router/index.js';
 export * from './null-handler.js';
 export * from './util/index.js';
 export * from './null-handler.js';
+export * from './request-reply-processor/index.js';
 export * from './types/index.js';
