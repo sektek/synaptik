@@ -1,4 +1,4 @@
-import { getComponent } from '@sektek/utility-belt';
+import { EventEmittingService, getComponent } from '@sektek/utility-belt';
 
 import {
   AbstractEventService,
@@ -16,21 +16,10 @@ import {
 import { NullHandler } from '../null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
-export interface FilterChannelEvents<T extends Event = Event>
-  extends EventChannelEvents<T> {
-  'event:rejected': (event: T) => void;
-}
-
-interface FilterChannelEventsEmitter<T extends Event = Event> {
-  on<E extends keyof FilterChannelEvents<T>>(
-    event: E,
-    listener: FilterChannelEvents<T>[E],
-  ): this;
-  emit<E extends keyof FilterChannelEvents<T>>(
-    event: E,
-    ...args: Parameters<FilterChannelEvents<T>[E]>
-  ): boolean;
-}
+export type FilterChannelEvents<T extends Event = Event> =
+  EventChannelEvents<T> & {
+    'event:rejected': (event: T) => void;
+  };
 
 export type FilterChannelOptions<T extends Event = Event> =
   EventServiceOptions & {
@@ -41,7 +30,7 @@ export type FilterChannelOptions<T extends Event = Event> =
 
 export class FilterChannel<T extends Event = Event>
   extends AbstractEventService
-  implements EventChannel<T>, FilterChannelEventsEmitter<T>
+  implements EventChannel<T>, EventEmittingService<FilterChannelEvents<T>>
 {
   #filter: EventPredicateFn<T>;
   #handler: EventHandlerFn<T>;
