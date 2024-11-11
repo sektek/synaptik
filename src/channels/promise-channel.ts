@@ -14,8 +14,10 @@ type PromiseChannelEvents<T extends Event = Event> = EventChannelEvents<T> & {
 };
 
 export type PromiseChannelOptions = EventServiceOptions & {
-  timeout: number;
+  timeout?: number;
 };
+
+const DEFAULT_TIMEOUT = 0;
 
 /**
  * An EventChannel class that resolves a promise when an event is sent to it.
@@ -33,9 +35,9 @@ export class PromiseChannel<T extends Event = Event>
   #resolve?: (value: T | PromiseLike<T>) => void;
   #reject?: (reason?: unknown) => void;
 
-  constructor(opts: PromiseChannelOptions = { timeout: 0 }) {
+  constructor(opts: PromiseChannelOptions = { timeout: DEFAULT_TIMEOUT }) {
     super(opts);
-    this.#timeout = opts.timeout;
+    this.#timeout = opts.timeout ?? DEFAULT_TIMEOUT;
     this.#promise = new Promise<T>((resolve, reject) => {
       this.#resolve = (value: T | PromiseLike<T>) => {
         this.#state = 'fulfilled';
