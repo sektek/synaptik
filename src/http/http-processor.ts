@@ -1,8 +1,8 @@
 import { Event, EventProcessor } from '../types/index.js';
 import {
-  EventDeserializerComponent,
-  EventDeserializerFn,
   HttpEventService,
+  ResponseEventExtractorComponent,
+  ResponseEventExtractorFn,
 } from './types/index.js';
 import {
   HttpEventServiceOptions,
@@ -14,33 +14,38 @@ export type HttpProcessorOptions<
   T extends Event,
   R extends Event,
 > = HttpEventServiceOptions<T> & {
-  deserializer?: EventDeserializerComponent<R>;
+  eventExtractor?: ResponseEventExtractorComponent<R>;
 };
 
 export class HttpProcessor<T extends Event = Event, R extends Event = T>
   extends SimpleHttpEventService<T>
   implements EventProcessor<T, R>, HttpEventService<T>
 {
-  #deserializer: EventDeserializerFn<R>;
+  #eventExtractor: ResponseEventExtractorFn<R>;
 
   constructor(opts: HttpProcessorOptions<T, R>) {
     super(opts);
 
-    this.#deserializer = getComponent(
-      opts.deserializer,
-      'deserialize',
-      async (response: Response) => await response.json(),
+    this.#eventExtractor = getComponent(
+      opts.eventExtractor,
+      'extract',
+      async (response: Response) => (await response.json()) as R,
     );
   }
 
   async process(event: T): Promise<R> {
     this.emit('event:received', event);
 
-    const response = await this.perform(event);
+    try {
+      const response = await this.perform(event);
 
-    const result = await this.#deserializer(response);
-    this.emit('event:processed', result);
+      const result = await this.#eventExtractor(response);
+      this.emit('event:processed', result);
 
-    return result;
+      return result;
+    } catch (error) {
+      this.emit('event:error', event, error);
+      throw error;
+    }
   }
 }

@@ -53,6 +53,25 @@ describe('SimpleHttpEventService', function () {
     );
   });
 
+  it('should emit a response:error event if the response status is not 2xx', async function () {
+    const event = await EventBuilder.create();
+    nock('http://test.local').post('/').reply(500, 'Internal Server Error');
+    const listener = (e: Event, r: Response, err: Error) => {
+      expect(e).to.equal(event);
+      expect(r.ok).to.be.true;
+      expect(err.message).to.equal('Unexpected status code: 500');
+    };
+
+    const service = new SimpleHttpEventService({
+      url: 'http://test.local/',
+    });
+    service.on('response:error', listener);
+
+    expect(service.perform(event)).to.be.rejectedWith(
+      'Unexpected status code: 500',
+    );
+  });
+
   it('should take the url from the urlProvider', async function () {
     const scope = nock('http://test.local', {
       reqheaders: { 'Content-Type': 'application/json' },

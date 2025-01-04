@@ -9,8 +9,13 @@ export class HttpChannel<T extends Event = Event>
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
 
-    await this.perform(event);
+    try {
+      await this.perform(event);
 
-    this.emit('event:delivered', event);
+      this.emit('event:delivered', event);
+    } catch (error) {
+      this.emit('event:error', event, error);
+      throw error;
+    }
   }
 }

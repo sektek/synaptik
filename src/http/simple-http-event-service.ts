@@ -88,11 +88,14 @@ export class SimpleHttpEventService<T extends Event = Event>
     this.emit('request:created', event, request);
 
     const response = await fetch(request);
-    this.emit('response:received', event, response);
 
     if (response.status < 200 || response.status >= 300) {
-      throw new Error(`Unexpected status code: ${response.status}`);
+      const error = new Error(`Unexpected status code: ${response.status}`);
+      this.emit('response:error', event, response, error);
+      throw error;
     }
+
+    this.emit('response:received', event, response);
 
     return response;
   }

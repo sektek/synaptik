@@ -25,8 +25,6 @@ describe('HttpProcessor', function () {
   it('should return the response event', async function () {
     const processor = new HttpProcessor({
       url: 'http://test.local/',
-      deserializer: async (response: Response) =>
-        JSON.parse(await response.text()),
     });
     const event = await new EventBuilder().create();
     const response = await processor.process(event);

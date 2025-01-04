@@ -48,7 +48,11 @@ export class CompositeHeadersProvider<T extends Event = Event>
           });
         } else {
           Object.entries(providerHeaders).forEach(([name, value]) => {
-            headers.set(name, value);
+            if (Array.isArray(value)) {
+              value.forEach(v => headers.append(name, v));
+              return;
+            }
+            headers.set(name, value as string);
           });
         }
       }),
