@@ -8,11 +8,11 @@ type XMLHttpRequestBodyInit =
   | BufferSource
   | FormData
   | URLSearchParams;
-type BodyInit = ReadableStream<number> | XMLHttpRequestBodyInit;
+type BodyInit = XMLHttpRequestBodyInit | ReadableStream<number>;
 
 export type EventSerializerFn<T extends Event = Event> = (
   event: T,
-) => BodyInit | PromiseLike<BodyInit> | null | undefined;
+) => BodyInit | undefined | PromiseLike<BodyInit | undefined>;
 
 export interface EventSerializer<T extends Event = Event> {
   serialize: EventSerializerFn<T>;

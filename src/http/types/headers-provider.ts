@@ -5,8 +5,7 @@ import {
   EventBasedProviderFn,
 } from '../../types/index.js';
 
-// Pretty certain I can import this from somewhere else. For now, I'll just copy it.
-type HeadersInit = [string, string][] | Record<string, string> | Headers;
+type HeadersInit = Headers | [string, string][] | Record<string, string>;
 
 export type HeadersProviderFn<T extends Event = Event> = EventBasedProviderFn<
   T,
