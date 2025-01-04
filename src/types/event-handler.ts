@@ -1,4 +1,5 @@
-import { Component } from '@sektek/utility-belt';
+import { Component, EventEmittingService } from '@sektek/utility-belt';
+
 import { Event } from './event.js';
 import { EventService } from './event-service.js';
 
@@ -15,14 +16,14 @@ export type EventHandlerFn<
   R extends EventHandlerReturnType = unknown,
 > = (event: T) => R | PromiseLike<R>;
 
-export interface EventHandlerEvents<
+export type EventHandlerEvents<
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
-> {
+> = {
   'event:received': (event: T) => void;
   'event:processed': (event: T, result: R) => void;
   'event:error': (event: T, err: Error) => void;
-}
+};
 
 /**
  * An event handler represent an endpoint that performs an action in response
@@ -30,21 +31,15 @@ export interface EventHandlerEvents<
  *
  * @typeParam T - The type of event that the handler can process.
  */
-export interface EventHandler<T extends Event = Event> extends EventService {
+export interface EventHandler<T extends Event = Event>
+  extends EventService,
+    EventEmittingService<EventHandlerEvents<T>> {
   /**
    * Handle an event.
    * @param event - The event to handle.
    * @returns A promise that resolves when the event has been handled.
    */
   handle: EventHandlerFn<T>;
-  on<E extends keyof EventHandlerEvents<T>>(
-    event: E,
-    listener: EventHandlerEvents<T>[E],
-  ): this;
-  emit<E extends keyof EventHandlerEvents<T>>(
-    event: E,
-    ...args: Parameters<EventHandlerEvents<T>[E]>
-  ): boolean;
 }
 
 export type EventHandlerComponent<T extends Event = Event> = Component<
