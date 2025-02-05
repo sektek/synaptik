@@ -1,18 +1,25 @@
 import { Component } from '@sektek/utility-belt';
+
 import { Event } from '../../types/index.js';
 
-type BufferSource = ArrayBufferView | ArrayBuffer;
-type XMLHttpRequestBodyInit =
-  | string
+// Having some typing issues with BodyInit and fetch
+// So I'm commenting out the types that are causing conflicts
+type BodyInit =
+  | ArrayBuffer
+  // | AsyncIterable<Uint8Array>
   | Blob
-  | BufferSource
   | FormData
-  | URLSearchParams;
-type BodyInit = XMLHttpRequestBodyInit | ReadableStream<number>;
+  // | Iterable<Uint8Array>
+  // | ArrayBufferView
+  | URLSearchParams
+  | null
+  | string;
+
+type EventSerializerReturnType = undefined | BodyInit;
 
 export type EventSerializerFn<T extends Event = Event> = (
   event: T,
-) => BodyInit | undefined | PromiseLike<BodyInit | undefined>;
+) => EventSerializerReturnType | PromiseLike<EventSerializerReturnType>;
 
 export interface EventSerializer<T extends Event = Event> {
   serialize: EventSerializerFn<T>;
