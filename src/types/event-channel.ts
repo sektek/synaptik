@@ -10,7 +10,7 @@ import { EventService } from './event-service.js';
  *
  * @typeParam T - The event type that the channel can send.
  */
-export type EventChannelFn<T extends Event> = EventHandlerFn<T, void>;
+export type EventChannelFn<T extends Event = Event> = EventHandlerFn<T, void>;
 
 export type EventChannelEvents<T extends Event = Event> = {
   'event:received': (event: T) => void;
