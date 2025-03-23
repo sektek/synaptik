@@ -12,9 +12,9 @@
   "type": "module",
   "scripts": {
     "build": "npx tsc -p tsconfig.build.json",
-    "cover": "nyc npm test -s -- --reporter min && nyc report",
     "lint": "eslint . --cache",
-    "test": "mocha"
+    "test": "mocha",
+    "test:cover": "c8 npm run test"
   },
   "dependencies": {
     "@sektek/utility-belt": "^1.0.0",
@@ -31,12 +31,12 @@
     "@types/node": "^22.10.5",
     "@types/sinon": "^17.0.3",
     "@types/sinon-chai": "^4.0.0",
+    "c8": "^10.1.3",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.1",
     "eslint": "^8.57.0",
     "mocha": "^10.8.2",
     "nock": "^14.0.0-beta.19",
-    "nyc": "^17.1.0",
     "prettier": "^3.4.1",
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
