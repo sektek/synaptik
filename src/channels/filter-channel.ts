@@ -39,12 +39,12 @@ export class FilterChannel<T extends Event = Event>
   constructor(opts: FilterChannelOptions<T>) {
     super(opts);
 
-    this.#filter = getComponent(opts.filter, 'test');
+    this.#filter = getComponent(opts.filter, 'test', { name: 'filter' });
     this.#handler = getEventHandlerComponent(opts.handler);
-    this.#rejectionHandler = getEventHandlerComponent(
-      opts.rejectionHandler,
-      new NullHandler<T>(),
-    );
+    this.#rejectionHandler = getEventHandlerComponent(opts.rejectionHandler, {
+      name: 'rejectionHandler',
+      defaultProvider: () => new NullHandler<T>(),
+    });
   }
 
   async send(event: T): Promise<void> {

@@ -1,32 +1,46 @@
-import { getComponent } from '@sektek/utility-belt';
+import { GetComponentOptions, getComponent } from '@sektek/utility-belt';
 
 import {
   Event,
-  EventChannel,
-  EventHandler,
+  EventChannelComponent,
+  EventHandlerComponent,
   EventHandlerFn,
   EventHandlerReturnType,
-  EventProcessor,
+  EventProcessorComponent,
 } from '../types/index.js';
 
-type DefaultHandlerType<
+/**
+ * Type representing a component that can handle events.
+ * It can be an EventProcessorComponent, EventChannelComponent, or EventHandlerComponent.
+ * @param T - The type of the event.
+ * @param R - The return type of the event handler.
+ * @returns A type that can be an EventProcessorComponent, EventChannelComponent, or EventHandlerComponent.
+ */
+export type EventEndpointComponent<
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
 > =
-  | EventHandlerFn<T, R>
-  | (R extends Event ? EventProcessor<T, R> : never)
-  | (R extends void | unknown ? EventHandler<T> | EventChannel<T> : never);
+  | (R extends Event ? EventProcessorComponent<T, R> : never)
+  | (R extends void | unknown
+      ? EventChannelComponent<T> | EventHandlerComponent<T>
+      : never);
+
+export type GetEventHandlerComponentOptions<
+  T extends Event = Event,
+  R extends EventHandlerReturnType = unknown,
+> = GetComponentOptions<EventEndpointComponent<T, R>>;
 
 export const getEventHandlerComponent = <
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
 >(
   obj: unknown | null | undefined,
-  defaultHandler?: DefaultHandlerType<T, R>,
+  opts: GetEventHandlerComponentOptions<T, R> = {},
+  // defaultHandler?: DefaultHandlerType<T, R>,
 ): EventHandlerFn<T, R> => {
   return getComponent(
     obj,
     ['send', 'process', 'handle'],
-    defaultHandler,
+    opts,
   ) as EventHandlerFn<T, R>;
 };

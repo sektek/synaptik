@@ -38,10 +38,10 @@ export class RouteStore<T extends Event = Event>
   constructor(opts: RouteStoreOptions<T>) {
     super(opts);
     this.#routeDecider = getComponent(opts.routeDecider, 'get');
-    this.#defaultRoute = getEventHandlerComponent(
-      opts.defaultRoute,
-      new NullHandler<T>(),
-    );
+    this.#defaultRoute = getEventHandlerComponent(opts.defaultRoute, {
+      name: 'defaultRoute',
+      default: () => new NullHandler<T>(),
+    });
     if (opts.routes) {
       Object.entries(opts.routes).forEach(([name, route]) =>
         this.add(name, route),

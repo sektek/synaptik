@@ -52,30 +52,32 @@ export class SimpleHttpEventService<T extends Event = Event>
     if (!opts.urlProvider && !opts.url) {
       throw new Error('Must provide either urlProvider or url');
     }
-    this.#urlProvider = getComponent(opts.urlProvider, 'get', () => opts.url!);
-    this.#eventSerializer = getComponent(
-      opts.eventSerializer,
-      'serialize',
-      METHOD_DEFAULT_BODY_SERIALIZER[opts.method ?? 'POST'],
-    );
+    this.#urlProvider = getComponent(opts.urlProvider, 'get', {
+      default: () => opts.url!,
+    });
     this.#method = opts.method ?? 'POST';
+    this.#eventSerializer = getComponent(opts.eventSerializer, 'serialize', {
+      name: 'eventSerializer',
+      default: METHOD_DEFAULT_BODY_SERIALIZER[this.#method],
+    });
     const contentType = opts.contentType ?? 'application/json';
     if (opts.headersProvider && opts.contentType) {
       this.#headersProvider = getComponent(
         new CompositeHeadersProvider<T>({
           providers: [
-            opts.headersProvider,
+            getComponent(opts.headersProvider, 'get', {
+              name: 'headersProvider',
+            }),
             contentTypeHeadersProvider(contentType),
           ],
         }) as HeadersProviderComponent<T>,
         'get',
       );
     } else {
-      this.#headersProvider = getComponent(
-        opts.headersProvider,
-        'get',
-        contentTypeHeadersProvider(contentType),
-      );
+      this.#headersProvider = getComponent(opts.headersProvider, 'get', {
+        name: 'headersProvider',
+        defaultProvider: () => contentTypeHeadersProvider(contentType),
+      });
     }
   }
 

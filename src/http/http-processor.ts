@@ -26,11 +26,10 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
   constructor(opts: HttpProcessorOptions<T, R>) {
     super(opts);
 
-    this.#eventExtractor = getComponent(
-      opts.eventExtractor,
-      'extract',
-      async (response: Response) => (await response.json()) as R,
-    );
+    this.#eventExtractor = getComponent(opts.eventExtractor, 'extract', {
+      name: 'eventExtractor',
+      default: (response: Response) => response.json() as Promise<R>,
+    });
   }
 
   async process(event: T): Promise<R> {

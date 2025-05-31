@@ -35,7 +35,10 @@ export class EventRouter<T extends Event = Event>
     this.#executionStrategy = getComponent(
       options.executionStrategy,
       'execute',
-      parallelExecutionStrategy,
+      {
+        name: 'executionStrategy',
+        default: parallelExecutionStrategy,
+      },
     );
   }
 

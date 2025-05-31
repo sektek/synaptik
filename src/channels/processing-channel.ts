@@ -45,11 +45,10 @@ export class ProcessingChannel<T extends Event = Event, R extends Event = T>
   constructor(opts: ProcessingChannelOptions<T, R>) {
     super(opts);
     this.#processor = getComponent(opts.processor, 'process');
-    this.#cloner = getComponent(
-      opts.cloner,
-      'process',
-      EventBuilder.clone.bind(EventBuilder),
-    );
+    this.#cloner = getComponent(opts.cloner, 'process', {
+      name: 'cloner',
+      default: EventBuilder.clone.bind(EventBuilder),
+    });
   }
 
   async send(event: T): Promise<void> {
