@@ -17,12 +17,14 @@ export type ProcessingChannelOptions<
   R extends Event,
 > = EventHandlingServiceOptions<R> & {
   processor: EventProcessor<T, R> | EventProcessorFn<T, R>;
+  cloner?: EventProcessor<T, T> | EventProcessorFn<T, T>;
 };
 
 export type ProcessingChannelEvents<
   T extends Event = Event,
   R extends Event = Event,
 > = EventChannelEvents<T> & {
+  'event:processed': (event: T, processedEvent: R) => void;
   'event:delivered': (event: R) => void;
 };
 
@@ -38,23 +40,36 @@ export class ProcessingChannel<T extends Event = Event, R extends Event = T>
   implements EventEmittingService<ProcessingChannelEvents<T, R>>
 {
   #processor: EventProcessorFn<T, R>;
+  #cloner: EventProcessorFn<T, T>;
 
   constructor(opts: ProcessingChannelOptions<T, R>) {
     super(opts);
     this.#processor = getComponent(opts.processor, 'process');
+    this.#cloner = getComponent(
+      opts.cloner,
+      'process',
+      EventBuilder.clone.bind(EventBuilder),
+    );
   }
 
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
 
+    let processedEvent: R;
     try {
-      const processorEvent = await EventBuilder.clone(event);
-      const processedEvent = await this.#processor(processorEvent);
-      await this.handler(processedEvent);
-      this.emit('event:delivered', processedEvent);
+      processedEvent = await this.#process(event);
+      this.emit('event:processed', event, processedEvent);
     } catch (err) {
       this.emit('event:error', event, err);
       throw err;
     }
+
+    await this.handler(processedEvent);
+    this.emit('event:delivered', processedEvent);
+  }
+
+  async #process(event: T): Promise<R> {
+    const eventClone = await this.#cloner(event);
+    return this.#processor(eventClone);
   }
 }

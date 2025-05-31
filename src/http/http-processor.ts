@@ -40,7 +40,7 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
       const response = await this.perform(event);
 
       const result = await this.#eventExtractor(response);
-      this.emit('event:processed', result);
+      this.emit('event:processed', event, result);
 
       return result;
     } catch (error) {
