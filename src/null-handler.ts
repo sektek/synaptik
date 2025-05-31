@@ -22,7 +22,6 @@ export class NullHandler<T extends Event = Event>
 
   handle(event: T): Promise<void> {
     this.emit('event:received', event);
-    this.emit('event:processed', event, undefined);
     return Promise.resolve();
   }
 
