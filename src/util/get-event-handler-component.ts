@@ -16,7 +16,7 @@ import {
  * @param R - The return type of the event handler.
  * @returns A type that can be an EventProcessorComponent, EventChannelComponent, or EventHandlerComponent.
  */
-export type EventEndpointComponent<
+type EventEndpointComponent<
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
 > =
