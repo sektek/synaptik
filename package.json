@@ -41,8 +41,7 @@
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
+    "typescript": "^5.8.3",
     "undici-types": "^7.2.1"
   }
 }
