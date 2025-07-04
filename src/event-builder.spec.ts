@@ -7,9 +7,8 @@ type TestEventType = 'TestEvent';
 type TestEventData = {
   value: string;
 };
-type TestEvent = Event & {
+type TestEvent = Event<TestEventData> & {
   type: TestEventType;
-  data: TestEventData;
 };
 
 describe('EventBuilder', function () {
@@ -41,21 +40,15 @@ describe('EventBuilder', function () {
     });
 
     it('should permit data to be provided in the constructor', async function () {
-      const eventBuilder = new EventBuilder({ data: { value: 'test' } });
+      const eventBuilder = new EventBuilder({ defaults: { value: 'test' } });
       const event = await eventBuilder.create();
       expect(event.data?.value).to.equal('test');
     });
 
     it('should override data provided in the constructor', async function () {
-      const eventBuilder = new EventBuilder({ data: { value: 'test' } });
+      const eventBuilder = new EventBuilder({ defaults: { value: 'test' } });
       const event = await eventBuilder.create({ value: 'test2' });
       expect(event.data?.value).to.equal('test2');
-    });
-
-    it('should permit headers to be provided in the constructor', async function () {
-      const eventBuilder = new EventBuilder({ headers: { id: 'test' } });
-      const event = await eventBuilder.create();
-      expect(event.id).to.equal('test');
     });
   });
 
@@ -70,7 +63,7 @@ describe('EventBuilder', function () {
     it('should permit data to be provided in the constructor', async function () {
       const eventBuilder = new EventBuilder<TestEvent>({
         type: 'TestEvent',
-        data: { value: 'test' },
+        defaults: { value: 'test' },
       });
       const event = await eventBuilder.create();
       expect(event.data.value).to.equal('test');
@@ -86,17 +79,13 @@ describe('EventBuilder', function () {
   describe('with() method', function () {
     it('should create an event', async function () {
       const eventBuilder = new EventBuilder();
-      const event = await eventBuilder
-        .with({ data: { value: 'test' } })
-        .create();
+      const event = await eventBuilder.with({ value: 'test' }).create();
       expect(event.data.value).to.equal('test');
     });
 
     it('should override data', async function () {
-      const eventBuilder = new EventBuilder({ data: { value: 'test' } });
-      const event = await eventBuilder
-        .with({ data: { value: 'test2' } })
-        .create();
+      const eventBuilder = new EventBuilder({ defaults: { value: 'test' } });
+      const event = await eventBuilder.with({ value: 'test2' }).create();
       expect(event.data.value).to.equal('test2');
     });
   });
@@ -112,7 +101,7 @@ describe('EventBuilder', function () {
     it('should copy parentId from event to parentId', async function () {
       const eventBuilder = new EventBuilder();
       const event = await eventBuilder
-        .with({ headers: { parentId: 'test' } })
+        .withHeaders({ parentId: 'test' })
         .create();
       const event2 = await eventBuilder.from(event).create();
       expect(event2.parentId).to.equal('test');
@@ -120,7 +109,7 @@ describe('EventBuilder', function () {
 
     it('should copy data from event', async function () {
       const eventBuilder = new EventBuilder<TestEvent>({
-        copyableData: ['value'],
+        copyKeys: ['value'],
       });
       const event = await eventBuilder.create({ value: 'test' });
       const event2 = await eventBuilder.from(event).create();
@@ -129,7 +118,7 @@ describe('EventBuilder', function () {
 
     it('should allow any copyable data for non-typed events', async function () {
       const eventBuilder = new EventBuilder({
-        copyableData: ['value'],
+        copyKeys: ['value'],
       });
       const event = await eventBuilder.create({ value: 'test' });
       const event2 = await eventBuilder.from(event).create();
@@ -138,7 +127,7 @@ describe('EventBuilder', function () {
 
     it('should override data from event', async function () {
       const eventBuilder = new EventBuilder<TestEvent>({
-        copyableData: ['value', 'blah'],
+        copyKeys: ['value'],
       });
       const event = await eventBuilder.create({ value: 'test' });
       const event2 = await eventBuilder.from(event).create({ value: 'test2' });
@@ -148,7 +137,7 @@ describe('EventBuilder', function () {
     it('should copy data from event regardless of type', async function () {
       const event = await new EventBuilder().create({ value: 'test' });
       const eventBuilder = new EventBuilder<TestEvent>({
-        copyableData: ['value'],
+        copyKeys: ['value'],
       });
       const event2 = await eventBuilder.from(event).create();
       expect(event2.data.value).to.equal('test');
@@ -225,7 +214,7 @@ describe('EventBuilder', function () {
   describe('static with() method', function () {
     it('should create an EventBuilder with the provided options', async function () {
       const eventBuilder = EventBuilder.with({
-        data: { value: 'test' },
+        defaults: { value: 'test' },
         headers: { id: 'test' },
         type: 'TestEvent',
       });
