@@ -11,7 +11,7 @@ export type Event = EventHeaders & {
   data: EventData;
 };
 
-export const EmtpyEvent: Event = {
+export const EmptyEvent: Event = {
   id: '',
   type: 'Event',
   data: {},
