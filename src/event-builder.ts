@@ -1,4 +1,4 @@
-import { BuilderOptions, builderRender } from '@sektek/utility-belt';
+import { BuilderOptions, ObjectBuilder } from '@sektek/utility-belt';
 import _ from 'lodash';
 
 import { Event } from './types/index.js';
@@ -11,11 +11,24 @@ type EventHeadersBuildOpts<T extends Event = Event> = BuilderOptions<
 
 type EventDataBuildOpts<T extends Event = Event> = BuilderOptions<T['data']>;
 
+/**
+ * Options for the EventBuilder.
+ *
+ * @template T The type of event to build. Defaults to Event.
+ * @property {T['type']} [type] - The type of event to build. Defaults to 'Event'.
+ * @property {Partial<EventHeadersBuildOpts<T>>} [headers] - Headers for the event.
+ * @property {Array<keyof T['data']>} [copyKeys] - Keys to copy from the data when calling `from()`.
+ * @property {Partial<BuilderOptions<T['data']>>} [defaults] - Default values for the event data.
+ * @property {ObjectBuilder<T['data']>} [dataBuilder] - Custom data builder for the event data.
+ * @property {ObjectBuilder<T>} [objectBuilder] - Custom object builder for the event.
+ */
 export type EventBuilderOptions<T extends Event = Event> = {
-  data?: EventDataBuildOpts<T>;
-  copyableData?: string[];
-  headers?: EventHeadersBuildOpts<T>;
-  type?: string;
+  type?: T['type'];
+  headers?: Partial<EventHeadersBuildOpts<T>>;
+  copyKeys?: Array<keyof T['data']>;
+  defaults?: Partial<BuilderOptions<T['data']>>;
+  dataBuilder?: ObjectBuilder<T['data']>;
+  objectBuilder?: ObjectBuilder<T>;
 };
 
 /**
@@ -24,34 +37,32 @@ export type EventBuilderOptions<T extends Event = Event> = {
  * @template T The type of event to build.
  */
 export class EventBuilder<T extends Event = Event> {
-  #data: EventDataBuildOpts<T>;
-  #headers: EventHeadersBuildOpts<T>;
-  #type: T['type'];
-  #copyableData: string[];
+  #dataBuilder: ObjectBuilder<T['data']>;
+  #objectBuilder: ObjectBuilder<T>;
 
   /**
-   * Creates a new EventBuilder with the provided options.
+   * Creates a new EventBuilder.
    *
-   * @param opts The options to use when creating the event.
-   * @param opts.copyableData The data attributes to copy from an existing
-   *                          event when calling the from() method.
-   * @param opts.data The data attributes to use when creating an event.
-   *                  Will accept both a value or a function that returns
-   *                  a value.
-   * @param opts.headers The headers to use when creating an event. As with
-   *                     the data attribute, will accept both a value or a
-   *                     function that returns a value. The id header will
-   *                     default to a random UUID.
-   * @param opts.type The type of event to create. Will default to 'Event'.
+   * @param {EventBuilderOptions<T>} [opts] - Options for the event builder.
    */
   constructor(opts: EventBuilderOptions<T> = {}) {
-    this.#data = opts.data ?? {};
-    this.#type = (opts.type ?? 'Event') as T['type'];
-    this.#headers = {
-      id: randomUUID,
-      ...(opts.headers ?? {}),
-    } as EventHeadersBuildOpts<T>;
-    this.#copyableData = opts.copyableData ?? [];
+    const dataBuilder =
+      opts.dataBuilder ??
+      new ObjectBuilder<T['data']>({
+        defaults: opts.defaults,
+        copyKeys: opts.copyKeys,
+      });
+    this.#objectBuilder =
+      opts.objectBuilder ??
+      new ObjectBuilder<T>({
+        defaults: {
+          id: () => randomUUID(),
+          type: opts.type ?? 'Event',
+          data: dataBuilder.creator,
+          ...(opts.headers ?? {}),
+        },
+      });
+    this.#dataBuilder = dataBuilder;
   }
 
   /**
@@ -74,12 +85,13 @@ export class EventBuilder<T extends Event = Event> {
    * @returns A new EventBuilder with the data from the provided event
    */
   static from<T extends Event = Event>(event: T): EventBuilder<T> {
-    const headers = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
+    const headers = _.omit(event, 'id', 'data', 'type') as Partial<
+      EventHeadersBuildOpts<T>
+    >;
     headers.parentId ??= event.id;
-    headers.id = randomUUID;
 
     return new EventBuilder<T>({
-      data: _.cloneDeep(event.data) as EventDataBuildOpts<T>,
+      defaults: _.cloneDeep(event.data) as T['data'],
       headers,
       type: event.type,
     });
@@ -106,7 +118,7 @@ export class EventBuilder<T extends Event = Event> {
    * @returns {Event} An empty event with only the id set.
    */
   static async create(createOps: EventDataBuildOpts = {}): Promise<Event> {
-    return await new EventBuilder({ data: createOps }).create();
+    return await new EventBuilder().create(createOps);
   }
 
   /**
@@ -116,8 +128,23 @@ export class EventBuilder<T extends Event = Event> {
    * @param opts The options to merge with the current options.
    * @returns A new EventBuilder with the merged options.
    */
-  with(opts: EventBuilderOptions<T>): EventBuilder<T> {
-    return new EventBuilder<T>(_.merge(this.eventBuilderOptions, opts));
+  with(defaults: Partial<EventDataBuildOpts<T>>): EventBuilder<T> {
+    const dataBuilder = this.#dataBuilder.with(defaults);
+    return new EventBuilder<T>({
+      dataBuilder,
+      objectBuilder: this.#objectBuilder.with({
+        data: dataBuilder.creator,
+      }),
+    });
+  }
+
+  withHeaders(headers: Partial<EventHeadersBuildOpts<T>>): EventBuilder<T> {
+    return new EventBuilder<T>({
+      dataBuilder: this.#dataBuilder,
+      objectBuilder: this.#objectBuilder.with(
+        headers as Partial<BuilderOptions<T>>,
+      ),
+    });
   }
 
   /**
@@ -130,30 +157,26 @@ export class EventBuilder<T extends Event = Event> {
    * @returns A new EventBuilder with the merged data.
    */
   from(event: Event): EventBuilder<T> {
-    return new EventBuilder<T>(
-      _.merge(this.eventBuilderOptions, this.#optionsFromEvent(event)),
-    );
-  }
-
-  #optionsFromEvent(event: Event): EventBuilderOptions<T> {
-    return {
-      data: this.#dataFromEvent(event),
-      headers: this.#headersFromEvent(event),
-    };
-  }
-
-  #dataFromEvent(event: Event): EventDataBuildOpts<T> {
-    return _.cloneDeep(
-      _.pick(event.data, this.#copyableData),
-    ) as EventDataBuildOpts<T>;
+    const headers = this.#headersFromEvent(event);
+    const dataBuilder = this.#dataBuilder.from(event.data);
+    return new EventBuilder<T>({
+      dataBuilder,
+      objectBuilder: this.#objectBuilder.with({
+        ...headers,
+        data: dataBuilder.creator,
+      }),
+    });
   }
 
   #headersFromEvent(event: Event): EventHeadersBuildOpts<T> {
-    const result = _.omit(event, 'data', 'type') as EventHeadersBuildOpts<T>;
+    const result = _.omit(
+      event,
+      'id',
+      'data',
+      'type',
+    ) as EventHeadersBuildOpts<T>;
 
-    if (!this.#headers.parentId) {
-      result.parentId ??= event.id;
-    }
+    result.parentId ??= event.id;
 
     return result as EventHeadersBuildOpts<T>;
   }
@@ -167,23 +190,6 @@ export class EventBuilder<T extends Event = Event> {
    * @returns The created event.
    */
   async create(createOpts: EventDataBuildOpts<T> = {}): Promise<T> {
-    const result: Record<string, unknown> = {
-      ...(await builderRender(this.#headers)),
-      type: this.#type,
-      data: (await builderRender(
-        _.merge({}, this.#data, createOpts),
-      )) satisfies T['data'],
-    };
-
-    return result as T;
-  }
-
-  private get eventBuilderOptions(): EventBuilderOptions<T> {
-    return {
-      copyableData: this.#copyableData,
-      data: this.#data,
-      headers: this.#headers,
-      type: this.#type,
-    };
+    return await this.#objectBuilder.create({ data: createOpts });
   }
 }
