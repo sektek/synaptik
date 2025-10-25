@@ -12,10 +12,11 @@ import {
 import { Event, EventChannel } from '../types/index.js';
 import { RouteFn, RouteProvider, RouteProviderFn } from './types/index.js';
 
-type EventRouterOptions<T extends Event = Event> = EventServiceOptions & {
-  routeProvider: RouteProvider<T> | RouteProviderFn<T>;
-  executionStrategy?: ExecutionStrategyComponent<RouteFn<T>>;
-};
+export type EventRouterOptions<T extends Event = Event> =
+  EventServiceOptions & {
+    routeProvider: RouteProvider<T> | RouteProviderFn<T>;
+    executionStrategy?: ExecutionStrategyComponent<RouteFn<T>>;
+  };
 
 /**
  * An EventRouter is an EventChannel that routes events to one or more
