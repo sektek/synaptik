@@ -1,9 +1,8 @@
 import { BuilderOptions, ObjectBuilder } from '@sektek/utility-belt';
 import _ from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 import { Event } from './types/index.js';
-
-const randomUUID = globalThis.crypto.randomUUID.bind(globalThis.crypto);
 
 type EventHeadersBuildOpts<T extends Event = Event> = BuilderOptions<
   Omit<T, 'data' | 'type'>
@@ -56,7 +55,7 @@ export class EventBuilder<T extends Event = Event> {
       opts.objectBuilder ??
       new ObjectBuilder<T>({
         defaults: {
-          id: () => randomUUID(),
+          id: () => uuid(),
           type: opts.type ?? 'Event',
           data: dataBuilder.creator,
           ...(opts.headers ?? {}),
