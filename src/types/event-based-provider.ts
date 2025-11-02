@@ -1,16 +1,12 @@
-import { Component } from '@sektek/utility-belt';
+import { Provider, ProviderComponent, ProviderFn } from '@sektek/utility-belt';
 import { Event } from './event.js';
-import { EventService } from './event-service.js';
 
-export type EventBasedProviderFn<T extends Event, R> = (
-  event: T,
-) => R | PromiseLike<R>;
+export type EventBasedProviderFn<R, T extends Event = Event> = ProviderFn<R, T>;
 
-export interface EventBasedProvider<T extends Event, R> extends EventService {
-  get: EventBasedProviderFn<T, R>;
-}
+export interface EventBasedProvider<R, T extends Event = Event>
+  extends Provider<R, T> {}
 
-export type EventBasedProviderComponent<T extends Event, R> = Component<
-  EventBasedProvider<T, R>,
-  'get'
->;
+export type EventBasedProviderComponent<
+  R,
+  T extends Event = Event,
+> = ProviderComponent<R, T>;
