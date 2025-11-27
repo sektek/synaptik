@@ -13,7 +13,7 @@ import {
   EventPredicateComponent,
   EventPredicateFn,
 } from '../types/index.js';
-import { NullHandler } from '../null-handler.js';
+import { NullHandler } from '../handlers/null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type FilterChannelEvents<T extends Event = Event> =

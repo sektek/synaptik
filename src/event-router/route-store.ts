@@ -12,7 +12,7 @@ import {
   RouteProvider,
 } from './types/index.js';
 import { Event } from '../types/index.js';
-import { NullHandler } from '../null-handler.js';
+import { NullHandler } from '../handlers/null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 type RouteRecord<T extends Event = Event> = Record<string, Route<T>>;
