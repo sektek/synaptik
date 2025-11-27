@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { Event, EventHandler, EventService } from './types/index.js';
+import { Event, EventHandler, EventService } from '../types/index.js';
 
 /**
  * An EventHandler function that does nothing.

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { EventBuilder } from './event-builder.js';
+import { EventBuilder } from '../event-builder.js';
 import { NullHandler } from './null-handler.js';
 
 describe('NullHandler', function () {
