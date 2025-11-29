@@ -64,7 +64,7 @@ describe('MutatorHandler', function () {
     expect(eventListener).to.have.been.calledOnceWithExactly(event);
   });
 
-  it('should emit event:handled after handling an event', async function () {
+  it('should emit event:processed after handling an event', async function () {
     const event = await new EventBuilder().create();
     const store = new Map<string, Event>();
     const handler = new MutatorHandler<Event, string, Event>({
