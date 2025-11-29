@@ -71,7 +71,7 @@ export class MutatorHandler<T extends Event = Event, K = string, V = T>
       const key = await this.#keyExtractor(event);
       const value = await this.#valueExtractor(event);
       await this.#mutator(key, value);
-      this.emit('event:handled', event);
+      this.emit('event:processed', event);
     } catch (error) {
       this.emit('event:error', event, error);
       throw error;

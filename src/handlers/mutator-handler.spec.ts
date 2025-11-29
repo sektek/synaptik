@@ -71,7 +71,7 @@ describe('MutatorHandler', function () {
       mutator: store,
     });
     const eventListener = sinon.fake();
-    handler.on('event:handled', eventListener);
+    handler.on('event:processed', eventListener);
 
     await handler.handle(event);
 
