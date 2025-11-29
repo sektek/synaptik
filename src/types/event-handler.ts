@@ -33,13 +33,13 @@ export type EventHandlerEvents<
  */
 export interface EventHandler<T extends Event = Event>
   extends EventService,
-    EventEmittingService<EventHandlerEvents<T>> {
+    EventEmittingService<EventHandlerEvents<T, void>> {
   /**
    * Handle an event.
    * @param event - The event to handle.
    * @returns A promise that resolves when the event has been handled.
    */
-  handle: EventHandlerFn<T>;
+  handle: EventHandlerFn<T, void>;
 }
 
 export type EventHandlerComponent<T extends Event = Event> = Component<
