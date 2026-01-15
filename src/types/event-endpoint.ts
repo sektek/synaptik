@@ -5,7 +5,7 @@ import { Event } from './event.js';
 import { EventChannel } from './event-channel.js';
 
 interface EventProcessorAsEndpoint<T extends Event = Event> {
-  process: EventHandlerFn<T, void>;
+  process: EventHandlerFn<T, unknown>;
 }
 
 export type EventEndpoint<T extends Event = Event> =
