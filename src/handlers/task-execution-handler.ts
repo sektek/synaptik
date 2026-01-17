@@ -73,7 +73,7 @@ export class TaskExecutionHandler<T extends Event = Event, C = void>
   async handle(event: T): Promise<void> {
     this.emit('event:received', event);
     try {
-      const taskComponent = this.#taskProvider(event);
+      const taskComponent = await this.#taskProvider(event);
       const context = await this.#contextProvider(event);
       const task: CommandFn<C> = getComponent(taskComponent, 'execute');
 
