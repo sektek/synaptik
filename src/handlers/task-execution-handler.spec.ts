@@ -14,7 +14,7 @@ use(sinonChai);
 describe('TaskExecutionHandler', function () {
   it('should throw an error if neither task nor taskProvider is provided', function () {
     expect(() => new TaskExecutionHandler<Event>({})).to.throw(
-      'Either task or taskProvider must be provided to RepeatingExecutor',
+      'Either task or taskProvider must be provided to TaskExecutionHandler',
     );
   });
 

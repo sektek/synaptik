@@ -6,7 +6,7 @@ import {
   getComponent,
 } from '@sektek/utility-belt';
 
-import { Event } from '../types/index.js';
+import { Event, EventHandler } from '../types/index.js';
 
 import {
   AbstractEventService,
@@ -25,17 +25,30 @@ export type TaskExecutionHandlerOptions<T, C> = EventServiceOptions & {
    * If not provided, a task must be specified directly.
    */
   taskProvider?: ProviderComponent<CommandComponent<C>, T>;
+  /**
+   * The context to be passed to the task command. If C is void, context
+   * is undefined.
+   */
   context?: C extends void ? undefined : C;
+  /**
+   * A provider component that supplies the context for the task command.
+   * If not provided, the static context (if any) will be used.
+   * Should not be provided if C is void.
+   */
   contextProvider?: ProviderComponent<C, T>;
 };
 
 /**
  * A handler that executes a task command in response to an event.
+ *
+ * @template T - The type of the Event being handled.
+ * @template C - The type of the context passed to the task command.
+ *    Defaults to void if no context is needed.
  */
-export class TaskExecutionHandler<
-  T extends Event = Event,
-  C = void,
-> extends AbstractEventService {
+export class TaskExecutionHandler<T extends Event = Event, C = void>
+  extends AbstractEventService
+  implements EventHandler<T>
+{
   #taskProvider: ProviderFn<CommandComponent<C>, T>;
   #contextProvider: ProviderFn<C, T>;
 
@@ -44,7 +57,7 @@ export class TaskExecutionHandler<
 
     if (!opts.task && !opts.taskProvider) {
       throw new Error(
-        'Either task or taskProvider must be provided to RepeatingExecutor',
+        'Either task or taskProvider must be provided to TaskExecutionHandler',
       );
     }
 
