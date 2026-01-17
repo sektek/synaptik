@@ -40,7 +40,7 @@ export class RouteStore<T extends Event = Event>
     this.#routeDecider = getComponent(opts.routeDecider, 'get');
     this.#defaultRoute = getEventHandlerComponent(opts.defaultRoute, {
       name: 'defaultRoute',
-      default: () => new NullHandler<T>(),
+      defaultProvider: () => new NullHandler<T>(),
     });
     if (opts.routes) {
       Object.entries(opts.routes).forEach(([name, route]) =>
