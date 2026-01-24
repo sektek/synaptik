@@ -61,7 +61,7 @@ describe('TapChannel', function () {
 
       await channel.send(event).catch(() => {});
 
-      expect(errorListener).to.have.been.calledOnceWith(event, error);
+      expect(errorListener).to.have.been.calledOnceWith(error, event);
       expect(handler).to.not.have.been.called;
     });
   });

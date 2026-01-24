@@ -11,22 +11,16 @@ import {
   EventErrorHandlerFn,
 } from '../types/index.js';
 
-export type CompositeEventErrorHandlerOptions<
-  T extends Event = Event,
-  E extends Error = Error,
-> = {
-  errorHandlers: Array<EventErrorHandlerComponent<T, E>>;
-  executionStrategy?: ExecutionStrategyComponent<EventErrorHandlerFn<T, E>>;
+export type CompositeEventErrorHandlerOptions<T extends Event = Event> = {
+  errorHandlers: Array<EventErrorHandlerComponent<T>>;
+  executionStrategy?: ExecutionStrategyComponent<EventErrorHandlerFn<T>>;
 };
 
-export class CompositeEventErrorHandler<
-  T extends Event = Event,
-  E extends Error = Error,
-> {
-  #errorHandlers: EventErrorHandlerFn<T, E>[];
-  #executionStrategy: ExecutionStrategyFn<EventErrorHandlerFn<T, E>>;
+export class CompositeEventErrorHandler<T extends Event = Event> {
+  #errorHandlers: EventErrorHandlerFn<T>[];
+  #executionStrategy: ExecutionStrategyFn<EventErrorHandlerFn<T>>;
 
-  constructor(opts: CompositeEventErrorHandlerOptions<T, E>) {
+  constructor(opts: CompositeEventErrorHandlerOptions<T>) {
     this.#errorHandlers = opts.errorHandlers.map(handler =>
       getComponent(handler, 'handle'),
     );
@@ -35,7 +29,7 @@ export class CompositeEventErrorHandler<
     });
   }
 
-  async handle(event: T, error: E) {
-    await this.#executionStrategy(this.#errorHandlers, event, error);
+  async handle(error: Error, event: T): Promise<void> {
+    await this.#executionStrategy(this.#errorHandlers, error, event);
   }
 }

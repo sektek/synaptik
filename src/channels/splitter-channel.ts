@@ -6,6 +6,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
   Event,
   EventSplitterComponent,
   EventSplitterFn,
@@ -45,7 +48,7 @@ export class SplitterChannel<
   }
 
   async send(event: T): Promise<void> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
     let events = [];
     try {
       for await (const splitEvent of this.#splitter(event)) {
@@ -59,7 +62,7 @@ export class SplitterChannel<
         await this.#executeBatch(event, events);
       }
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
   }
@@ -68,7 +71,7 @@ export class SplitterChannel<
     this.emit('event:batch:received', event, events);
     const tasks = events.map(e => async () => {
       await this.handler(e);
-      this.emit('event:delivered', e);
+      this.emit(EVENT_DELIVERED, e);
     });
     await this.#executionStrategy(tasks);
     this.emit('event:batch:delivered', event, events);

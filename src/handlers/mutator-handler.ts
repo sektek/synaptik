@@ -11,8 +11,13 @@ import {
   EventServiceOptions,
 } from '../abstract-event-service.js';
 
+import {
+  EVENT_ERROR,
+  EVENT_PROCESSED,
+  EVENT_RECEIVED,
+  EventHandler,
+} from '../types/event-handler.js';
 import { Event } from '../types/event.js';
-import { EventHandler } from '../types/event-handler.js';
 
 /**
  * Options for the MutatorHandler constructor.
@@ -66,14 +71,14 @@ export class MutatorHandler<T extends Event = Event, K = string, V = T>
   }
 
   async handle(event: T): Promise<void> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
     try {
       const key = await this.#keyExtractor(event);
       const value = await this.#valueExtractor(event);
       await this.#mutator(key, value);
-      this.emit('event:processed', event);
+      this.emit(EVENT_PROCESSED, event);
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
   }

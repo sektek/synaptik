@@ -3,6 +3,9 @@ import {
   EventHandlingServiceOptions,
 } from '../abstract-event-handling-service.js';
 import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
   Event,
   EventHandlerComponent,
   EventHandlerFn,
@@ -29,16 +32,16 @@ export class TapChannel<
 
   async send(event: T): Promise<void> {
     try {
-      this.emit('event:received', event);
+      this.emit(EVENT_RECEIVED, event);
       await this.#tapHandler(event);
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit(EVENT_ERROR, error, event);
       if (this.#rethrow) {
         throw error;
       }
     }
 
     await this.handler(event);
-    this.emit('event:delivered', event);
+    this.emit(EVENT_DELIVERED, event);
   }
 }

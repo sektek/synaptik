@@ -41,7 +41,7 @@ describe('ErrorTrapChannel', function () {
       await errorTrap.send(event);
 
       expect(handler).to.have.been.calledOnceWith(event);
-      expect(errorHandler).to.have.been.calledOnceWith(event, error);
+      expect(errorHandler).to.have.been.calledOnceWith(error, event);
     });
 
     it('should be called prior to the error being rethrown', async function () {
@@ -57,7 +57,7 @@ describe('ErrorTrapChannel', function () {
 
       expect(errorTrap.send(event)).to.eventually.be.rejectedWith(error);
       expect(handler).to.have.been.calledOnceWith(event);
-      expect(errorHandler).to.have.been.calledOnceWith(event, error);
+      expect(errorHandler).to.have.been.calledOnceWith(error, event);
     });
 
     it('should not be called when no error occurs', async function () {
@@ -122,7 +122,7 @@ describe('ErrorTrapChannel', function () {
 
       await errorTrap.send(event);
 
-      expect(errorListener).to.have.been.calledOnceWith(event, error);
+      expect(errorListener).to.have.been.calledOnceWith(error, event);
     });
 
     it('should not emit an event:error when no error occurs', async function () {

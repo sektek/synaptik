@@ -4,7 +4,13 @@ import {
   AbstractEventService,
   EventServiceOptions,
 } from '../abstract-event-service.js';
-import { Event, EventChannel } from '../types/index.js';
+import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
+  Event,
+  EventChannel,
+} from '../types/index.js';
 
 import { HttpEventService } from './types/http-event-service.js';
 
@@ -75,14 +81,14 @@ export class HttpChannel<T extends Event = Event>
    * @returns {Promise<void>} A promise that resolves when the event is sent.
    */
   async send(event: T): Promise<void> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
 
     try {
       await this.#httpOperator.perform(event);
 
-      this.emit('event:delivered', event);
+      this.emit(EVENT_DELIVERED, event);
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
   }

@@ -1,9 +1,14 @@
 import { Component, EventEmittingService } from '@sektek/utility-belt';
 
 import { Event } from './event.js';
+import { EventErrorHandlerFn } from './event-error-handler.js';
 import { EventService } from './event-service.js';
 
 export type EventHandlerReturnType = Event | unknown | void;
+
+export const EVENT_ERROR = 'event:error';
+export const EVENT_PROCESSED = 'event:processed';
+export const EVENT_RECEIVED = 'event:received';
 
 /**
  * An event handler function is the base function for performing an action in
@@ -20,9 +25,9 @@ export type EventHandlerEvents<
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
 > = {
-  'event:received': (event: T) => void;
-  'event:processed': (event: T, result: R) => void;
-  'event:error': (event: T, err: Error) => void;
+  [EVENT_RECEIVED]: (event: T) => void;
+  [EVENT_PROCESSED]: (event: T, result: R) => void;
+  [EVENT_ERROR]: EventErrorHandlerFn<T>;
 };
 
 /**

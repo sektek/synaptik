@@ -10,7 +10,13 @@ import {
   AbstractEventService,
   EventServiceOptions,
 } from '../abstract-event-service.js';
-import { Event, EventProcessor } from '../types/index.js';
+import {
+  EVENT_ERROR,
+  EVENT_PROCESSED,
+  EVENT_RECEIVED,
+  Event,
+  EventProcessor,
+} from '../types/index.js';
 import { HttpEventService } from './types/index.js';
 
 /**
@@ -101,17 +107,17 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
    * @returns {Promise<R>} A promise that resolves to the processed event.
    */
   async process(event: T): Promise<R> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
 
     try {
       const response = await this.#httpOperator.perform(event);
 
       const result = await this.#responseDeserializer(response);
-      this.emit('event:processed', event, result);
+      this.emit(EVENT_PROCESSED, event, result);
 
       return result;
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
   }

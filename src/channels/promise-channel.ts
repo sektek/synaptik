@@ -4,10 +4,16 @@ import {
   AbstractEventService,
   EventServiceOptions,
 } from '../abstract-event-service.js';
-import { Event, EventChannel, EventChannelEvents } from '../types/index.js';
+import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
+  Event,
+  EventChannel,
+  EventChannelEvents,
+} from '../types/index.js';
 
 type PromiseState = 'pending' | 'fulfilled' | 'rejected';
-const EVENT_ERROR = 'event:error';
 
 type PromiseChannelEvents<T extends Event = Event> = EventChannelEvents<T> & {
   'channel:stateChange': (state: PromiseState) => void;
@@ -71,26 +77,26 @@ export class PromiseChannel<T extends Event = Event>
    * Delivers an event to the promise created with the channel.
    * The promise will resolve with the event.
    *
-   * @param value - The event to send.
+   * @param event - The event to send.
    * @throws If the channel has not been initialized.
    */
-  async send(value: T) {
-    this.emit('event:received', value);
+  async send(event: T) {
+    this.emit(EVENT_RECEIVED, event);
 
     if (this.#state !== 'pending') {
       const error = new Error('Promise already resolved');
-      this.emit(EVENT_ERROR, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
 
     if (!this.#resolve) {
       const error = new Error('Promise not initialized');
-      this.emit(EVENT_ERROR, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
 
-    this.#resolve(value);
-    this.emit('event:delivered', value);
+    this.#resolve(event);
+    this.emit(EVENT_DELIVERED, event);
   }
 
   get state(): PromiseState {

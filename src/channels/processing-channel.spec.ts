@@ -1,20 +1,26 @@
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { fake } from 'sinon';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
 
 import { Event } from '../types/index.js';
 import { EventBuilder } from '../event-builder.js';
 import { ProcessingChannel } from './processing-channel.js';
 
 use(chaiAsPromised);
+use(sinonChai);
 
 describe('ProcessingChannel', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
   it('should process an event before sending it to the handler', async function () {
     const processor = async (event: Event) => {
       event.data.processed = true;
       return event;
     };
-    const handler = fake();
+    const handler = sinon.fake();
     const channel = new ProcessingChannel({ processor, handler });
     const event = await new EventBuilder().create();
 
@@ -29,7 +35,7 @@ describe('ProcessingChannel', function () {
       event.data.processed = true;
       return event;
     };
-    const handler = fake();
+    const handler = sinon.fake();
     const channel = new ProcessingChannel({ processor, handler });
     const event = await new EventBuilder().create();
 
@@ -46,7 +52,7 @@ describe('ProcessingChannel', function () {
       event.data.processed = true;
       return event;
     };
-    const handler = fake();
+    const handler = sinon.fake();
     const channel = new ProcessingChannel({ processor, handler });
     const event = await new EventBuilder().create();
 
@@ -57,11 +63,11 @@ describe('ProcessingChannel', function () {
 
   it('should emit an event when the event is received', async function () {
     const processor = async (event: Event) => event;
-    const handler = fake();
+    const handler = sinon.fake();
     const channel = new ProcessingChannel({ processor, handler });
     const event = await new EventBuilder().create();
 
-    const listener = fake();
+    const listener = sinon.fake();
     channel.on('event:received', listener);
 
     await channel.send(event);
@@ -74,11 +80,11 @@ describe('ProcessingChannel', function () {
       event.data.processed = true;
       return event;
     };
-    const handler = fake();
+    const handler = sinon.fake();
     const channel = new ProcessingChannel({ processor, handler });
     const event = await new EventBuilder().create();
 
-    const listener = fake();
+    const listener = sinon.fake();
     channel.on('event:delivered', listener);
 
     await channel.send(event);
@@ -90,17 +96,17 @@ describe('ProcessingChannel', function () {
 
   it('should emit an event when an error occurs', async function () {
     const error = new Error('Test error');
-    const processor = fake.throws(error);
-    const handler = fake();
+    const processor = sinon.fake.throws(error);
+    const handler = sinon.fake();
     const event = await new EventBuilder().create();
-    const listener = (event: Event, err: Error) => {
-      expect(event).to.equal(event);
-      expect(err).to.equal(error);
-    };
+    const listener = sinon.fake();
 
     const channel = new ProcessingChannel({ processor, handler });
     channel.on('event:error', listener);
 
-    expect(channel.send(event)).to.be.rejectedWith(error);
+    await expect(channel.send(event)).to.eventually.be.rejectedWith(error);
+
+    expect(listener).to.have.been.calledOnceWith(error, event);
+    expect(handler).to.not.have.been.called;
   });
 });

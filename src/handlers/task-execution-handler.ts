@@ -6,7 +6,13 @@ import {
   getComponent,
 } from '@sektek/utility-belt';
 
-import { Event, EventHandler } from '../types/index.js';
+import {
+  EVENT_ERROR,
+  EVENT_PROCESSED,
+  EVENT_RECEIVED,
+  Event,
+  EventHandler,
+} from '../types/index.js';
 
 import {
   AbstractEventService,
@@ -71,16 +77,16 @@ export class TaskExecutionHandler<T extends Event = Event, C = void>
   }
 
   async handle(event: T): Promise<void> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
     try {
       const taskComponent = await this.#taskProvider(event);
       const context = await this.#contextProvider(event);
       const task: CommandFn<C> = getComponent(taskComponent, 'execute');
 
       await task(context);
-      this.emit('event:processed', event);
+      this.emit(EVENT_PROCESSED, event);
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit(EVENT_ERROR, error, event);
       throw error;
     }
   }
