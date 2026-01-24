@@ -5,6 +5,7 @@ import {
   EventServiceOptions,
 } from '../abstract-event-service.js';
 import {
+  EVENT_DELIVERED,
   EVENT_ERROR,
   EVENT_RECEIVED,
   Event,
@@ -95,7 +96,7 @@ export class PromiseChannel<T extends Event = Event>
     }
 
     this.#resolve(event);
-    this.emit('event:delivered', event);
+    this.emit(EVENT_DELIVERED, event);
   }
 
   get state(): PromiseState {

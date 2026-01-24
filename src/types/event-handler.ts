@@ -25,9 +25,9 @@ export type EventHandlerEvents<
   T extends Event = Event,
   R extends EventHandlerReturnType = unknown,
 > = {
-  EVENT_RECEIVED: (event: T) => void;
-  EVENT_PROCESSED: (event: T, result: R) => void;
-  EVENT_ERROR: EventErrorHandlerFn<T>;
+  [EVENT_RECEIVED]: (event: T) => void;
+  [EVENT_PROCESSED]: (event: T, result: R) => void;
+  [EVENT_ERROR]: EventErrorHandlerFn<T>;
 };
 
 /**

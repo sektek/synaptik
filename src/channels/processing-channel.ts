@@ -28,7 +28,7 @@ export type ProcessingChannelEvents<
   T extends Event = Event,
   R extends Event = Event,
 > = EventChannelEvents<T> & {
-  EVENT_DELIVERED: (event: R) => void;
+  [EVENT_DELIVERED]: (event: R) => void;
 };
 
 /**
