@@ -5,6 +5,9 @@ import {
   EventServiceOptions,
 } from '../abstract-event-service.js';
 import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
   Event,
   EventChannel,
   EventChannelEvents,
@@ -18,6 +21,7 @@ import { getEventHandlerComponent } from '../util/get-event-handler-component.js
 
 export type FilterChannelEvents<T extends Event = Event> =
   EventChannelEvents<T> & {
+    'event:accepted': (event: T) => void;
     'event:rejected': (event: T) => void;
   };
 
@@ -48,19 +52,19 @@ export class FilterChannel<T extends Event = Event>
   }
 
   async send(event: T): Promise<void> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
     try {
       if (await this.#filter(event)) {
         this.emit('event:accepted', event);
         await this.#handler(event);
-        this.emit('event:delivered', event);
+        this.emit(EVENT_DELIVERED, event);
       } else {
         this.emit('event:rejected', event);
         await this.#rejectionHandler(event);
-        this.emit('event:delivered', event);
+        this.emit(EVENT_DELIVERED, event);
       }
     } catch (err) {
-      this.emit('event:error', event, err);
+      this.emit(EVENT_ERROR, err, event);
     }
   }
 }

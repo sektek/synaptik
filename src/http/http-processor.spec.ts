@@ -58,4 +58,22 @@ describe('HttpProcessor', function () {
     expect(listener).to.have.been.calledOnceWith(event, responseEvent);
     expect(scope.isDone()).to.be.true;
   });
+
+  it('should emit event:error on error during processing', async function () {
+    const errorScope = nock('http://error.local/')
+      .post('/')
+      .reply(500, 'Internal Server Error');
+
+    const processor = new HttpProcessor({ url: 'http://error.local/' });
+    const listener = fake();
+    processor.on('event:error', listener);
+
+    const event = await new EventBuilder().create();
+    await expect(processor.process(event)).to.be.rejected;
+
+    expect(listener.calledOnce).to.be.true;
+    expect(listener.firstCall.args[0]).to.be.instanceOf(Error);
+    expect(listener.firstCall.args[1]).to.equal(event);
+    expect(errorScope.isDone()).to.be.true;
+  });
 });

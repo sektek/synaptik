@@ -66,6 +66,7 @@ describe('PromiseChannel', function () {
         match
           .instanceOf(Error)
           .and(match.has('message', 'Promise already resolved')),
+        event,
       ),
     ).to.be.true;
   });

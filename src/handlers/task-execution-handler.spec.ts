@@ -105,7 +105,8 @@ describe('TaskExecutionHandler', function () {
   });
 
   it('should emit event:error if an error occurs during handling', async function () {
-    const taskFn = sinon.fake.throws(new Error('Task failed'));
+    const error = new Error('Task failed');
+    const taskFn = sinon.fake.throws(error);
     const handler = new TaskExecutionHandler<Event>({
       task: taskFn,
     });
@@ -114,10 +115,8 @@ describe('TaskExecutionHandler', function () {
 
     const event = await EventBuilder.create({});
 
-    await expect(handler.handle(event)).to.be.rejectedWith('Task failed');
+    await expect(handler.handle(event)).to.eventually.be.rejectedWith(error);
 
-    expect(eventListener).to.have.been.calledOnce;
-    expect(eventListener.firstCall.args[0]).to.equal(event);
-    expect(eventListener.firstCall.args[1]).to.be.instanceOf(Error);
+    expect(eventListener).to.have.been.calledOnceWith(error, event);
   });
 });

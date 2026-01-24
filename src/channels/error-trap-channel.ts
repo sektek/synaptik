@@ -1,6 +1,9 @@
 import { getComponent, noOp } from '@sektek/utility-belt';
 
 import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
   Event,
   EventErrorHandlerComponent,
   EventErrorHandlerFn,
@@ -35,12 +38,12 @@ export class ErrorTrapChannel<
 
   async send(event: T): Promise<void> {
     try {
-      this.emit('event:received', event);
+      this.emit(EVENT_RECEIVED, event);
       await this.handler(event);
-      this.emit('event:delivered', event);
+      this.emit(EVENT_DELIVERED, event);
     } catch (error) {
-      this.emit('event:error', event, error);
-      this.#errorHandler(event, error);
+      this.emit(EVENT_ERROR, error, event);
+      await this.#errorHandler(error, event);
       if (this.#rethrow) {
         throw error;
       }

@@ -1,7 +1,10 @@
 import { Component, EventEmittingService } from '@sektek/utility-belt';
+
+import { EventHandlerEvents, EventHandlerFn } from './event-handler.js';
 import { Event } from './event.js';
-import { EventHandlerFn } from './event-handler.js';
 import { EventService } from './event-service.js';
+
+export const EVENT_DELIVERED = 'event:delivered';
 
 /**
  * An EventChannel Function is an event handler that specifically should
@@ -12,10 +15,11 @@ import { EventService } from './event-service.js';
  */
 export type EventChannelFn<T extends Event = Event> = EventHandlerFn<T, void>;
 
-export type EventChannelEvents<T extends Event = Event> = {
-  'event:received': (event: T) => void;
-  'event:delivered': (event: Event) => void;
-  'event:error': (event: Event, err: Error) => void;
+export type EventChannelEvents<T extends Event = Event> = EventHandlerEvents<
+  T,
+  void
+> & {
+  [EVENT_DELIVERED]: (event: Event) => void;
 };
 
 /**

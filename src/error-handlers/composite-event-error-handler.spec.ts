@@ -24,10 +24,10 @@ describe('CompositeEventErrorHandler', function () {
     const event = EventBuilder.create();
     const error = new Error('Test error');
 
-    await errorHandler.handle(event, error);
+    await errorHandler.handle(error, event);
 
-    expect(handler1).to.have.been.calledOnceWith(event, error);
-    expect(handler2).to.have.been.calledOnceWith(event, error);
+    expect(handler1).to.have.been.calledOnceWith(error, event);
+    expect(handler2).to.have.been.calledOnceWith(error, event);
   });
 
   it('should allow custom execution strategy', async function () {
@@ -41,10 +41,10 @@ describe('CompositeEventErrorHandler', function () {
     const event = EventBuilder.create();
     const error = new Error('Test error');
 
-    await errorHandler.handle(event, error);
+    await errorHandler.handle(error, event);
 
-    expect(handler1).to.have.been.calledOnceWith(event, error);
-    expect(handler2).to.have.been.calledOnceWith(event, error);
+    expect(handler1).to.have.been.calledOnceWith(error, event);
+    expect(handler2).to.have.been.calledOnceWith(error, event);
     expect(handler1).to.have.been.calledBefore(handler2);
   });
 });

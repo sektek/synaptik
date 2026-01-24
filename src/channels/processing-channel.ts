@@ -5,6 +5,10 @@ import {
   EventHandlingServiceOptions,
 } from '../abstract-event-handling-service.js';
 import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_PROCESSED,
+  EVENT_RECEIVED,
   Event,
   EventChannelEvents,
   EventProcessor,
@@ -24,8 +28,7 @@ export type ProcessingChannelEvents<
   T extends Event = Event,
   R extends Event = Event,
 > = EventChannelEvents<T> & {
-  'event:processed': (event: T, processedEvent: R) => void;
-  'event:delivered': (event: R) => void;
+  EVENT_DELIVERED: (event: R) => void;
 };
 
 /**
@@ -52,19 +55,19 @@ export class ProcessingChannel<T extends Event = Event, R extends Event = T>
   }
 
   async send(event: T): Promise<void> {
-    this.emit('event:received', event);
+    this.emit(EVENT_RECEIVED, event);
 
     let processedEvent: R;
     try {
       processedEvent = await this.#process(event);
-      this.emit('event:processed', event, processedEvent);
+      this.emit(EVENT_PROCESSED, event, processedEvent);
     } catch (err) {
-      this.emit('event:error', event, err);
+      this.emit(EVENT_ERROR, err, event);
       throw err;
     }
 
     await this.handler(processedEvent);
-    this.emit('event:delivered', processedEvent);
+    this.emit(EVENT_DELIVERED, processedEvent);
   }
 
   async #process(event: T): Promise<R> {

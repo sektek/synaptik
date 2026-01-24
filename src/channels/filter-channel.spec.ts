@@ -102,6 +102,6 @@ describe('FilterChannel', function () {
 
     await channel.send(event);
 
-    expect(callback.calledOnceWith(event, error)).to.be.true;
+    expect(callback.calledOnceWith(error, event)).to.be.true;
   });
 });

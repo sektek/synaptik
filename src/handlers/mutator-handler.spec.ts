@@ -94,8 +94,8 @@ describe('MutatorHandler', function () {
     await expect(handler.handle(event)).to.be.rejectedWith('Mutator error');
 
     expect(errorListener).to.have.been.calledOnceWith(
-      event,
       sinon.match.instanceOf(Error),
+      event,
     );
   });
 });
