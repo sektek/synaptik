@@ -78,7 +78,7 @@ export class PromiseChannel<T extends Event = Event>
    * The promise will resolve with the event.
    *
    * @param event - The event to send.
-   * @throws If the channel has not been initialized.
+   * @throws {Error} If the channel has not been initialized.
    */
   async send(event: T) {
     this.emit(EVENT_RECEIVED, event);

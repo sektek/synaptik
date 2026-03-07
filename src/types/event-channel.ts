@@ -11,7 +11,7 @@ export const EVENT_DELIVERED = 'event:delivered';
  * be used to carry events from one component to the next. Often used as
  * outbound gateways for transporting events between systems.
  *
- * @typeParam T - The event type that the channel can send.
+ * @template T - The event type that the channel can send.
  */
 export type EventChannelFn<T extends Event = Event> = EventHandlerFn<T, void>;
 
@@ -27,11 +27,10 @@ export type EventChannelEvents<T extends Event = Event> = EventHandlerEvents<
  * carry events from one component to the next. Often used as outbound gateways
  * for transporting events between systems.
  *
- * @typeParam T - The event type that the channel can send.
+ * @template T - The event type that the channel can send.
  */
 export interface EventChannel<T extends Event = Event>
-  extends EventService,
-    EventEmittingService<EventChannelEvents<T>> {
+  extends EventService, EventEmittingService<EventChannelEvents<T>> {
   send: EventChannelFn<T>;
 }
 

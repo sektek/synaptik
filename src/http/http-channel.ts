@@ -18,10 +18,10 @@ import { HttpEventService } from './types/http-event-service.js';
  * Options for the HttpChannel.
  *
  * @template T The type of event to send.
- * @property {HttpOperator<T>} [httpOperator] An optional HttpOperator instance to use.
  */
 export type HttpChannelOptions<T extends Event = Event> = EventServiceOptions &
   HttpOperatorOptions<T> & {
+    /** An optional HttpOperator instance to use. */
     httpOperator?: HttpOperator<T>;
   };
 
@@ -41,7 +41,8 @@ export class HttpChannel<T extends Event = Event>
   /**
    * Creates an instance of HttpChannel.
    *
-   * @param {HttpChannelOptions<T>} [opts] The options for the channel.
+   * @param opts The options for the channel.
+   *
    * @throws {Error} If neither httpOperator, url, nor urlProvider is provided.
    */
   constructor(opts: HttpChannelOptions<T> = {}) {
@@ -77,8 +78,8 @@ export class HttpChannel<T extends Event = Event>
   /**
    * Sends an event over HTTP using the configured HttpOperator.
    *
-   * @param {T} event The event to send.
-   * @returns {Promise<void>} A promise that resolves when the event is sent.
+   * @param event The event to send.
+   * @returns A promise that resolves when the event is sent.
    */
   async send(event: T): Promise<void> {
     this.emit(EVENT_RECEIVED, event);

@@ -2,10 +2,8 @@ import { EventEmitter } from 'events';
 
 import { Event, EventHandler, EventService } from '../types/index.js';
 
-/**
- * An EventHandler function that does nothing.
- */
-export const NullHandlerFn = () => Promise<void>;
+/** An EventHandler function that does nothing. */
+export const NullHandlerFn = () => {};
 
 /**
  * An EventHandler class that does nothing but emit events.

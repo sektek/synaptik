@@ -24,16 +24,18 @@ import { HttpEventService } from './types/index.js';
  *
  * @template T The type of event to process.
  * @template R The type of event to return.
- * @property {HttpOperator<T>} [httpOperator] An optional HttpOperator instance to use.
- * @property {ResponseDeserializerComponent<R>} [responseDeserializer] An optional
- *   response deserializer component to use for processing the HTTP response.
  */
 export type HttpProcessorOptions<
   T extends Event,
   R extends Event,
 > = HttpOperatorOptions<T> &
   EventServiceOptions & {
+    /** An optional HttpOperator instance to use. */
     httpOperator?: HttpOperator<T>;
+    /**
+     * An optional response deserializer component to use for processing the
+     * HTTP response.
+     */
     responseDeserializer?: ResponseDeserializerComponent<R>;
   };
 
@@ -44,9 +46,6 @@ export type HttpProcessorOptions<
  *
  * @template T The type of event to process.
  * @template R The type of event to return.
- * @extends AbstractEventService
- * @implements {EventProcessor<T, R>}
- * @implements {HttpEventService<T>}
  */
 export class HttpProcessor<T extends Event = Event, R extends Event = T>
   extends AbstractEventService
@@ -58,7 +57,8 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
   /**
    * Creates an instance of HttpProcessor.
    *
-   * @param {HttpProcessorOptions<T, R>} opts The options for the processor.
+   * @param opts The options for the processor.
+   *
    * @throws {Error} If neither httpOperator, url, nor urlProvider is provided.
    */
   constructor(opts: HttpProcessorOptions<T, R>) {
@@ -103,8 +103,8 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
    * Processes the given event by performing an HTTP request and deserializing
    * the response.
    *
-   * @param {T} event The event to process.
-   * @returns {Promise<R>} A promise that resolves to the processed event.
+   * @param event The event to process.
+   * @returns A promise that resolves to the processed event.
    */
   async process(event: T): Promise<R> {
     this.emit(EVENT_RECEIVED, event);

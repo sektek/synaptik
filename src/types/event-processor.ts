@@ -9,8 +9,8 @@ import { EventService } from './event-service.js';
  * when the return value of the EventHandler is expected to be another event.
  * EventProcessors are often used for Event Transformers or Event Enrichment.
  *
- * @typeParam T - The inbound event type.
- * @typeParam R - The returned event type.
+ * @template T - The inbound event type.
+ * @template R - The returned event type.
  */
 export type EventProcessorFn<
   T extends Event = Event,
@@ -23,8 +23,8 @@ export type EventProcessorFn<
  * another event. EventProcessors are often used for Event Transformers or
  * Event Enrichment.
  *
- * @typeParam T - The inbound event type.
- * @typeParam R - The returned event type.
+ * @template T - The inbound event type.
+ * @template R - The returned event type.
  */
 export interface EventProcessor<
   T extends Event = Event,
@@ -32,7 +32,9 @@ export interface EventProcessor<
 > extends EventService {
   /**
    * Process an event.
+   *
    * @param event - The event to process.
+   *
    * @returns A promise that resolves with the processed event.
    */
   process: EventProcessorFn<T, R>;

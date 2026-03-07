@@ -34,14 +34,15 @@ export type EventHandlerEvents<
  * An event handler represent an endpoint that performs an action in response
  * to an event.
  *
- * @typeParam T - The type of event that the handler can process.
+ * @template T - The type of event that the handler can process.
  */
 export interface EventHandler<T extends Event = Event>
-  extends EventService,
-    EventEmittingService<EventHandlerEvents<T, void>> {
+  extends EventService, EventEmittingService<EventHandlerEvents<T, void>> {
   /**
    * Handle an event.
+   *
    * @param event - The event to handle.
+   *
    * @returns A promise that resolves when the event has been handled.
    */
   handle: EventHandlerFn<T, void>;
