@@ -4,6 +4,8 @@ import { Event, EventHandler, EventService } from '../types/index.js';
 
 /**
  * An EventHandler function that does nothing.
+ *
+ * @returns A promise that resolves to void.
  */
 export const NullHandlerFn = () => Promise<void>;
 

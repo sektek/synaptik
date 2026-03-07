@@ -35,8 +35,8 @@ export type ProcessingChannelEvents<
  * A channel that performs processing on an event prior to send it to
  * the event handler.
  *
- * @typeParam T - The type of event that this channel processes.
- * @typeParam R - The type of event that this channel sends.
+ * @template T - The type of event that this channel processes.
+ * @template R - The type of event that this channel sends.
  */
 export class ProcessingChannel<T extends Event = Event, R extends Event = T>
   extends AbstractEventHandlingService<R>

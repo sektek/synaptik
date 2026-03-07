@@ -11,10 +11,14 @@ import {
 
 /**
  * Type representing a component that can handle events.
- * It can be an EventProcessorComponent, EventChannelComponent, or EventHandlerComponent.
+ * It can be an EventProcessorComponent, EventChannelComponent,
+ * or EventHandlerComponent.
+ *
  * @param T - The type of the event.
  * @param R - The return type of the event handler.
- * @returns A type that can be an EventProcessorComponent, EventChannelComponent, or EventHandlerComponent.
+ *
+ * @returns A type that can be an EventProcessorComponent,
+ *  EventChannelComponent, or EventHandlerComponent.
  */
 type EventEndpointComponent<
   T extends Event = Event,

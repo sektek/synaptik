@@ -26,8 +26,9 @@ export type RouteProviderFn<T extends Event = Event> = EventBasedProviderFn<
 /**
  * A class that provides one or more event handlers for a given event.
  */
-export interface RouteProvider<T extends Event = Event>
-  extends EventBasedProvider<RouteFn<T> | RouteFn<T>[], T> {}
+export interface RouteProvider<
+  T extends Event = Event,
+> extends EventBasedProvider<RouteFn<T> | RouteFn<T>[], T> {}
 
 export type RouteProviderComponent<T extends Event = Event> = Component<
   RouteProvider<T>,

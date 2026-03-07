@@ -14,19 +14,19 @@ type EventDataBuildOpts<T extends Event = Event> = BuilderOptions<T['data']>;
  * Options for the EventBuilder.
  *
  * @template T The type of event to build. Defaults to Event.
- * @property {T['type']} [type] - The type of event to build. Defaults to 'Event'.
- * @property {Partial<EventHeadersBuildOpts<T>>} [headers] - Headers for the event.
- * @property {Array<keyof T['data']>} [copyKeys] - Keys to copy from the data when calling `from()`.
- * @property {Partial<BuilderOptions<T['data']>>} [defaults] - Default values for the event data.
- * @property {ObjectBuilder<T['data']>} [dataBuilder] - Custom data builder for the event data.
- * @property {ObjectBuilder<T>} [objectBuilder] - Custom object builder for the event.
  */
 export type EventBuilderOptions<T extends Event = Event> = {
+  /** The type of event to build. Defaults to 'Event'. */
   type?: T['type'];
+  /** Headers for the event. */
   headers?: Partial<EventHeadersBuildOpts<T>>;
+  /** Keys to copy from the data when calling `from()`. */
   copyKeys?: Array<keyof T['data']>;
+  /** Default values for the event data. */
   defaults?: Partial<BuilderOptions<T['data']>>;
+  /** Custom data builder for the event data. */
   dataBuilder?: ObjectBuilder<T['data']>;
+  /** Custom object builder for the event. */
   objectBuilder?: ObjectBuilder<T>;
 };
 
@@ -42,7 +42,7 @@ export class EventBuilder<T extends Event = Event> {
   /**
    * Creates a new EventBuilder.
    *
-   * @param {EventBuilderOptions<T>} [opts] - Options for the event builder.
+   * @param opts The options for the event builder.
    */
   constructor(opts: EventBuilderOptions<T> = {}) {
     const dataBuilder =
@@ -68,6 +68,12 @@ export class EventBuilder<T extends Event = Event> {
    * Clones an existing event with a new id. The parentId will be set to the
    * parentId of the original event or the original event's id if the parentId
    * is not set.
+   *
+   * @param event The event to clone.
+   *
+   * @returns A new event with the same data and headers as the original event,
+   *          but with a new id and if the original event does not have a parentId,
+   *          the parentId will be set to the original event's id.
    */
   static async clone<T extends Event = Event>(event: T): Promise<T> {
     return await EventBuilder.from(event).create();
@@ -114,7 +120,9 @@ export class EventBuilder<T extends Event = Event> {
    * of the create() method. It can only be used to create events of type
    * 'Event'.
    *
-   * @returns {Event} An empty event with only the id set.
+   * @param createOps The data to use when creating the event.
+   *
+   * @returns An empty event with only the id set.
    */
   static async create(createOps: EventDataBuildOpts = {}): Promise<Event> {
     return await new EventBuilder().create(createOps);
@@ -124,7 +132,8 @@ export class EventBuilder<T extends Event = Event> {
    * Creates a new EventBuilder with the provided options merged with the
    * current options.
    *
-   * @param opts The options to merge with the current options.
+   * @param defaults The options to merge with the current options.
+   *
    * @returns A new EventBuilder with the merged options.
    */
   with(defaults: Partial<EventDataBuildOpts<T>>): EventBuilder<T> {
@@ -137,6 +146,12 @@ export class EventBuilder<T extends Event = Event> {
     });
   }
 
+  /**
+   * Creates a new EventBuilder with the provided headers merged with the current options.
+   *
+   * @param headers The headers to merge with the current options.
+   * @returns A new EventBuilder with the merged headers.
+   */
   withHeaders(headers: Partial<EventHeadersBuildOpts<T>>): EventBuilder<T> {
     return new EventBuilder<T>({
       dataBuilder: this.#dataBuilder,
