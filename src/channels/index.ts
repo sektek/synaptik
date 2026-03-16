@@ -5,4 +5,5 @@ export * from './null-channel.js';
 export * from './processing-channel.js';
 export * from './promise-channel.js';
 export * from './splitter-channel.js';
+export * from './store-channel.js';
 export * from './tap-channel.js';
