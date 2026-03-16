@@ -1,3 +1,4 @@
+export * from './collector-channel.js';
 export * from './error-trap-channel.js';
 export * from './filter-channel.js';
 export * from './null-channel.js';
