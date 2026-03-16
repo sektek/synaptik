@@ -51,7 +51,7 @@ export class StoreChannel<T extends Event = Event, K = string>
   #keyProvider: ProviderFn<K, T>;
 
   constructor(opts: StoreChannelOptions<T, K>) {
-    super();
+    super(opts);
     this.#store = opts.store;
     this.#keyProvider = getComponent(opts.keyProvider, 'get', {
       default: DEFAULT_KEY_PROVIDER,
@@ -64,7 +64,7 @@ export class StoreChannel<T extends Event = Event, K = string>
       const key = await this.#keyProvider(event);
       await this.#store.set(key, event);
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit('event:error', error, event);
       throw error;
     }
     this.emit('event:delivered', event);
