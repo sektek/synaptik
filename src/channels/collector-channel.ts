@@ -7,17 +7,6 @@ import {
 import { Event, EventChannel } from '../types/index.js';
 
 /**
- * Options for the CollectionChannel.
- *
- * @template T The type of event to send.
- */
-export type CollectionChannelOptions<T extends Event = Event> =
-  EventServiceOptions & {
-    /** The collection to use for storing events. */
-    collection: Collector<T>;
-  };
-
-/**
  * A channel that stores events in a Collector.
  * Useful for persisting events or for testing purposes.
  *
@@ -51,7 +40,7 @@ export class CollectorChannel<T extends Event = Event>
     try {
       await this.#collector.add(event);
     } catch (error) {
-      this.emit('event:error', event, error);
+      this.emit('event:error', error, event);
       throw error;
     }
     this.emit('event:delivered', event);

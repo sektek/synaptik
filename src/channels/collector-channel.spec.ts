@@ -61,6 +61,6 @@ describe('CollectorChannel', function () {
 
     channel.on('event:error', errorSpy);
     await expect(channel.send(event)).to.be.rejectedWith(error);
-    expect(errorSpy).to.have.been.calledWith(event, error);
+    expect(errorSpy).to.have.been.calledWith(error, event);
   });
 });
