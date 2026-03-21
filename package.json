@@ -1,6 +1,6 @@
 {
   "name": "@sektek/synaptik",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Event library for @sektek projects",
   "author": "Edward Kelly <eddie@sektek.net>",
   "repository": {
@@ -14,15 +14,17 @@
     "build": "npx tsc -p tsconfig.build.json",
     "lint": "eslint . --cache",
     "test": "mocha",
-    "test:cover": "c8 npm run test"
+    "test:cover": "c8 npm run test",
+    "release": "release-it --ci"
   },
   "dependencies": {
-    "@sektek/utility-belt": "^1.0.0",
+    "@sektek/utility-belt": "^0.2.3",
     "lodash": "^4.17.23",
     "tslib": "^2.8.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^10.0.6",
     "@sektek/eslint-plugin": "^2.0.0",
     "@sektek/prettier-config": "^2.0.0",
     "@types/chai": "^5.0.1",
@@ -39,6 +41,7 @@
     "mocha": "^10.8.2",
     "nock": "^14.0.5",
     "prettier": "^3.4.1",
+    "release-it": "^19.2.4",
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
     "tsx": "^4.20.3",
