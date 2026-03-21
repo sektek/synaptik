@@ -15,6 +15,7 @@
     "lint": "eslint . --cache",
     "test": "mocha",
     "test:cover": "c8 npm run test",
+    "packages:update": "npm install --package-lock-only --workspaces=false",
     "release": "release-it --ci"
   },
   "dependencies": {
