@@ -1,11 +1,9 @@
+import { parallelExecutionStrategy, sleep } from '@sektek/utility-belt';
 import { expect } from 'chai';
 import { fake } from 'sinon';
-import { parallelExecutionStrategy } from '@sektek/utility-belt';
 
 import { EventBuilder } from './event-builder.js';
 import { ProviderGateway } from './provider-gateway.js';
-
-const WAIT = () => new Promise(resolve => setTimeout(resolve, 50));
 
 const DEFAULT_PROVIDER_GATEWAY_OPTS = {
   intervalProvider: () => 10,
@@ -71,7 +69,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(handler.calledWith(event1)).to.be.true;
@@ -89,7 +87,7 @@ describe('ProviderGateway', function () {
       }).on('event:received', receivedCallback);
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(receivedCallback.calledWith(event)).to.be.true;
@@ -106,7 +104,7 @@ describe('ProviderGateway', function () {
       }).on('event:processed', processedCallback);
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(processedCallback.calledWith(event)).to.be.true;
@@ -127,7 +125,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(handler.calledWith(event)).to.be.true;
@@ -144,7 +142,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(handler.calledWith(event)).to.be.true;
@@ -161,7 +159,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(provider.callCount).to.be.greaterThan(1);
@@ -189,7 +187,7 @@ describe('ProviderGateway', function () {
       }).on('event:error', errorCallback);
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(errorCallback.called).to.be.true;
@@ -225,7 +223,7 @@ describe('ProviderGateway', function () {
       }).on('event:error', errorCallback);
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(errorCallback.called).to.be.true;
@@ -245,7 +243,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(handler.called).to.be.true;
@@ -263,7 +261,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(handler.called).to.be.true;
@@ -283,7 +281,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(handler.called).to.be.true;
@@ -302,7 +300,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await WAIT();
+      await sleep(50);
       await gateway.stop();
 
       expect(intervalProvider.called).to.be.true;
@@ -346,7 +344,7 @@ describe('ProviderGateway', function () {
       const handler = async () => {
         concurrent++;
         maxConcurrent = Math.max(maxConcurrent, concurrent);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await sleep(10);
         concurrent--;
       };
 
@@ -367,7 +365,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await sleep(150);
       await gateway.stop();
 
       expect(maxConcurrent).to.equal(1);
@@ -385,7 +383,7 @@ describe('ProviderGateway', function () {
       const handler = async () => {
         concurrent++;
         maxConcurrent = Math.max(maxConcurrent, concurrent);
-        await new Promise(resolve => setTimeout(resolve, 20));
+        await sleep(20);
         concurrent--;
       };
 
@@ -406,7 +404,7 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await sleep(150);
       await gateway.stop();
 
       expect(maxConcurrent).to.be.greaterThan(1);
