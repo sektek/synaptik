@@ -40,6 +40,21 @@ describe('ProviderGateway', function () {
       expect(callback.calledOnce).to.be.true;
     });
 
+    it('should stop promptly even when mid-sleep on a long interval', async function () {
+      const gateway = new ProviderGateway({
+        queueOptions: { sleepDuration: 10 },
+        frequency: 60_000,
+        provider: () => [],
+        handler: fake(),
+      });
+
+      await gateway.start();
+      const start = Date.now();
+      await gateway.stop();
+
+      expect(Date.now() - start).to.be.lessThan(500);
+    });
+
     it('should be idempotent on start()', async function () {
       const startedCallback = fake();
       const gateway = new ProviderGateway({
