@@ -11,6 +11,7 @@ import {
   getComponent,
   parallelExecutionStrategy,
   serialExecutionStrategy,
+  sleep,
 } from '@sektek/utility-belt';
 
 import {
@@ -23,8 +24,6 @@ import {
   EVENT_RECEIVED,
   Event,
 } from './types/index.js';
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const DEFAULT_FREQUENCY = 60_000;
 
