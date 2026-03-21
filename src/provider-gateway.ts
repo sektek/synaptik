@@ -1,4 +1,5 @@
 import {
+  CancellableSleep,
   ExecutionStrategyComponent,
   ExecutionStrategyFn,
   IterableProviderComponent,
@@ -116,6 +117,7 @@ export class ProviderGateway<
   #executionStrategy: ExecutionStrategyFn;
   #queue: Queue<T>;
   #running = false;
+  #currentSleep: CancellableSleep | null = null;
 
   constructor(opts: ProviderGatewayOptions<T>) {
     super(opts);
@@ -142,12 +144,14 @@ export class ProviderGateway<
 
   /**
    * Stops the polling loop and waits for the internal queue to drain before
-   * resolving.
+   * resolving. Any in-progress interval sleep is cancelled immediately so the
+   * gateway shuts down without waiting for the next poll to be due.
    *
    * Emits `gateway:stopped` after the queue has emptied.
    */
   async stop(): Promise<void> {
     this.#running = false;
+    this.#currentSleep?.cancel();
     await this.#queue.stop();
     this.emit('gateway:stopped');
   }
@@ -171,7 +175,9 @@ export class ProviderGateway<
   async #runPollingLoop(): Promise<void> {
     while (this.#running) {
       const delayMs = await this.#intervalProvider();
-      await sleep(delayMs);
+      this.#currentSleep = sleep(delayMs);
+      await this.#currentSleep;
+      this.#currentSleep = null;
       if (!this.#running) break;
       try {
         for await (const event of await this.#provider()) {
