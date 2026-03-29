@@ -45,7 +45,8 @@ export type ProviderGatewayOptions<T extends Event = Event> =
     /**
      * Maximum number of events processed concurrently. Ignored when
      * `executionStrategy` is also provided. Use `1` for serial processing,
-     * `Infinity` for unlimited parallelism. Must not be negative or `NaN`.
+     * `Infinity` for unlimited parallelism. Must be a positive integer or
+     * `Infinity`.
      */
     concurrency?: number;
     /**
@@ -175,9 +176,16 @@ export class ProviderGateway<
   async #runPollingLoop(): Promise<void> {
     while (this.#running) {
       const delayMs = await this.#intervalProvider();
+      if (!this.#running) break;
       this.#currentSleep = sleep(delayMs);
-      await this.#currentSleep;
-      this.#currentSleep = null;
+      try {
+        await this.#currentSleep;
+      } catch (err) {
+        if (!this.#running) break;
+        throw err;
+      } finally {
+        this.#currentSleep = null;
+      }
       if (!this.#running) break;
       try {
         for await (const event of await this.#provider()) {
@@ -228,7 +236,8 @@ function resolveIntervalProvider<T extends Event>(
 /**
  * Resolves the effective execution strategy from the gateway options.
  * Prefers `executionStrategy`, then derives one from `concurrency`, then falls
- * back to `parallelExecutionStrategy`. Throws if `concurrency` is negative or NaN.
+ * back to `parallelExecutionStrategy`. Throws if `concurrency` is zero,
+ * negative, or NaN.
  *
  * @param opts - The gateway options.
  * @returns The resolved execution strategy function.
@@ -241,8 +250,8 @@ function resolveExecutionStrategy<T extends Event>(
     return getComponent(opts.executionStrategy, 'execute');
   }
   if (opts.concurrency !== undefined) {
-    if (Number.isNaN(opts.concurrency) || opts.concurrency < 0) {
-      throw new Error('concurrency must be a non-negative number or Infinity');
+    if (Number.isNaN(opts.concurrency) || opts.concurrency <= 0) {
+      throw new Error('concurrency must be a positive number or Infinity');
     }
     if (opts.concurrency === 1) {
       return serialExecutionStrategy;

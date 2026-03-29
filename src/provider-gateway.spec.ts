@@ -49,6 +49,8 @@ describe('ProviderGateway', function () {
       });
 
       await gateway.start();
+      // Yield to ensure the polling loop has entered its 60-second sleep
+      await sleep(0);
       const start = Date.now();
       await gateway.stop();
 
@@ -332,7 +334,19 @@ describe('ProviderGateway', function () {
             handler: fake(),
             concurrency: -1,
           }),
-      ).to.throw('non-negative');
+      ).to.throw('positive');
+    });
+
+    it('should throw on zero concurrency', function () {
+      expect(
+        () =>
+          new ProviderGateway({
+            ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+            provider: () => [],
+            handler: fake(),
+            concurrency: 0,
+          }),
+      ).to.throw('positive');
     });
 
     it('should throw on NaN concurrency', function () {
@@ -344,7 +358,7 @@ describe('ProviderGateway', function () {
             handler: fake(),
             concurrency: NaN,
           }),
-      ).to.throw('non-negative');
+      ).to.throw('positive');
     });
 
     it('should use serial execution when concurrency is 1', async function () {
