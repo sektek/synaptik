@@ -119,6 +119,8 @@ export class ProviderGateway<
   #queue: Queue<T>;
   #running = false;
   #currentSleep: CancellableSleep | null = null;
+  #pollingLoopPromise: Promise<void> = Promise.resolve();
+  #consumerLoopPromise: Promise<void> = Promise.resolve();
 
   constructor(opts: ProviderGatewayOptions<T>) {
     super(opts);
@@ -138,22 +140,25 @@ export class ProviderGateway<
     if (this.#running) return;
     this.#running = true;
     this.#queue.start();
-    this.#startConsumerLoop();
-    this.#startPollingLoop();
+    this.#consumerLoopPromise = this.#startConsumerLoop();
+    this.#pollingLoopPromise = this.#startPollingLoop();
     this.emit('gateway:started');
   }
 
   /**
-   * Stops the polling loop and waits for the internal queue to drain before
-   * resolving. Any in-progress interval sleep is cancelled immediately so the
-   * gateway shuts down without waiting for the next poll to be due.
+   * Stops the polling loop and waits for the internal queue to drain and both
+   * loops to exit before resolving. Any in-progress interval sleep is cancelled
+   * immediately so the gateway shuts down without waiting for the next poll to
+   * be due.
    *
-   * Emits `gateway:stopped` after the queue has emptied.
+   * Emits `gateway:stopped` after both loops have fully exited.
    */
   async stop(): Promise<void> {
     this.#running = false;
     this.#currentSleep?.cancel();
+    await this.#pollingLoopPromise;
     await this.#queue.stop();
+    await this.#consumerLoopPromise;
     this.emit('gateway:stopped');
   }
 
@@ -236,12 +241,12 @@ function resolveIntervalProvider<T extends Event>(
 /**
  * Resolves the effective execution strategy from the gateway options.
  * Prefers `executionStrategy`, then derives one from `concurrency`, then falls
- * back to `parallelExecutionStrategy`. Throws if `concurrency` is zero,
- * negative, or NaN.
+ * back to `parallelExecutionStrategy`. Throws if `concurrency` is not a
+ * positive integer or `Infinity`.
  *
  * @param opts - The gateway options.
  * @returns The resolved execution strategy function.
- * @throws {Error} If `concurrency` is negative or NaN (and `executionStrategy` is not set).
+ * @throws {Error} If `concurrency` is zero, negative, non-integer, or NaN (and `executionStrategy` is not set).
  */
 function resolveExecutionStrategy<T extends Event>(
   opts: ProviderGatewayOptions<T>,
@@ -250,8 +255,12 @@ function resolveExecutionStrategy<T extends Event>(
     return getComponent(opts.executionStrategy, 'execute');
   }
   if (opts.concurrency !== undefined) {
-    if (Number.isNaN(opts.concurrency) || opts.concurrency <= 0) {
-      throw new Error('concurrency must be a positive number or Infinity');
+    if (
+      Number.isNaN(opts.concurrency) ||
+      opts.concurrency <= 0 ||
+      (Number.isFinite(opts.concurrency) && !Number.isInteger(opts.concurrency))
+    ) {
+      throw new Error('concurrency must be a positive integer or Infinity');
     }
     if (opts.concurrency === 1) {
       return serialExecutionStrategy;

@@ -57,6 +57,39 @@ describe('ProviderGateway', function () {
       expect(Date.now() - start).to.be.lessThan(500);
     });
 
+    it('should wait for an in-flight provider iteration before resolving stop()', async function () {
+      const event = await new EventBuilder().create();
+      const handler = fake();
+      let providerResolve: () => void;
+
+      // Provider returns a slow async iterable — resolves only when signalled
+      const provider = () =>
+        (async function* () {
+          await new Promise<void>(resolve => {
+            providerResolve = resolve;
+          });
+          yield event;
+        })();
+
+      const gateway = new ProviderGateway({
+        queueOptions: { sleepDuration: 10 },
+        frequency: 0,
+        provider,
+        handler,
+      });
+
+      await gateway.start();
+      // Wait for the provider to be called and be mid-iteration
+      await sleep(10);
+      const stopPromise = gateway.stop();
+      // Unblock the provider after stop() is in flight
+      providerResolve!();
+      await stopPromise;
+
+      // stop() should have waited for the iteration to complete
+      expect(handler.calledWith(event)).to.be.true;
+    });
+
     it('should be idempotent on start()', async function () {
       const startedCallback = fake();
       const gateway = new ProviderGateway({
@@ -359,6 +392,18 @@ describe('ProviderGateway', function () {
             concurrency: NaN,
           }),
       ).to.throw('positive');
+    });
+
+    it('should throw on non-integer concurrency', function () {
+      expect(
+        () =>
+          new ProviderGateway({
+            ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+            provider: () => [],
+            handler: fake(),
+            concurrency: 1.5,
+          }),
+      ).to.throw('positive integer');
     });
 
     it('should use serial execution when concurrency is 1', async function () {
