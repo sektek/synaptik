@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2](https://github.com/sektek/synaptik/compare/v0.2.1...v0.2.2) (2026-03-29)
+
+### Features
+
+* Add ProviderGateway ([#40](https://github.com/sektek/synaptik/issues/40)) ([964f56a](https://github.com/sektek/synaptik/commit/964f56ab1a7a7d35f2dbad9dae9839bd58ebd89d))
+
 ## [0.2.1](https://github.com/sektek/synaptik/compare/v0.2.0...v0.2.1) (2026-03-29)
 
 ## 0.2.0 (2026-03-21)
