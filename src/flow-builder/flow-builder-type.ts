@@ -52,9 +52,12 @@ export interface FlowProvider<T extends Event = Event> extends Provider<
  * for further chaining. Terminal methods (handle, outbound, etc.) return
  * a FlowProvider that can produce the composed handler.
  *
+ * get() and create() are intentionally absent — call a terminal method first
+ * to obtain a FlowProvider.
+ *
  * @template T - The event type at the current point in the chain.
  */
-export interface FlowBuilder<T extends Event = Event> extends FlowProvider<T> {
+export interface FlowBuilder<T extends Event = Event> {
   // Intermediate — return FlowBuilder for chaining
 
   errorTrap(
