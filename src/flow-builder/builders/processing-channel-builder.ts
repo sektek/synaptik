@@ -9,7 +9,7 @@ import {
 } from '../../channels/processing-channel.js';
 import { getEventHandlerComponent } from '../../util/get-event-handler-component.js';
 
-import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types.js';
+import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 
 export type ProcessingChannelBuilderOptions<
   T extends Event = Event,

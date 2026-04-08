@@ -6,7 +6,7 @@ import {
   ProcessingChannelOptions,
   SplitterChannelOptions,
   TapChannelOptions,
-} from '../channels/index.js';
+} from '../../channels/index.js';
 import {
   Event,
   EventChannelComponent,
@@ -15,14 +15,16 @@ import {
   EventPredicateComponent,
   EventProcessorComponent,
   EventSplitterComponent,
-} from '../types/index.js';
+} from '../../types/index.js';
 import {
   EventRouterOptions,
   RouteProviderComponent,
   RouteStoreOptions,
-} from '../event-router/index.js';
+} from '../../event-router/index.js';
 
-import { FlowCreateOptions } from './types.js';
+export type FlowCreateOptions = {
+  flowName?: string;
+};
 
 type OutputProducingComponent<T extends Event = Event, R extends Event = T> =
   | EventProcessorComponent<T, R>
@@ -45,10 +47,10 @@ export interface FlowProvider<T extends Event = Event> extends Provider<
 }
 
 /**
- * A FlowBuilder constructs event processing pipelines using a fluent DSL.
+ * A FlowChain represents the in-progress state of a flow being constructed.
  * Steps are declared top-down in the order events flow through them.
  *
- * Intermediate methods (filter, process, etc.) return a new FlowBuilder
+ * Intermediate methods (filter, process, etc.) return a new FlowChain
  * for further chaining. Terminal methods (handle, outbound, etc.) return
  * a FlowProvider that can produce the composed handler.
  *
@@ -57,18 +59,18 @@ export interface FlowProvider<T extends Event = Event> extends Provider<
  *
  * @template T - The event type at the current point in the chain.
  */
-export interface FlowBuilder<T extends Event = Event> {
-  // Intermediate — return FlowBuilder for chaining
+export interface FlowChain<T extends Event = Event> {
+  // Intermediate — return FlowChain for chaining
 
   errorTrap(
     errorHandler: EventErrorHandlerComponent<T>,
     opts?: Partial<Omit<ErrorTrapChannelOptions<T>, 'handler'>>,
-  ): FlowBuilder<T>;
+  ): FlowChain<T>;
 
   filter(
     predicate: EventPredicateComponent<T>,
     opts?: Partial<Omit<FilterChannelOptions<T>, 'handler' | 'filter'>>,
-  ): FlowBuilder<T>;
+  ): FlowChain<T>;
 
   process<P extends EventProcessorComponent<T, Event>>(
     processor: P,
@@ -78,7 +80,7 @@ export interface FlowBuilder<T extends Event = Event> {
         'handler' | 'processor'
       >
     >,
-  ): FlowBuilder<OutputOfComponent<P, T>>;
+  ): FlowChain<OutputOfComponent<P, T>>;
 
   transform<P extends EventProcessorComponent<T, Event>>(
     processor: P,
@@ -88,7 +90,7 @@ export interface FlowBuilder<T extends Event = Event> {
         'handler' | 'processor'
       >
     >,
-  ): FlowBuilder<OutputOfComponent<P, T>>;
+  ): FlowChain<OutputOfComponent<P, T>>;
 
   split<P extends EventSplitterComponent<T, Event>>(
     splitter: P,
@@ -98,12 +100,12 @@ export interface FlowBuilder<T extends Event = Event> {
         'handler' | 'splitter'
       >
     >,
-  ): FlowBuilder<OutputOfComponent<P, T>>;
+  ): FlowChain<OutputOfComponent<P, T>>;
 
   tap(
     tapHandler: EventHandlerComponent<T>,
     opts?: Partial<Omit<TapChannelOptions<T>, 'handler' | 'tapHandler'>>,
-  ): FlowBuilder<T>;
+  ): FlowChain<T>;
 
   // Terminal — end the chain, return FlowProvider
 

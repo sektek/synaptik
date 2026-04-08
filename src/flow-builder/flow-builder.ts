@@ -35,8 +35,11 @@ import {
   ChannelBuilder,
   ChannelBuilderComponent,
   ChannelBuilderCreateOptions,
+  FlowChain,
   FlowCreateOptions,
-} from './types.js';
+  FlowProvider,
+  OutputOfComponent,
+} from './types/index.js';
 import {
   ErrorTrapChannelBuilder,
   FilterChannelBuilder,
@@ -44,11 +47,6 @@ import {
   SplitterChannelBuilder,
   TapChannelBuilder,
 } from './builders/index.js';
-import {
-  FlowBuilder,
-  FlowProvider,
-  OutputOfComponent,
-} from './flow-builder-type.js';
 
 export type FlowBuilderConfig = {
   loggerProvider?: LoggerProvider;
@@ -57,9 +55,9 @@ export type FlowBuilderConfig = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BuilderEntry = ChannelBuilderComponent<any>;
 
-export class SimpleFlowBuilder<
+export class FlowBuilder<
   T extends Event = Event,
-> implements FlowBuilder<T> {
+> implements FlowChain<T> {
   #config: FlowBuilderConfig;
   #flowStack: BuilderEntry[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,8 +70,8 @@ export class SimpleFlowBuilder<
 
   static with<T extends Event = Event>(
     config: FlowBuilderConfig,
-  ): FlowBuilder<T> {
-    return new SimpleFlowBuilder<T>(config);
+  ): FlowChain<T> {
+    return new FlowBuilder<T>(config);
   }
 
   // -- Intermediate methods --
@@ -81,7 +79,7 @@ export class SimpleFlowBuilder<
   errorTrap(
     errorHandler: EventErrorHandlerComponent<T>,
     opts: Partial<Omit<ErrorTrapChannelOptions<T>, 'handler'>> = {},
-  ): FlowBuilder<T> {
+  ): FlowChain<T> {
     const builder = new ErrorTrapChannelBuilder<T>({ ...opts, errorHandler });
     return this.#append(builder);
   }
@@ -89,7 +87,7 @@ export class SimpleFlowBuilder<
   filter(
     predicate: EventPredicateComponent<T>,
     opts: Partial<Omit<FilterChannelOptions<T>, 'handler' | 'filter'>> = {},
-  ): FlowBuilder<T> {
+  ): FlowChain<T> {
     const builder = new FilterChannelBuilder<T>({ ...opts, filter: predicate });
     return this.#append(builder);
   }
@@ -102,9 +100,9 @@ export class SimpleFlowBuilder<
         'handler' | 'processor'
       >
     > = {},
-  ): FlowBuilder<OutputOfComponent<P, T>> {
+  ): FlowChain<OutputOfComponent<P, T>> {
     const builder = new ProcessingChannelBuilder({ ...opts, processor });
-    return this.#append(builder) as unknown as SimpleFlowBuilder<
+    return this.#append(builder) as unknown as FlowBuilder<
       OutputOfComponent<P, T>
     >;
   }
@@ -117,7 +115,7 @@ export class SimpleFlowBuilder<
         'handler' | 'processor'
       >
     > = {},
-  ): FlowBuilder<OutputOfComponent<P, T>> {
+  ): FlowChain<OutputOfComponent<P, T>> {
     return this.process(processor, opts);
   }
 
@@ -129,9 +127,9 @@ export class SimpleFlowBuilder<
         'handler' | 'splitter'
       >
     > = {},
-  ): FlowBuilder<OutputOfComponent<P, T>> {
+  ): FlowChain<OutputOfComponent<P, T>> {
     const builder = new SplitterChannelBuilder({ ...opts, splitter });
-    return this.#append(builder) as unknown as SimpleFlowBuilder<
+    return this.#append(builder) as unknown as FlowBuilder<
       OutputOfComponent<P, T>
     >;
   }
@@ -139,7 +137,7 @@ export class SimpleFlowBuilder<
   tap(
     tapHandler: EventHandlerComponent<T>,
     opts: Partial<Omit<TapChannelOptions<T>, 'handler' | 'tapHandler'>> = {},
-  ): FlowBuilder<T> {
+  ): FlowChain<T> {
     const builder = new TapChannelBuilder<T>({ ...opts, tapHandler });
     return this.#append(builder);
   }
@@ -205,14 +203,14 @@ export class SimpleFlowBuilder<
   // -- Private helpers --
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #setTerminal(terminal: EventEndpointComponent<any>): SimpleFlowBuilder<T> {
-    const result = new SimpleFlowBuilder<T>(this.#config, [...this.#flowStack]);
+  #setTerminal(terminal: EventEndpointComponent<any>): FlowBuilder<T> {
+    const result = new FlowBuilder<T>(this.#config, [...this.#flowStack]);
     result.#terminal = terminal;
     return result;
   }
 
-  #append(builder: BuilderEntry): SimpleFlowBuilder<T> {
-    return new SimpleFlowBuilder<T>(this.#config, [
+  #append(builder: BuilderEntry): FlowBuilder<T> {
+    return new FlowBuilder<T>(this.#config, [
       ...this.#flowStack,
       builder,
     ]);

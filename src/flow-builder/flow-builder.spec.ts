@@ -4,13 +4,13 @@ import { fake } from 'sinon';
 import { Event } from '../types/index.js';
 import { EventBuilder } from '../event-builder.js';
 
-import { SimpleFlowBuilder } from './simple-flow-builder.js';
+import { FlowBuilder } from './flow-builder.js';
 
-describe('SimpleFlowBuilder', function () {
+describe('FlowBuilder', function () {
   describe('filter', function () {
     it('should route matching events to the downstream handler', async function () {
       const handler = fake();
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .filter(() => true)
         .handle(handler);
 
@@ -23,7 +23,7 @@ describe('SimpleFlowBuilder', function () {
 
     it('should not route rejected events to the downstream handler', async function () {
       const handler = fake();
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .filter(() => false)
         .handle(handler);
 
@@ -37,7 +37,7 @@ describe('SimpleFlowBuilder', function () {
     it('should accept a predicate object with a test method', async function () {
       const handler = fake();
       const predicate = { test: () => true };
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .filter(predicate)
         .handle(handler);
 
@@ -51,7 +51,7 @@ describe('SimpleFlowBuilder', function () {
     it('should pass opts through to FilterChannel', async function () {
       const handler = fake();
       const rejectionHandler = fake();
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .filter(() => false, { rejectionHandler })
         .handle(handler);
 
@@ -72,7 +72,7 @@ describe('SimpleFlowBuilder', function () {
         data: { ...event.data, processed: true },
       });
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .process(processor)
         .handle(handler);
 
@@ -93,7 +93,7 @@ describe('SimpleFlowBuilder', function () {
         }),
       };
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .process(processor)
         .handle(handler);
 
@@ -114,7 +114,7 @@ describe('SimpleFlowBuilder', function () {
         data: { ...event.data, transformed: true },
       });
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .transform(processor)
         .handle(handler);
 
@@ -135,7 +135,7 @@ describe('SimpleFlowBuilder', function () {
         { ...event, data: { ...event.data, index: 1 } },
       ];
 
-      const pipeline = new SimpleFlowBuilder().split(splitter).handle(handler);
+      const pipeline = new FlowBuilder().split(splitter).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -152,7 +152,7 @@ describe('SimpleFlowBuilder', function () {
       const tapHandler = fake();
       const handler = fake();
 
-      const pipeline = new SimpleFlowBuilder().tap(tapHandler).handle(handler);
+      const pipeline = new FlowBuilder().tap(tapHandler).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -170,7 +170,7 @@ describe('SimpleFlowBuilder', function () {
       const errorHandler = fake();
       const handler = fake.throws(error);
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .errorTrap(errorHandler)
         .handle(handler);
 
@@ -184,7 +184,7 @@ describe('SimpleFlowBuilder', function () {
     it('should swallow errors by default', async function () {
       const handler = fake.throws(new Error('fail'));
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .errorTrap(fake())
         .handle(handler);
 
@@ -198,7 +198,7 @@ describe('SimpleFlowBuilder', function () {
       const error = new Error('fail');
       const handler = fake.throws(error);
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .errorTrap(fake(), { rethrow: true })
         .handle(handler);
 
@@ -213,7 +213,7 @@ describe('SimpleFlowBuilder', function () {
     describe('handle', function () {
       it('should set the terminal handler', async function () {
         const handler = fake();
-        const pipeline = new SimpleFlowBuilder().handle(handler);
+        const pipeline = new FlowBuilder().handle(handler);
 
         const handlerFn = pipeline.get();
         const event = await new EventBuilder().create();
@@ -228,7 +228,7 @@ describe('SimpleFlowBuilder', function () {
         const sendFn = fake();
         const channel = { send: sendFn };
 
-        const pipeline = new SimpleFlowBuilder().outbound(channel);
+        const pipeline = new FlowBuilder().outbound(channel);
 
         const handlerFn = pipeline.get();
         const event = await new EventBuilder().create();
@@ -243,7 +243,7 @@ describe('SimpleFlowBuilder', function () {
         const handler1 = fake();
         const handler2 = fake();
 
-        const pipeline = new SimpleFlowBuilder().dispatch([handler1, handler2]);
+        const pipeline = new FlowBuilder().dispatch([handler1, handler2]);
 
         const handlerFn = pipeline.get();
         const event = await new EventBuilder().create();
@@ -258,7 +258,7 @@ describe('SimpleFlowBuilder', function () {
       it('should accept RouteStoreOptions and route events', async function () {
         const handler = fake();
 
-        const pipeline = new SimpleFlowBuilder().route({
+        const pipeline = new FlowBuilder().route({
           routeDecider: () => Promise.resolve('myRoute'),
           routes: { myRoute: handler },
         });
@@ -274,12 +274,12 @@ describe('SimpleFlowBuilder', function () {
 
   describe('get / create', function () {
     it('should throw when no steps and no terminal', function () {
-      const builder = new SimpleFlowBuilder();
+      const builder = new FlowBuilder();
       expect(() => builder.get()).to.throw('at least one step or terminal');
     });
 
     it('should use NullHandler when steps exist but no terminal', async function () {
-      const pipeline = new SimpleFlowBuilder().filter(() => true);
+      const pipeline = new FlowBuilder().filter(() => true);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -301,7 +301,7 @@ describe('SimpleFlowBuilder', function () {
         order.push('handle');
       });
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .tap(tapHandler1)
         .tap(tapHandler2)
         .handle(handler);
@@ -316,7 +316,7 @@ describe('SimpleFlowBuilder', function () {
 
   describe('factory / reusability', function () {
     it('should create independent flows from the same template', async function () {
-      const template = new SimpleFlowBuilder();
+      const template = new FlowBuilder();
 
       const handler1 = fake();
       const handler2 = fake();
@@ -335,7 +335,7 @@ describe('SimpleFlowBuilder', function () {
 
     it('should create a template via static with()', async function () {
       const handler = fake();
-      const flow = SimpleFlowBuilder.with({})
+      const flow = FlowBuilder.with({})
         .filter(() => true)
         .handle(handler);
 
@@ -355,7 +355,7 @@ describe('SimpleFlowBuilder', function () {
         data: { ...event.data, processed: true },
       });
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .filter(() => true)
         .process(processor)
         .handle(handler);
@@ -374,7 +374,7 @@ describe('SimpleFlowBuilder', function () {
       const error = new Error('fail');
       const handler = fake.throws(error);
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .tap(tapHandler)
         .errorTrap(errorHandler)
         .handle(handler);
@@ -391,7 +391,7 @@ describe('SimpleFlowBuilder', function () {
       const handler = fake();
       const splitter = (event: Event) => [event, event];
 
-      const pipeline = new SimpleFlowBuilder()
+      const pipeline = new FlowBuilder()
         .filter(() => true)
         .split(splitter)
         .handle(handler);

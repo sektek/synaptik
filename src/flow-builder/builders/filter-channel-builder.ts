@@ -9,7 +9,7 @@ import {
 } from '../../channels/filter-channel.js';
 import { getEventHandlerComponent } from '../../util/get-event-handler-component.js';
 
-import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types.js';
+import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 
 export type FilterChannelBuilderOptions<T extends Event = Event> = Omit<
   FilterChannelOptions<T>,
