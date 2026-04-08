@@ -48,28 +48,26 @@ import {
   TapChannelBuilder,
 } from './builders/index.js';
 
-export type FlowBuilderConfig = {
+export type FlowBuilderOptions = {
   loggerProvider?: LoggerProvider;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BuilderEntry = ChannelBuilderComponent<any>;
 
-export class FlowBuilder<
-  T extends Event = Event,
-> implements FlowChain<T> {
-  #config: FlowBuilderConfig;
+export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
+  #config: FlowBuilderOptions;
   #flowStack: BuilderEntry[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #terminal?: EventEndpointComponent<any>;
 
-  constructor(config: FlowBuilderConfig = {}, flowStack: BuilderEntry[] = []) {
+  constructor(config: FlowBuilderOptions = {}, flowStack: BuilderEntry[] = []) {
     this.#config = config;
     this.#flowStack = flowStack;
   }
 
   static with<T extends Event = Event>(
-    config: FlowBuilderConfig,
+    config: FlowBuilderOptions,
   ): FlowChain<T> {
     return new FlowBuilder<T>(config);
   }
@@ -210,10 +208,7 @@ export class FlowBuilder<
   }
 
   #append(builder: BuilderEntry): FlowBuilder<T> {
-    return new FlowBuilder<T>(this.#config, [
-      ...this.#flowStack,
-      builder,
-    ]);
+    return new FlowBuilder<T>(this.#config, [...this.#flowStack, builder]);
   }
 
   #buildCreateOptions(opts: FlowCreateOptions): ChannelBuilderCreateOptions {
