@@ -10,9 +10,7 @@ describe('FlowBuilder', function () {
   describe('filter', function () {
     it('should route matching events to the downstream handler', async function () {
       const handler = fake();
-      const pipeline = new FlowBuilder()
-        .filter(() => true)
-        .handle(handler);
+      const pipeline = new FlowBuilder().filter(() => true).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -23,9 +21,7 @@ describe('FlowBuilder', function () {
 
     it('should not route rejected events to the downstream handler', async function () {
       const handler = fake();
-      const pipeline = new FlowBuilder()
-        .filter(() => false)
-        .handle(handler);
+      const pipeline = new FlowBuilder().filter(() => false).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -37,9 +33,7 @@ describe('FlowBuilder', function () {
     it('should accept a predicate object with a test method', async function () {
       const handler = fake();
       const predicate = { test: () => true };
-      const pipeline = new FlowBuilder()
-        .filter(predicate)
-        .handle(handler);
+      const pipeline = new FlowBuilder().filter(predicate).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -72,9 +66,7 @@ describe('FlowBuilder', function () {
         data: { ...event.data, processed: true },
       });
 
-      const pipeline = new FlowBuilder()
-        .process(processor)
-        .handle(handler);
+      const pipeline = new FlowBuilder().process(processor).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -93,9 +85,7 @@ describe('FlowBuilder', function () {
         }),
       };
 
-      const pipeline = new FlowBuilder()
-        .process(processor)
-        .handle(handler);
+      const pipeline = new FlowBuilder().process(processor).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -114,9 +104,7 @@ describe('FlowBuilder', function () {
         data: { ...event.data, transformed: true },
       });
 
-      const pipeline = new FlowBuilder()
-        .transform(processor)
-        .handle(handler);
+      const pipeline = new FlowBuilder().transform(processor).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -184,9 +172,7 @@ describe('FlowBuilder', function () {
     it('should swallow errors by default', async function () {
       const handler = fake.throws(new Error('fail'));
 
-      const pipeline = new FlowBuilder()
-        .errorTrap(fake())
-        .handle(handler);
+      const pipeline = new FlowBuilder().errorTrap(fake()).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
