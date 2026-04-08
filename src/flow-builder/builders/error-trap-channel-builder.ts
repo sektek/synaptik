@@ -16,9 +16,9 @@ export type ErrorTrapChannelBuilderOptions<T extends Event = Event> = Omit<
   'handler'
 >;
 
-export class ErrorTrapChannelBuilder<T extends Event = Event>
-  implements ChannelBuilder<T>
-{
+export class ErrorTrapChannelBuilder<
+  T extends Event = Event,
+> implements ChannelBuilder<T> {
   #opts: ErrorTrapChannelBuilderOptions<T>;
 
   constructor(opts: ErrorTrapChannelBuilderOptions<T>) {
@@ -31,6 +31,7 @@ export class ErrorTrapChannelBuilder<T extends Event = Event>
   ): EventHandlerFn<T> {
     const channel = new ErrorTrapChannel<T>({
       ...this.#opts,
+      ...opts,
       handler,
     });
 

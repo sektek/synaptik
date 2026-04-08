@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { fake } from 'sinon';
 
-import { EventBuilder } from '../event-builder.js';
 import { Event } from '../types/index.js';
+import { EventBuilder } from '../event-builder.js';
 
 import { SimpleFlowBuilder } from './simple-flow-builder.js';
 
@@ -135,9 +135,7 @@ describe('SimpleFlowBuilder', function () {
         { ...event, data: { ...event.data, index: 1 } },
       ];
 
-      const pipeline = new SimpleFlowBuilder()
-        .split(splitter)
-        .handle(handler);
+      const pipeline = new SimpleFlowBuilder().split(splitter).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -154,9 +152,7 @@ describe('SimpleFlowBuilder', function () {
       const tapHandler = fake();
       const handler = fake();
 
-      const pipeline = new SimpleFlowBuilder()
-        .tap(tapHandler)
-        .handle(handler);
+      const pipeline = new SimpleFlowBuilder().tap(tapHandler).handle(handler);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -247,8 +243,7 @@ describe('SimpleFlowBuilder', function () {
         const handler1 = fake();
         const handler2 = fake();
 
-        const pipeline = new SimpleFlowBuilder()
-          .dispatch([handler1, handler2]);
+        const pipeline = new SimpleFlowBuilder().dispatch([handler1, handler2]);
 
         const handlerFn = pipeline.get();
         const event = await new EventBuilder().create();
@@ -284,8 +279,7 @@ describe('SimpleFlowBuilder', function () {
     });
 
     it('should use NullHandler when steps exist but no terminal', async function () {
-      const pipeline = new SimpleFlowBuilder()
-        .filter(() => true);
+      const pipeline = new SimpleFlowBuilder().filter(() => true);
 
       const handlerFn = pipeline.get();
       const event = await new EventBuilder().create();
@@ -297,9 +291,15 @@ describe('SimpleFlowBuilder', function () {
     it('should fold right-to-left preserving step order', async function () {
       const order: string[] = [];
 
-      const tapHandler1 = fake(() => { order.push('tap1'); });
-      const tapHandler2 = fake(() => { order.push('tap2'); });
-      const handler = fake(() => { order.push('handle'); });
+      const tapHandler1 = fake(() => {
+        order.push('tap1');
+      });
+      const tapHandler2 = fake(() => {
+        order.push('tap2');
+      });
+      const handler = fake(() => {
+        order.push('handle');
+      });
 
       const pipeline = new SimpleFlowBuilder()
         .tap(tapHandler1)

@@ -1,4 +1,4 @@
-import { getComponent, LoggerProvider } from '@sektek/utility-belt';
+import { LoggerProvider, getComponent } from '@sektek/utility-belt';
 
 import {
   ErrorTrapChannelOptions,
@@ -22,12 +22,21 @@ import {
   RouteProviderComponent,
   RouteStoreOptions,
 } from '../event-router/index.js';
+import {
+  RouteStore,
+  isRouteStoreOptions,
+} from '../event-router/route-store.js';
 import { DispatchRouteProvider } from '../event-router/dispatch-route-provider.js';
 import { EventRouter } from '../event-router/event-router.js';
-import { isRouteStoreOptions, RouteStore } from '../event-router/route-store.js';
 import { NullHandler } from '../handlers/null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
+import {
+  ChannelBuilder,
+  ChannelBuilderComponent,
+  ChannelBuilderCreateOptions,
+  FlowCreateOptions,
+} from './types.js';
 import {
   ErrorTrapChannelBuilder,
   FilterChannelBuilder,
@@ -40,12 +49,6 @@ import {
   FlowProvider,
   OutputOfComponent,
 } from './flow-builder-type.js';
-import {
-  ChannelBuilder,
-  ChannelBuilderComponent,
-  ChannelBuilderCreateOptions,
-  FlowCreateOptions,
-} from './types.js';
 
 export type FlowBuilderConfig = {
   loggerProvider?: LoggerProvider;
@@ -54,9 +57,9 @@ export type FlowBuilderConfig = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BuilderEntry = ChannelBuilderComponent<any>;
 
-export class SimpleFlowBuilder<T extends Event = Event>
-  implements FlowBuilder<T>
-{
+export class SimpleFlowBuilder<
+  T extends Event = Event,
+> implements FlowBuilder<T> {
   #config: FlowBuilderConfig;
   #flowStack: BuilderEntry[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,17 +97,25 @@ export class SimpleFlowBuilder<T extends Event = Event>
   process<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts: Partial<
-      Omit<ProcessingChannelOptions<T, OutputOfComponent<P, T>>, 'handler' | 'processor'>
+      Omit<
+        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
+        'handler' | 'processor'
+      >
     > = {},
   ): FlowBuilder<OutputOfComponent<P, T>> {
     const builder = new ProcessingChannelBuilder({ ...opts, processor });
-    return this.#append(builder) as unknown as SimpleFlowBuilder<OutputOfComponent<P, T>>;
+    return this.#append(builder) as unknown as SimpleFlowBuilder<
+      OutputOfComponent<P, T>
+    >;
   }
 
   transform<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts: Partial<
-      Omit<ProcessingChannelOptions<T, OutputOfComponent<P, T>>, 'handler' | 'processor'>
+      Omit<
+        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
+        'handler' | 'processor'
+      >
     > = {},
   ): FlowBuilder<OutputOfComponent<P, T>> {
     return this.process(processor, opts);
@@ -113,11 +124,16 @@ export class SimpleFlowBuilder<T extends Event = Event>
   split<P extends EventSplitterComponent<T, Event>>(
     splitter: P,
     opts: Partial<
-      Omit<SplitterChannelOptions<T, OutputOfComponent<P, T>>, 'handler' | 'splitter'>
+      Omit<
+        SplitterChannelOptions<T, OutputOfComponent<P, T>>,
+        'handler' | 'splitter'
+      >
     > = {},
   ): FlowBuilder<OutputOfComponent<P, T>> {
     const builder = new SplitterChannelBuilder({ ...opts, splitter });
-    return this.#append(builder) as unknown as SimpleFlowBuilder<OutputOfComponent<P, T>>;
+    return this.#append(builder) as unknown as SimpleFlowBuilder<
+      OutputOfComponent<P, T>
+    >;
   }
 
   tap(
@@ -164,9 +180,7 @@ export class SimpleFlowBuilder<T extends Event = Event>
 
   create(opts: FlowCreateOptions = {}): EventHandlerComponent<T> {
     if (this.#flowStack.length === 0 && !this.#terminal) {
-      throw new Error(
-        'FlowBuilder requires at least one step or terminal.',
-      );
+      throw new Error('FlowBuilder requires at least one step or terminal.');
     }
 
     const createOpts = this.#buildCreateOptions(opts);
@@ -177,8 +191,10 @@ export class SimpleFlowBuilder<T extends Event = Event>
 
     return this.#flowStack.reduceRight<EventHandlerComponent<T>>(
       (handler, builderComponent) => {
-        const createFn = getComponent(builderComponent, 'create') as
-          ChannelBuilder<Event>['create'];
+        const createFn = getComponent(
+          builderComponent,
+          'create',
+        ) as ChannelBuilder<Event>['create'];
 
         return createFn(handler, createOpts) as EventHandlerComponent<T>;
       },
@@ -196,10 +212,10 @@ export class SimpleFlowBuilder<T extends Event = Event>
   }
 
   #append(builder: BuilderEntry): SimpleFlowBuilder<T> {
-    return new SimpleFlowBuilder<T>(
-      this.#config,
-      [...this.#flowStack, builder],
-    );
+    return new SimpleFlowBuilder<T>(this.#config, [
+      ...this.#flowStack,
+      builder,
+    ]);
   }
 
   #buildCreateOptions(opts: FlowCreateOptions): ChannelBuilderCreateOptions {

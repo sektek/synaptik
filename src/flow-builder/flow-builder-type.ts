@@ -36,11 +36,11 @@ export type OutputOfComponent<P, T extends Event = Event> =
  * Implements Provider for simple resolution via get(), and supports create()
  * for builder-style resolution with flow-level options.
  *
- * @typeParam T - The event type at the entry point of the flow.
+ * @template T - The event type at the entry point of the flow.
  */
-export interface FlowProvider<T extends Event = Event>
-  extends Provider<EventHandlerComponent<T>>
-{
+export interface FlowProvider<T extends Event = Event> extends Provider<
+  EventHandlerComponent<T>
+> {
   create(opts?: FlowCreateOptions): EventHandlerComponent<T>;
 }
 
@@ -52,7 +52,7 @@ export interface FlowProvider<T extends Event = Event>
  * for further chaining. Terminal methods (handle, outbound, etc.) return
  * a FlowProvider that can produce the composed handler.
  *
- * @typeParam T - The event type at the current point in the chain.
+ * @template T - The event type at the current point in the chain.
  */
 export interface FlowBuilder<T extends Event = Event> extends FlowProvider<T> {
   // Intermediate — return FlowBuilder for chaining
@@ -70,21 +70,30 @@ export interface FlowBuilder<T extends Event = Event> extends FlowProvider<T> {
   process<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts?: Partial<
-      Omit<ProcessingChannelOptions<T, OutputOfComponent<P, T>>, 'handler' | 'processor'>
+      Omit<
+        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
+        'handler' | 'processor'
+      >
     >,
   ): FlowBuilder<OutputOfComponent<P, T>>;
 
   transform<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts?: Partial<
-      Omit<ProcessingChannelOptions<T, OutputOfComponent<P, T>>, 'handler' | 'processor'>
+      Omit<
+        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
+        'handler' | 'processor'
+      >
     >,
   ): FlowBuilder<OutputOfComponent<P, T>>;
 
   split<P extends EventSplitterComponent<T, Event>>(
     splitter: P,
     opts?: Partial<
-      Omit<SplitterChannelOptions<T, OutputOfComponent<P, T>>, 'handler' | 'splitter'>
+      Omit<
+        SplitterChannelOptions<T, OutputOfComponent<P, T>>,
+        'handler' | 'splitter'
+      >
     >,
   ): FlowBuilder<OutputOfComponent<P, T>>;
 

@@ -1,6 +1,10 @@
 import { Component, LoggerProvider } from '@sektek/utility-belt';
 
-import { Event, EventHandlerComponent, EventHandlerFn } from '../types/index.js';
+import {
+  Event,
+  EventHandlerComponent,
+  EventHandlerFn,
+} from '../types/index.js';
 
 /**
  * Options passed to channel builders during the fold.
@@ -14,7 +18,7 @@ export type ChannelBuilderCreateOptions = {
  * A ChannelBuilder constructs a pipeline channel that wraps a downstream
  * handler. Builders store partial configuration that merges at create time.
  *
- * @typeParam T - The event type flowing into this channel.
+ * @template T - The event type flowing into this channel.
  */
 export interface ChannelBuilder<T extends Event = Event> {
   create(
@@ -33,7 +37,7 @@ export type ChannelBuilderComponent<T extends Event = Event> = Component<
  * to an external system. Unlike ChannelBuilder, it does not wrap a downstream
  * handler.
  *
- * @typeParam T - The event type flowing into this channel.
+ * @template T - The event type flowing into this channel.
  */
 export interface OutboundChannelBuilder<T extends Event = Event> {
   create(opts?: ChannelBuilderCreateOptions): EventHandlerFn<T>;
