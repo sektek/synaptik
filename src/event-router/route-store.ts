@@ -23,6 +23,16 @@ export type RouteStoreOptions<T extends Event = Event> = EventServiceOptions & {
   routes?: RouteRecord<T>;
 };
 
+export function isRouteStoreOptions<T extends Event = Event>(
+  obj: unknown,
+): obj is RouteStoreOptions<T> {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'routeDecider' in obj
+  );
+}
+
 /**
  * A RouteStore is a RouteProvider that stores routes within a map and returns
  * one or more routes based on the route names provided by the route decider.
