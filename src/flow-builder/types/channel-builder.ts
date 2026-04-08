@@ -1,6 +1,10 @@
 import { Component, LoggerProvider } from '@sektek/utility-belt';
 
-import { Event, EventHandlerComponent, EventHandlerFn } from '../../types/index.js';
+import {
+  Event,
+  EventHandlerComponent,
+  EventHandlerFn,
+} from '../../types/index.js';
 
 export type ChannelBuilderCreateOptions = {
   loggerProvider?: LoggerProvider;

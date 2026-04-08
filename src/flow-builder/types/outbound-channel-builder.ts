@@ -8,7 +8,5 @@ export interface OutboundChannelBuilder<T extends Event = Event> {
   create(opts?: ChannelBuilderCreateOptions): EventHandlerFn<T>;
 }
 
-export type OutboundChannelBuilderComponent<T extends Event = Event> = Component<
-  OutboundChannelBuilder<T>,
-  'create'
->;
+export type OutboundChannelBuilderComponent<T extends Event = Event> =
+  Component<OutboundChannelBuilder<T>, 'create'>;
