@@ -55,11 +55,14 @@ export type FlowBuilderOptions = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BuilderEntry = ChannelBuilderComponent<any>;
 
+type TerminalFactory<T extends Event = Event> = (
+  opts: ChannelBuilderCreateOptions,
+) => EventEndpointComponent<T>;
+
 export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
   #config: FlowBuilderOptions;
   #flowStack: BuilderEntry[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #terminal?: EventEndpointComponent<any>;
+  #terminal?: TerminalFactory<T>;
 
   constructor(config: FlowBuilderOptions = {}, flowStack: BuilderEntry[] = []) {
     this.#config = config;
@@ -143,29 +146,41 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
   // -- Terminal methods --
 
   handle(handler: EventHandlerComponent<T>): FlowProvider<T> {
-    return this.#setTerminal(handler);
+    return this.#setTerminal(() => handler);
   }
 
   outbound(channel: EventChannelComponent<T>): FlowProvider<T> {
-    return this.#setTerminal(channel);
+    return this.#setTerminal(() => channel);
   }
 
-  dispatch(handlers: EventHandlerComponent<T>[]): FlowProvider<T> {
-    const routeProvider = new DispatchRouteProvider<T>({ routes: handlers });
-    const router = new EventRouter<T>({ routeProvider });
-    return this.#setTerminal(router);
+  dispatch(handlers: EventEndpointComponent<T>[]): FlowProvider<T> {
+    return this.#setTerminal(opts => {
+      const routeProvider = new DispatchRouteProvider<T>({ routes: handlers });
+      return new EventRouter<T>({
+        routeProvider,
+        loggerProvider: opts.loggerProvider,
+      });
+    });
   }
 
   route(
     routeProviderOrOptions: RouteProviderComponent<T> | RouteStoreOptions<T>,
     opts: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>> = {},
   ): FlowProvider<T> {
-    const routeProvider = isRouteStoreOptions<T>(routeProviderOrOptions)
-      ? new RouteStore<T>(routeProviderOrOptions)
-      : routeProviderOrOptions;
+    return this.#setTerminal(createOpts => {
+      const routeProvider = isRouteStoreOptions<T>(routeProviderOrOptions)
+        ? new RouteStore<T>({
+            ...routeProviderOrOptions,
+            loggerProvider: createOpts.loggerProvider,
+          })
+        : routeProviderOrOptions;
 
-    const router = new EventRouter<T>({ ...opts, routeProvider });
-    return this.#setTerminal(router);
+      return new EventRouter<T>({
+        ...opts,
+        routeProvider,
+        loggerProvider: createOpts.loggerProvider,
+      });
+    });
   }
 
   // -- Resolution methods --
@@ -182,7 +197,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     const createOpts = this.#buildCreateOptions(opts);
 
     const terminal = this.#terminal
-      ? getEventHandlerComponent(this.#terminal)
+      ? getEventHandlerComponent(this.#terminal(createOpts))
       : getEventHandlerComponent(new NullHandler());
 
     return this.#flowStack.reduceRight<EventHandlerComponent<T>>(
@@ -200,10 +215,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   // -- Private helpers --
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #setTerminal(terminal: EventEndpointComponent<any>): FlowBuilder<T> {
+  #setTerminal(factory: TerminalFactory<T>): FlowBuilder<T> {
     const result = new FlowBuilder<T>(this.#config, [...this.#flowStack]);
-    result.#terminal = terminal;
+    result.#terminal = factory;
     return result;
   }
 

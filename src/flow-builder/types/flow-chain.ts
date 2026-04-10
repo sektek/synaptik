@@ -10,6 +10,7 @@ import {
 import {
   Event,
   EventChannelComponent,
+  EventEndpointComponent,
   EventErrorHandlerComponent,
   EventHandlerComponent,
   EventPredicateComponent,
@@ -109,7 +110,7 @@ export interface FlowChain<T extends Event = Event> {
 
   // Terminal — end the chain, return FlowProvider
 
-  dispatch(handlers: EventHandlerComponent<T>[]): FlowProvider<T>;
+  dispatch(handlers: EventEndpointComponent<T>[]): FlowProvider<T>;
 
   handle(handler: EventHandlerComponent<T>): FlowProvider<T>;
 
