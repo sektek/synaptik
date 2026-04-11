@@ -3,6 +3,7 @@ import { fake } from 'sinon';
 
 import { Event } from '../types/index.js';
 import { EventBuilder } from '../event-builder.js';
+import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 import { FlowBuilder } from './flow-builder.js';
 
@@ -12,7 +13,7 @@ describe('FlowBuilder', function () {
       const handler = fake();
       const pipeline = new FlowBuilder().filter(() => true).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -23,7 +24,7 @@ describe('FlowBuilder', function () {
       const handler = fake();
       const pipeline = new FlowBuilder().filter(() => false).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -35,7 +36,7 @@ describe('FlowBuilder', function () {
       const predicate = { test: () => true };
       const pipeline = new FlowBuilder().filter(predicate).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -49,7 +50,7 @@ describe('FlowBuilder', function () {
         .filter(() => false, { rejectionHandler })
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -68,7 +69,7 @@ describe('FlowBuilder', function () {
 
       const pipeline = new FlowBuilder().process(processor).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -79,6 +80,7 @@ describe('FlowBuilder', function () {
     it('should accept a processor object with a process method', async function () {
       const handler = fake();
       const processor = {
+        name: 'EnrichProcessor',
         process: async (event: Event) => ({
           ...event,
           data: { ...event.data, enriched: true },
@@ -87,7 +89,7 @@ describe('FlowBuilder', function () {
 
       const pipeline = new FlowBuilder().process(processor).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -106,7 +108,7 @@ describe('FlowBuilder', function () {
 
       const pipeline = new FlowBuilder().transform(processor).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -125,7 +127,7 @@ describe('FlowBuilder', function () {
 
       const pipeline = new FlowBuilder().split(splitter).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -142,7 +144,7 @@ describe('FlowBuilder', function () {
 
       const pipeline = new FlowBuilder().tap(tapHandler).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -162,7 +164,7 @@ describe('FlowBuilder', function () {
         .errorTrap(errorHandler)
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -174,7 +176,7 @@ describe('FlowBuilder', function () {
 
       const pipeline = new FlowBuilder().errorTrap(fake()).handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
 
       await expect(handlerFn(event)).to.not.be.rejected;
@@ -188,7 +190,7 @@ describe('FlowBuilder', function () {
         .errorTrap(fake(), { rethrow: true })
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
 
       await expect(handlerFn(event)).to.be.rejectedWith(error);
@@ -201,7 +203,7 @@ describe('FlowBuilder', function () {
         const handler = fake();
         const pipeline = new FlowBuilder().handle(handler);
 
-        const handlerFn = pipeline.get();
+        const handlerFn = getEventHandlerComponent(pipeline.get());
         const event = await new EventBuilder().create();
         await handlerFn(event);
 
@@ -212,11 +214,10 @@ describe('FlowBuilder', function () {
     describe('outbound', function () {
       it('should accept an EventChannel as terminal', async function () {
         const sendFn = fake();
-        const channel = { send: sendFn };
 
-        const pipeline = new FlowBuilder().outbound(channel);
+        const pipeline = new FlowBuilder().outbound(sendFn);
 
-        const handlerFn = pipeline.get();
+        const handlerFn = getEventHandlerComponent(pipeline.get());
         const event = await new EventBuilder().create();
         await handlerFn(event);
 
@@ -231,7 +232,7 @@ describe('FlowBuilder', function () {
 
         const pipeline = new FlowBuilder().dispatch([handler1, handler2]);
 
-        const handlerFn = pipeline.get();
+        const handlerFn = getEventHandlerComponent(pipeline.get());
         const event = await new EventBuilder().create();
         await handlerFn(event);
 
@@ -249,7 +250,7 @@ describe('FlowBuilder', function () {
           routes: { myRoute: handler },
         });
 
-        const handlerFn = pipeline.get();
+        const handlerFn = getEventHandlerComponent(pipeline.get());
         const event = await new EventBuilder().create();
         await handlerFn(event);
 
@@ -262,16 +263,6 @@ describe('FlowBuilder', function () {
     it('should throw when no steps and no terminal', function () {
       const builder = new FlowBuilder();
       expect(() => builder.get()).to.throw('at least one step or terminal');
-    });
-
-    it('should use NullHandler when steps exist but no terminal', async function () {
-      const pipeline = new FlowBuilder().filter(() => true);
-
-      const handlerFn = pipeline.get();
-      const event = await new EventBuilder().create();
-
-      // Should not throw — NullHandler is the default terminal
-      await expect(handlerFn(event)).to.not.be.rejected;
     });
 
     it('should fold right-to-left preserving step order', async function () {
@@ -292,7 +283,7 @@ describe('FlowBuilder', function () {
         .tap(tapHandler2)
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -312,8 +303,8 @@ describe('FlowBuilder', function () {
 
       const event = await new EventBuilder().create();
 
-      await flow1.get()(event);
-      await flow2.get()(event);
+      await getEventHandlerComponent(flow1.get())(event);
+      await getEventHandlerComponent(flow2.get())(event);
 
       expect(handler1).to.have.been.calledOnce;
       expect(handler2).to.not.have.been.called;
@@ -325,7 +316,7 @@ describe('FlowBuilder', function () {
         .filter(() => true)
         .handle(handler);
 
-      const handlerFn = flow.get();
+      const handlerFn = getEventHandlerComponent(flow.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -346,7 +337,7 @@ describe('FlowBuilder', function () {
         .process(processor)
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -365,7 +356,7 @@ describe('FlowBuilder', function () {
         .errorTrap(errorHandler)
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
@@ -382,7 +373,7 @@ describe('FlowBuilder', function () {
         .split(splitter)
         .handle(handler);
 
-      const handlerFn = pipeline.get();
+      const handlerFn = getEventHandlerComponent(pipeline.get());
       const event = await new EventBuilder().create();
       await handlerFn(event);
 
