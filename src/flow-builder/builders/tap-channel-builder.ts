@@ -22,7 +22,7 @@ export type TapChannelBuilderOptions<T extends Event = Event> = Omit<
  */
 export class TapChannelBuilder<
   T extends Event = Event,
-> implements ChannelBuilder<T> {
+> implements ChannelBuilder<T, TapChannelBuilderOptions<T>> {
   #opts: TapChannelBuilderOptions<T>;
 
   constructor(opts: TapChannelBuilderOptions<T>) {
@@ -34,12 +34,12 @@ export class TapChannelBuilder<
    * downstream handler.
    *
    * @param handler - The downstream handler that receives the event after the tap.
-   * @param opts - Flow-level options that override step-level options.
+   * @param opts - Options that override step-level options.
    * @returns A bound `send` function for the constructed channel.
    */
   create(
     handler: EventHandlerComponent<T>,
-    opts?: ChannelBuilderCreateOptions,
+    opts?: TapChannelBuilderOptions<T>,
   ): EventHandlerFn<T> {
     const channel = new TapChannel<T>({
       ...this.#opts,

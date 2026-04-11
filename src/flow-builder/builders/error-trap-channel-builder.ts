@@ -25,7 +25,7 @@ export type ErrorTrapChannelBuilderOptions<T extends Event = Event> = Omit<
  */
 export class ErrorTrapChannelBuilder<
   T extends Event = Event,
-> implements ChannelBuilder<T> {
+> implements ChannelBuilder<T, ErrorTrapChannelBuilderOptions<T>> {
   #opts: ErrorTrapChannelBuilderOptions<T>;
 
   constructor(opts: ErrorTrapChannelBuilderOptions<T>) {
@@ -36,12 +36,12 @@ export class ErrorTrapChannelBuilder<
    * Builds an {@link ErrorTrapChannel} that wraps the given downstream handler.
    *
    * @param handler - The downstream handler to protect with error trapping.
-   * @param opts - Flow-level options that override step-level options.
+   * @param opts - Options that override step-level options.
    * @returns A bound `handle` function for the constructed channel.
    */
   create(
     handler: EventHandlerComponent<T>,
-    opts?: ChannelBuilderCreateOptions,
+    opts?: ErrorTrapChannelBuilderOptions<T>,
   ): EventHandlerFn<T> {
     const channel = new ErrorTrapChannel<T>({
       ...this.#opts,

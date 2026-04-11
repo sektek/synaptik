@@ -1,4 +1,4 @@
-import { LoggerProvider, getComponent } from '@sektek/utility-belt';
+import { LoggerProvider } from '@sektek/utility-belt';
 
 import {
   ErrorTrapChannelOptions,
@@ -33,7 +33,6 @@ import { getEventHandlerComponent } from '../util/get-event-handler-component.js
 
 import {
   ChannelBuilder,
-  ChannelBuilderComponent,
   ChannelBuilderCreateOptions,
   FlowChain,
   FlowCreateOptions,
@@ -52,8 +51,7 @@ export type FlowBuilderOptions = {
   loggerProvider?: LoggerProvider;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BuilderEntry = ChannelBuilderComponent<any>;
+type BuilderEntry = ChannelBuilder<Event>;
 
 type TerminalFactory<T extends Event = Event> = (
   opts: ChannelBuilderCreateOptions,
@@ -201,14 +199,8 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
       : getEventHandlerComponent(new NullHandler());
 
     return this.#flowStack.reduceRight<EventHandlerComponent<T>>(
-      (handler, builderComponent) => {
-        const createFn = getComponent(
-          builderComponent,
-          'create',
-        ) as ChannelBuilder<Event>['create'];
-
-        return createFn(handler, createOpts) as EventHandlerComponent<T>;
-      },
+      (handler, builder) =>
+        builder.create(handler, createOpts) as EventHandlerComponent<T>,
       terminal as EventHandlerComponent<T>,
     );
   }

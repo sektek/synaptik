@@ -29,7 +29,7 @@ export type ProcessingChannelBuilderOptions<
 export class ProcessingChannelBuilder<
   T extends Event = Event,
   R extends Event = T,
-> implements ChannelBuilder<T> {
+> implements ChannelBuilder<T, ProcessingChannelBuilderOptions<T, R>> {
   #opts: ProcessingChannelBuilderOptions<T, R>;
 
   constructor(opts: ProcessingChannelBuilderOptions<T, R>) {
@@ -40,12 +40,12 @@ export class ProcessingChannelBuilder<
    * Builds a {@link ProcessingChannel} wrapping the given downstream handler.
    *
    * @param handler - The downstream handler that receives the transformed `R` events.
-   * @param opts - Flow-level options that override step-level options.
+   * @param opts - Options that override step-level options.
    * @returns A bound `send` function for the constructed channel.
    */
   create(
     handler: EventHandlerComponent<T>,
-    opts?: ChannelBuilderCreateOptions,
+    opts?: ProcessingChannelBuilderOptions<T, R>,
   ): EventHandlerFn<T> {
     const channel = new ProcessingChannel<T, R>({
       ...this.#opts,
