@@ -27,6 +27,10 @@ src/
   request-reply-processor/        # RequestReplyProcessor, ReplyRouteProvider
   error-handlers/                 # CompositeEventErrorHandler
   http/                           # HttpChannel, HttpProcessor (NOT Express middleware)
+  flow-builder/                   # FlowBuilder (top-down fluent pipeline DSL)
+    types/                        # ChannelBuilder, FlowChain, FlowProvider, OutputOfComponent
+    builders/                     # FilterChannelBuilder, ProcessingChannelBuilder, etc.
+    flow-builder.ts               # FlowBuilder class (implements FlowChain)
   abstract-event-service.ts       # Base class for all services
   abstract-event-handling-service.ts
   event-builder.ts
@@ -194,6 +198,10 @@ Resolves a callable handler from any `EventEndpoint` by checking methods in prio
 - Mocha BDD (`describe`/`it`), Chai + `chai-as-promised`, Sinon (`fake()`, stubs)
 - Sinon `fake()` used as stand-in handlers/channels in unit tests
 - `NullHandler` / `NullChannel` are Null Object pattern defaults (e.g. `rejectionHandler` in `FilterChannel`) — do not use these in tests
+
+## Reserved names
+
+- `Flow` — reserved for a future `EventChannel` implementation that wraps an entire `FlowBuilder`-constructed pipeline and emits lifecycle events as events move through it. Do not use this name for any class or type.
 
 ## Key constraints
 
