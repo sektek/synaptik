@@ -10,7 +10,7 @@ import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 
 export type TapChannelBuilderOptions<T extends Event = Event> = Omit<
   TapChannelOptions<T>,
-  'handler'
+  'handler' | keyof ChannelBuilderCreateOptions
 >;
 
 /**

@@ -13,7 +13,7 @@ import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 
 export type FilterChannelBuilderOptions<T extends Event = Event> = Omit<
   FilterChannelOptions<T>,
-  'handler'
+  'handler' | keyof ChannelBuilderCreateOptions
 >;
 
 /**

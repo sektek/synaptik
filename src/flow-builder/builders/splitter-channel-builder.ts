@@ -14,7 +14,10 @@ import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 export type SplitterChannelBuilderOptions<
   T extends Event = Event,
   R extends Event = T,
-> = Omit<SplitterChannelOptions<T, R>, 'handler'>;
+> = Omit<
+  SplitterChannelOptions<T, R>,
+  'handler' | keyof ChannelBuilderCreateOptions
+>;
 
 /**
  * A {@link ChannelBuilder} that creates a {@link SplitterChannel}.
