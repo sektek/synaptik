@@ -200,7 +200,10 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
     return this.#flowStack.reduceRight<EventHandlerComponent<T>>(
       (handler, builder) =>
-        builder.create(handler, createOpts) as EventHandlerComponent<T>,
+        (builder as ChannelBuilder<T>).create(
+          handler,
+          createOpts,
+        ) as EventHandlerComponent<T>,
       terminal as EventHandlerComponent<T>,
     );
   }
