@@ -192,12 +192,59 @@ Resolves a callable handler from any `EventEndpoint` by checking methods in prio
 
 **`CompositeEventErrorHandler<T>`** — fans errors out to multiple `EventErrorHandlerComponent` instances using a configurable execution strategy (default: parallel).
 
+## FlowBuilder (`src/flow-builder/`)
+
+Top-down fluent DSL for composing event pipelines. Declare steps in the order events flow through them; the builder folds them right-to-left at resolution time.
+
+### Key types
+
+| Type | Role |
+|------|------|
+| `FlowChain<T>` | In-progress chain — intermediate methods return this; `get()`/`create()` are absent by design |
+| `FlowProvider<T>` | Completed chain — returned by terminal methods; exposes `get()` and `create()` |
+| `ChannelBuilder<T, O>` | Lazily builds one pipeline step; `create(handler, opts?)` wraps the downstream handler |
+| `ChannelBuilderCreateOptions` | Flow-level options (e.g. `loggerProvider`) passed to every builder during the fold |
+
+### Usage
+
+```ts
+// Shared factory — create once, reuse across multiple flows
+const flowBuilder = FlowBuilder.with({ loggerProvider });
+
+// get() — simple resolution
+const handler = flowBuilder
+  .filter(predicate)
+  .process(enricher)
+  .handle(store)
+  .get();
+
+// create() — scopes loggerProvider to flowName
+const handler = flowBuilder
+  .filter(predicate)
+  .handle(store)
+  .create({ flowName: 'MyFlow' });
+```
+
+`FlowBuilder.with()` returns `FlowChain<T>`. Terminal methods (`handle`, `outbound`, `dispatch`, `route`) return `FlowProvider<T>`, at which point `get()`/`create()` become available.
+
+### Channel builder options pattern
+
+Each `XxxChannelBuilderOptions<T>` is:
+
+```ts
+Omit<XxxChannelOptions<T>, 'handler' | keyof ChannelBuilderCreateOptions>
+  & ChannelBuilderCreateOptions
+```
+
+Step-level options (constructor) and flow-level options (`create()`) are both accepted; flow-level wins: `{ ...stepOpts, ...createOpts, handler }`.
+
 ## Testing conventions
 
 - Tests in `*.spec.ts` co-located with source
 - Mocha BDD (`describe`/`it`), Chai + `chai-as-promised`, Sinon (`fake()`, stubs)
 - Sinon `fake()` used as stand-in handlers/channels in unit tests
 - `NullHandler` / `NullChannel` are Null Object pattern defaults (e.g. `rejectionHandler` in `FilterChannel`) — do not use these in tests
+- `FlowProvider.get()`/`create()` returns `EventHandlerComponent<T>` — wrap with `getEventHandlerComponent()` before invoking as a function in tests
 
 ## Reserved names
 
