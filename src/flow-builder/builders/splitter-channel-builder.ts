@@ -16,6 +16,12 @@ export type SplitterChannelBuilderOptions<
   R extends Event = T,
 > = Omit<SplitterChannelOptions<T, R>, 'handler'>;
 
+/**
+ * A {@link ChannelBuilder} that creates a {@link SplitterChannel}.
+ *
+ * Step-level options (set at construction time) are overridden by flow-level
+ * options (passed to `create()`).
+ */
 export class SplitterChannelBuilder<
   T extends Event = Event,
   R extends Event = T,
@@ -26,6 +32,13 @@ export class SplitterChannelBuilder<
     this.#opts = opts;
   }
 
+  /**
+   * Builds a {@link SplitterChannel} wrapping the given downstream handler.
+   *
+   * @param handler - The downstream handler that receives each split `R` event.
+   * @param opts - Flow-level options that override step-level options.
+   * @returns A bound `send` function for the constructed channel.
+   */
   create(
     handler: EventHandlerComponent<T>,
     opts?: ChannelBuilderCreateOptions,

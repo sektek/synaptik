@@ -13,6 +13,12 @@ export type TapChannelBuilderOptions<T extends Event = Event> = Omit<
   'handler'
 >;
 
+/**
+ * A {@link ChannelBuilder} that creates a {@link TapChannel}.
+ *
+ * Step-level options (set at construction time) are overridden by flow-level
+ * options (passed to `create()`).
+ */
 export class TapChannelBuilder<
   T extends Event = Event,
 > implements ChannelBuilder<T> {
@@ -22,6 +28,14 @@ export class TapChannelBuilder<
     this.#opts = opts;
   }
 
+  /**
+   * Builds a {@link TapChannel} that runs a side-effect before the given
+   * downstream handler.
+   *
+   * @param handler - The downstream handler that receives the event after the tap.
+   * @param opts - Flow-level options that override step-level options.
+   * @returns A bound `send` function for the constructed channel.
+   */
   create(
     handler: EventHandlerComponent<T>,
     opts?: ChannelBuilderCreateOptions,

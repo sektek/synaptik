@@ -16,6 +16,12 @@ export type FilterChannelBuilderOptions<T extends Event = Event> = Omit<
   'handler'
 >;
 
+/**
+ * A {@link ChannelBuilder} that creates a {@link FilterChannel}.
+ *
+ * Step-level options (set at construction time) are overridden by flow-level
+ * options (passed to `create()`).
+ */
 export class FilterChannelBuilder<
   T extends Event = Event,
 > implements ChannelBuilder<T> {
@@ -25,6 +31,13 @@ export class FilterChannelBuilder<
     this.#opts = opts;
   }
 
+  /**
+   * Builds a {@link FilterChannel} that guards the given downstream handler.
+   *
+   * @param handler - The downstream handler that receives events passing the filter.
+   * @param opts - Flow-level options that override step-level options.
+   * @returns A bound `send` function for the constructed channel.
+   */
   create(
     handler: EventHandlerComponent<T>,
     opts?: ChannelBuilderCreateOptions,

@@ -16,6 +16,12 @@ export type ProcessingChannelBuilderOptions<
   R extends Event = T,
 > = Omit<ProcessingChannelOptions<T, R>, 'handler'>;
 
+/**
+ * A {@link ChannelBuilder} that creates a {@link ProcessingChannel}.
+ *
+ * Step-level options (set at construction time) are overridden by flow-level
+ * options (passed to `create()`).
+ */
 export class ProcessingChannelBuilder<
   T extends Event = Event,
   R extends Event = T,
@@ -26,6 +32,13 @@ export class ProcessingChannelBuilder<
     this.#opts = opts;
   }
 
+  /**
+   * Builds a {@link ProcessingChannel} wrapping the given downstream handler.
+   *
+   * @param handler - The downstream handler that receives the transformed `R` events.
+   * @param opts - Flow-level options that override step-level options.
+   * @returns A bound `send` function for the constructed channel.
+   */
   create(
     handler: EventHandlerComponent<T>,
     opts?: ChannelBuilderCreateOptions,
