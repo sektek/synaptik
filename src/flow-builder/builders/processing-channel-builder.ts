@@ -17,7 +17,8 @@ export type ProcessingChannelBuilderOptions<
 > = Omit<
   ProcessingChannelOptions<T, R>,
   'handler' | keyof ChannelBuilderCreateOptions
->;
+> &
+  ChannelBuilderCreateOptions;
 
 /**
  * A {@link ChannelBuilder} that creates a {@link ProcessingChannel}.

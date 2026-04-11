@@ -14,7 +14,8 @@ import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 export type FilterChannelBuilderOptions<T extends Event = Event> = Omit<
   FilterChannelOptions<T>,
   'handler' | keyof ChannelBuilderCreateOptions
->;
+> &
+  ChannelBuilderCreateOptions;
 
 /**
  * A {@link ChannelBuilder} that creates a {@link FilterChannel}.

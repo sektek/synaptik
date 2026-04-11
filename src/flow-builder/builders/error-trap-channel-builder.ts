@@ -14,7 +14,8 @@ import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 export type ErrorTrapChannelBuilderOptions<T extends Event = Event> = Omit<
   ErrorTrapChannelOptions<T>,
   'handler' | keyof ChannelBuilderCreateOptions
->;
+> &
+  ChannelBuilderCreateOptions;
 
 /**
  * A {@link ChannelBuilder} that creates an {@link ErrorTrapChannel}.

@@ -17,7 +17,8 @@ export type SplitterChannelBuilderOptions<
 > = Omit<
   SplitterChannelOptions<T, R>,
   'handler' | keyof ChannelBuilderCreateOptions
->;
+> &
+  ChannelBuilderCreateOptions;
 
 /**
  * A {@link ChannelBuilder} that creates a {@link SplitterChannel}.

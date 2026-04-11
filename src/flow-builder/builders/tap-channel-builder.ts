@@ -11,7 +11,8 @@ import { ChannelBuilder, ChannelBuilderCreateOptions } from '../types/index.js';
 export type TapChannelBuilderOptions<T extends Event = Event> = Omit<
   TapChannelOptions<T>,
   'handler' | keyof ChannelBuilderCreateOptions
->;
+> &
+  ChannelBuilderCreateOptions;
 
 /**
  * A {@link ChannelBuilder} that creates a {@link TapChannel}.
