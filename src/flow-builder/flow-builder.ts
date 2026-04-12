@@ -1,13 +1,6 @@
 import { LoggerProvider } from '@sektek/utility-belt';
 
 import {
-  ErrorTrapChannelOptions,
-  FilterChannelOptions,
-  ProcessingChannelOptions,
-  SplitterChannelOptions,
-  TapChannelOptions,
-} from '../channels/index.js';
-import {
   Event,
   EventChannelComponent,
   EventEndpointComponent,
@@ -42,10 +35,15 @@ import {
 } from './types/index.js';
 import {
   ErrorTrapChannelBuilder,
+  ErrorTrapChannelBuilderOptions,
   FilterChannelBuilder,
+  FilterChannelBuilderOptions,
   ProcessingChannelBuilder,
+  ProcessingChannelBuilderOptions,
   SplitterChannelBuilder,
+  SplitterChannelBuilderOptions,
   TapChannelBuilder,
+  TapChannelBuilderOptions,
 } from './builders/index.js';
 
 export type FlowBuilderOptions = {
@@ -81,7 +79,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   errorTrap(
     errorHandler: EventErrorHandlerComponent<T>,
-    opts: Partial<Omit<ErrorTrapChannelOptions<T>, 'handler'>> = {},
+    opts: Partial<ErrorTrapChannelBuilderOptions<T>> = {},
   ): FlowChain<T> {
     const builder = new ErrorTrapChannelBuilder<T>({ ...opts, errorHandler });
     return this.#append(builder);
@@ -89,7 +87,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   filter(
     predicate: EventPredicateComponent<T>,
-    opts: Partial<Omit<FilterChannelOptions<T>, 'handler' | 'filter'>> = {},
+    opts: Partial<FilterChannelBuilderOptions<T>> = {},
   ): FlowChain<T> {
     const builder = new FilterChannelBuilder<T>({ ...opts, filter: predicate });
     return this.#append(builder);
@@ -98,10 +96,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
   process<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts: Partial<
-      Omit<
-        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
-        'handler' | 'processor'
-      >
+      ProcessingChannelBuilderOptions<T, OutputOfComponent<P, T>>
     > = {},
   ): FlowChain<OutputOfComponent<P, T>> {
     const builder = new ProcessingChannelBuilder({ ...opts, processor });
@@ -113,10 +108,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
   transform<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts: Partial<
-      Omit<
-        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
-        'handler' | 'processor'
-      >
+      ProcessingChannelBuilderOptions<T, OutputOfComponent<P, T>>
     > = {},
   ): FlowChain<OutputOfComponent<P, T>> {
     return this.process(processor, opts);
@@ -125,10 +117,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
   split<P extends EventSplitterComponent<T, Event>>(
     splitter: P,
     opts: Partial<
-      Omit<
-        SplitterChannelOptions<T, OutputOfComponent<P, T>>,
-        'handler' | 'splitter'
-      >
+      SplitterChannelBuilderOptions<T, OutputOfComponent<P, T>>
     > = {},
   ): FlowChain<OutputOfComponent<P, T>> {
     const builder = new SplitterChannelBuilder({ ...opts, splitter });
@@ -139,7 +128,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   tap(
     tapHandler: EventHandlerComponent<T>,
-    opts: Partial<Omit<TapChannelOptions<T>, 'handler' | 'tapHandler'>> = {},
+    opts: Partial<TapChannelBuilderOptions<T>> = {},
   ): FlowChain<T> {
     const builder = new TapChannelBuilder<T>({ ...opts, tapHandler });
     return this.#append(builder);

@@ -1,12 +1,12 @@
 import { Provider } from '@sektek/utility-belt';
 
 import {
-  ErrorTrapChannelOptions,
-  FilterChannelOptions,
-  ProcessingChannelOptions,
-  SplitterChannelOptions,
-  TapChannelOptions,
-} from '../../channels/index.js';
+  ErrorTrapChannelBuilderOptions,
+  FilterChannelBuilderOptions,
+  ProcessingChannelBuilderOptions,
+  SplitterChannelBuilderOptions,
+  TapChannelBuilderOptions,
+} from '../builders/index.js';
 import {
   Event,
   EventChannelComponent,
@@ -65,47 +65,32 @@ export interface FlowChain<T extends Event = Event> {
 
   errorTrap(
     errorHandler: EventErrorHandlerComponent<T>,
-    opts?: Partial<Omit<ErrorTrapChannelOptions<T>, 'handler'>>,
+    opts?: Partial<ErrorTrapChannelBuilderOptions<T>>,
   ): FlowChain<T>;
 
   filter(
     predicate: EventPredicateComponent<T>,
-    opts?: Partial<Omit<FilterChannelOptions<T>, 'handler' | 'filter'>>,
+    opts?: Partial<FilterChannelBuilderOptions<T>>,
   ): FlowChain<T>;
 
   process<P extends EventProcessorComponent<T, Event>>(
     processor: P,
-    opts?: Partial<
-      Omit<
-        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
-        'handler' | 'processor'
-      >
-    >,
+    opts?: Partial<ProcessingChannelBuilderOptions<T, OutputOfComponent<P, T>>>,
   ): FlowChain<OutputOfComponent<P, T>>;
 
   transform<P extends EventProcessorComponent<T, Event>>(
     processor: P,
-    opts?: Partial<
-      Omit<
-        ProcessingChannelOptions<T, OutputOfComponent<P, T>>,
-        'handler' | 'processor'
-      >
-    >,
+    opts?: Partial<ProcessingChannelBuilderOptions<T, OutputOfComponent<P, T>>>,
   ): FlowChain<OutputOfComponent<P, T>>;
 
   split<P extends EventSplitterComponent<T, Event>>(
     splitter: P,
-    opts?: Partial<
-      Omit<
-        SplitterChannelOptions<T, OutputOfComponent<P, T>>,
-        'handler' | 'splitter'
-      >
-    >,
+    opts?: Partial<SplitterChannelBuilderOptions<T, OutputOfComponent<P, T>>>,
   ): FlowChain<OutputOfComponent<P, T>>;
 
   tap(
     tapHandler: EventHandlerComponent<T>,
-    opts?: Partial<Omit<TapChannelOptions<T>, 'handler' | 'tapHandler'>>,
+    opts?: Partial<TapChannelBuilderOptions<T>>,
   ): FlowChain<T>;
 
   // Terminal — end the chain, return FlowProvider
