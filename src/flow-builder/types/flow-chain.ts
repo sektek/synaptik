@@ -110,7 +110,10 @@ export interface FlowChain<T extends Event = Event> {
 
   // Terminal — end the chain, return FlowProvider
 
-  dispatch(handlers: EventEndpointComponent<T>[]): FlowProvider<T>;
+  dispatch(
+    handlers: EventEndpointComponent<T>[],
+    opts?: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>>,
+  ): FlowProvider<T>;
 
   handle(handler: EventHandlerComponent<T>): FlowProvider<T>;
 

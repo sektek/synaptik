@@ -155,12 +155,16 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     return this.#setTerminal(() => channel);
   }
 
-  dispatch(handlers: EventEndpointComponent<T>[]): FlowProvider<T> {
-    return this.#setTerminal(opts => {
+  dispatch(
+    handlers: EventEndpointComponent<T>[],
+    opts: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>> = {},
+  ): FlowProvider<T> {
+    return this.#setTerminal(createOpts => {
       const routeProvider = new DispatchRouteProvider<T>({ routes: handlers });
       return new EventRouter<T>({
+        ...opts,
         routeProvider,
-        loggerProvider: opts.loggerProvider,
+        loggerProvider: createOpts.loggerProvider,
       });
     });
   }
