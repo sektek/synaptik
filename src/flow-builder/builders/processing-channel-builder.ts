@@ -44,13 +44,13 @@ export class ProcessingChannelBuilder<
    * @returns A bound `send` function for the constructed channel.
    */
   create(
-    handler: EventEndpointComponent<T>,
+    handler: EventEndpointComponent<R>,
     opts?: ProcessingChannelBuilderOptions<T, R>,
   ): EventHandlerFn<T> {
     const channel = new ProcessingChannel<T, R>({
       ...this.#opts,
       ...opts,
-      handler: handler as unknown as EventEndpointComponent<R>,
+      handler,
     });
 
     return getEventHandlerComponent(channel);

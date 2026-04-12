@@ -53,7 +53,7 @@ export type FlowBuilderOptions = {
 };
 
 type BuilderEntry = (
-  handler: EventEndpointComponent<Event>,
+  handler: EventEndpointComponent,
   opts?: ChannelBuilderCreateOptions,
 ) => EventHandlerFn<Event>;
 
@@ -209,7 +209,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     return this.#flowStack.reduceRight<EventHandlerComponent<T>>(
       (handler, entry) =>
         entry(
-          handler as EventEndpointComponent<Event>,
+          handler as EventEndpointComponent,
           createOpts,
         ) as EventHandlerComponent<T>,
       terminal as EventHandlerComponent<T>,
@@ -228,10 +228,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     builder: ChannelBuilder<T, O>,
   ): FlowBuilder<T> {
     const entry: BuilderEntry = (handler, opts) =>
-      builder.create(
-        handler as EventEndpointComponent<T>,
-        opts as O,
-      ) as EventHandlerFn<Event>;
+      builder.create(handler, opts as O) as EventHandlerFn<Event>;
     return new FlowBuilder<T>(this.#config, [...this.#flowStack, entry]);
   }
 

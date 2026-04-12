@@ -39,7 +39,7 @@ export interface ChannelBuilder<
    *   construction time.
    * @returns A bound handler function for the constructed channel.
    */
-  create(handler: EventEndpointComponent<T>, opts?: O): EventHandlerFn<T>;
+  create(handler: EventEndpointComponent, opts?: O): EventHandlerFn<T>;
 }
 
 /**

@@ -44,13 +44,13 @@ export class SplitterChannelBuilder<
    * @returns A bound `send` function for the constructed channel.
    */
   create(
-    handler: EventEndpointComponent<T>,
+    handler: EventEndpointComponent<R>,
     opts?: SplitterChannelBuilderOptions<T, R>,
   ): EventHandlerFn<T> {
     const channel = new SplitterChannel<T, R>({
       ...this.#opts,
       ...opts,
-      handler: handler as unknown as EventEndpointComponent<R>,
+      handler,
     });
 
     return getEventHandlerComponent(channel);
