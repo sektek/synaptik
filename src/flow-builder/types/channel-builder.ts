@@ -2,7 +2,7 @@ import { Component, LoggerProvider } from '@sektek/utility-belt';
 
 import {
   Event,
-  EventHandlerComponent,
+  EventEndpointComponent,
   EventHandlerFn,
 } from '../../types/index.js';
 
@@ -31,14 +31,15 @@ export interface ChannelBuilder<
   O extends ChannelBuilderCreateOptions = ChannelBuilderCreateOptions,
 > {
   /**
-   * Builds the channel, wrapping the given downstream handler.
+   * Builds the channel, wrapping the given downstream endpoint.
    *
-   * @param handler - The next handler in the pipeline.
+   * @param handler - The next endpoint in the pipeline. Accepts any
+   *   {@link EventEndpointComponent} — handler, channel, or processor.
    * @param opts - Options that override step-level options stored at
    *   construction time.
    * @returns A bound handler function for the constructed channel.
    */
-  create(handler: EventHandlerComponent<T>, opts?: O): EventHandlerFn<T>;
+  create(handler: EventEndpointComponent<T>, opts?: O): EventHandlerFn<T>;
 }
 
 /**

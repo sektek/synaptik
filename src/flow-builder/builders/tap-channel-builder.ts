@@ -1,6 +1,6 @@
 import {
   Event,
-  EventHandlerComponent,
+  EventEndpointComponent,
   EventHandlerFn,
 } from '../../types/index.js';
 import { TapChannel, TapChannelOptions } from '../../channels/tap-channel.js';
@@ -38,7 +38,7 @@ export class TapChannelBuilder<
    * @returns A bound `send` function for the constructed channel.
    */
   create(
-    handler: EventHandlerComponent<T>,
+    handler: EventEndpointComponent<T>,
     opts?: TapChannelBuilderOptions<T>,
   ): EventHandlerFn<T> {
     const channel = new TapChannel<T>({

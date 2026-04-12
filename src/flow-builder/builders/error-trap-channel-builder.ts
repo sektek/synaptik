@@ -4,7 +4,7 @@ import {
 } from '../../channels/error-trap-channel.js';
 import {
   Event,
-  EventHandlerComponent,
+  EventEndpointComponent,
   EventHandlerFn,
 } from '../../types/index.js';
 import { getEventHandlerComponent } from '../../util/get-event-handler-component.js';
@@ -40,7 +40,7 @@ export class ErrorTrapChannelBuilder<
    * @returns A bound `handle` function for the constructed channel.
    */
   create(
-    handler: EventHandlerComponent<T>,
+    handler: EventEndpointComponent<T>,
     opts?: ErrorTrapChannelBuilderOptions<T>,
   ): EventHandlerFn<T> {
     const channel = new ErrorTrapChannel<T>({

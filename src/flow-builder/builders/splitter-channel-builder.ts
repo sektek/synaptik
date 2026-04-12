@@ -1,6 +1,6 @@
 import {
   Event,
-  EventHandlerComponent,
+  EventEndpointComponent,
   EventHandlerFn,
 } from '../../types/index.js';
 import {
@@ -44,13 +44,13 @@ export class SplitterChannelBuilder<
    * @returns A bound `send` function for the constructed channel.
    */
   create(
-    handler: EventHandlerComponent<T>,
+    handler: EventEndpointComponent<T>,
     opts?: SplitterChannelBuilderOptions<T, R>,
   ): EventHandlerFn<T> {
     const channel = new SplitterChannel<T, R>({
       ...this.#opts,
       ...opts,
-      handler: handler as unknown as EventHandlerComponent<R>,
+      handler: handler as unknown as EventEndpointComponent<R>,
     });
 
     return getEventHandlerComponent(channel);

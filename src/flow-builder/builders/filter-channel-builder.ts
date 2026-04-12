@@ -1,6 +1,6 @@
 import {
   Event,
-  EventHandlerComponent,
+  EventEndpointComponent,
   EventHandlerFn,
 } from '../../types/index.js';
 import {
@@ -40,7 +40,7 @@ export class FilterChannelBuilder<
    * @returns A bound `send` function for the constructed channel.
    */
   create(
-    handler: EventHandlerComponent<T>,
+    handler: EventEndpointComponent<T>,
     opts?: FilterChannelBuilderOptions<T>,
   ): EventHandlerFn<T> {
     const channel = new FilterChannel<T>({
