@@ -46,7 +46,11 @@ import {
   TapChannelBuilderOptions,
 } from './builders/index.js';
 
+/**
+ * Shared configuration for a {@link FlowBuilder} factory instance.
+ */
 export type FlowBuilderOptions = {
+  /** Provider used to scope a logger to each flow at resolution time. */
   loggerProvider?: LoggerProvider;
 };
 
@@ -59,6 +63,14 @@ type TerminalFactory<T extends Event = Event> = (
   opts: ChannelBuilderCreateOptions,
 ) => EventEndpointComponent<T>;
 
+/**
+ * Concrete implementation of {@link FlowChain}. Acts as a reusable factory:
+ * call {@link FlowBuilder.with} once with shared config, then chain steps off
+ * the returned instance to produce independent flows. Each chain method returns
+ * a new `FlowBuilder` — the factory is never mutated.
+ *
+ * @template T - The event type at the entry point of the flow.
+ */
 export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
   #config: FlowBuilderOptions;
   #flowStack: BuilderEntry[];
@@ -69,6 +81,12 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     this.#flowStack = flowStack;
   }
 
+  /**
+   * Creates a reusable flow factory with shared configuration.
+   *
+   * @param config - Shared options applied to every flow built from this factory.
+   * @returns A {@link FlowChain} from which individual flows can be declared.
+   */
   static with<T extends Event = Event>(
     config: FlowBuilderOptions,
   ): FlowChain<T> {
@@ -77,6 +95,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   // -- Intermediate methods --
 
+  /**
+   * @inheritDoc
+   */
   errorTrap(
     errorHandler: EventErrorHandlerComponent<T>,
     opts: Partial<ErrorTrapChannelBuilderOptions<T>> = {},
@@ -85,6 +106,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     return this.#append(builder);
   }
 
+  /**
+   * @inheritDoc
+   */
   filter(
     predicate: EventPredicateComponent<T>,
     opts: Partial<FilterChannelBuilderOptions<T>> = {},
@@ -93,6 +117,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     return this.#append(builder);
   }
 
+  /**
+   * @inheritDoc
+   */
   process<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts: Partial<
@@ -105,6 +132,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     >;
   }
 
+  /**
+   * @inheritDoc
+   */
   transform<P extends EventProcessorComponent<T, Event>>(
     processor: P,
     opts: Partial<
@@ -114,6 +144,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     return this.process(processor, opts);
   }
 
+  /**
+   * @inheritDoc
+   */
   split<P extends EventSplitterComponent<T, Event>>(
     splitter: P,
     opts: Partial<
@@ -126,6 +159,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     >;
   }
 
+  /**
+   * @inheritDoc
+   */
   tap(
     tapHandler: EventHandlerComponent<T>,
     opts: Partial<TapChannelBuilderOptions<T>> = {},
@@ -136,14 +172,23 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   // -- Terminal methods --
 
+  /**
+   * @inheritDoc
+   */
   handle(handler: EventHandlerComponent<T>): FlowProvider<T> {
     return this.#setTerminal(() => handler);
   }
 
+  /**
+   * @inheritDoc
+   */
   outbound(channel: EventChannelComponent<T>): FlowProvider<T> {
     return this.#setTerminal(() => channel);
   }
 
+  /**
+   * @inheritDoc
+   */
   dispatch(
     handlers: EventEndpointComponent<T>[],
     opts: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>> = {},
@@ -158,6 +203,9 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
     });
   }
 
+  /**
+   * @inheritDoc
+   */
   route(
     routeProviderOrOptions: RouteProviderComponent<T> | RouteStoreOptions<T>,
     opts: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>> = {},
@@ -180,10 +228,16 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   // -- Resolution methods --
 
+  /**
+   * @inheritDoc
+   */
   get(): EventHandlerComponent<T> {
     return this.create();
   }
 
+  /**
+   * @inheritDoc
+   */
   create(opts: FlowCreateOptions = {}): EventHandlerComponent<T> {
     if (this.#flowStack.length === 0 && !this.#terminal) {
       throw new Error('FlowBuilder requires at least one step or terminal.');
