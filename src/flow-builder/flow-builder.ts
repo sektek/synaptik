@@ -15,6 +15,7 @@ import {
   EventRouterOptions,
   NamedRoutesProvider,
   NamedRoutesProviderOptions,
+  RoutesProviderComponent,
   StaticRoutesProvider,
   isNamedRoutesProviderOptions,
 } from '../event-router/index.js';
@@ -206,7 +207,7 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
    * @inheritDoc
    */
   route(
-    routerOptions: NamedRoutesProviderOptions<T>,
+    routerOptions: NamedRoutesProviderOptions<T> | RoutesProviderComponent<T>,
     opts: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>> = {},
   ): FlowProvider<T> {
     return this.#setTerminal(createOpts => {

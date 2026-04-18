@@ -10,11 +10,7 @@ import {
   EventServiceOptions,
 } from '../abstract-event-service.js';
 import { Event, EventChannel } from '../types/index.js';
-import {
-  RouteFn,
-  RoutesProvider,
-  RoutesProviderFn,
-} from './types/index.js';
+import { RouteFn, RoutesProvider, RoutesProviderFn } from './types/index.js';
 
 export type EventRouterOptions<T extends Event = Event> =
   EventServiceOptions & {

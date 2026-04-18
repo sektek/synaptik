@@ -20,6 +20,7 @@ import {
 import {
   EventRouterOptions,
   NamedRoutesProviderOptions,
+  RoutesProviderComponent,
 } from '../../event-router/index.js';
 
 /** Options accepted by {@link FlowProvider.create} at flow resolution time. */
@@ -195,6 +196,19 @@ export interface FlowChain<T extends Event = Event> {
    */
   route(
     routerOptions: NamedRoutesProviderOptions<T>,
+    opts?: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>>,
+  ): FlowProvider<T>;
+
+  /**
+   * Sets the terminal to an {@link EventRouter} backed by the given routes
+   * provider.
+   *
+   * @param routesProvider - A pre-built {@link RoutesProviderComponent} to use directly.
+   * @param opts - Additional options for the underlying router.
+   * @returns A FlowProvider ready to produce the composed handler.
+   */
+  route(
+    routesProvider: RoutesProviderComponent<T>,
     opts?: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>>,
   ): FlowProvider<T>;
 }

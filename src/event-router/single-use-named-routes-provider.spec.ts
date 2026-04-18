@@ -16,7 +16,7 @@ describe('SingleUseNamedRoutesProvider', function () {
   it('should retrieve a route then delete it so second call returns default', async function () {
     const route = fake();
     const defaultRoute = fake();
-    const store = new Map([[('route-a'), route]]);
+    const store = new Map([['route-a', route]]);
     const routeDecider = async () => 'route-a';
 
     const provider = new SingleUseNamedRoutesProvider({

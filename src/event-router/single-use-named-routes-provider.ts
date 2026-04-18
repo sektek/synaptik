@@ -4,8 +4,7 @@ import { RouteDeciderFn, RouteFn, RoutesProvider } from './types/index.js';
 import { AbstractEventService } from '../abstract-event-service.js';
 import { Event } from '../types/index.js';
 import { NamedRoutesProviderOptions } from './named-routes-provider.js';
-import { NullChannel } from '../channels/null-channel.js';
-import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
+import { resolveDefaultRouteProvider } from './resolve-default-route-provider.js';
 
 export type SingleUseNamedRoutesProviderOptions<E extends Event = Event> = Omit<
   NamedRoutesProviderOptions<E>,
@@ -27,17 +26,7 @@ export class SingleUseNamedRoutesProvider<E extends Event = Event>
     this.#routeDecider = getComponent(opts.routeDecider, 'get');
     this.#store = opts.store;
 
-    if (opts.defaultRouteProvider) {
-      this.#defaultRouteProvider = getComponent(
-        opts.defaultRouteProvider,
-        'get',
-      );
-    } else if (opts.defaultRoute) {
-      const fn = getEventHandlerComponent(opts.defaultRoute);
-      this.#defaultRouteProvider = () => fn;
-    } else {
-      this.#defaultRouteProvider = () => NullChannel.send;
-    }
+    this.#defaultRouteProvider = resolveDefaultRouteProvider(opts);
   }
 
   async *values(event: E): AsyncIterable<RouteFn<E>> {
@@ -54,7 +43,11 @@ export class SingleUseNamedRoutesProvider<E extends Event = Event>
     }
 
     if (!yielded) {
-      yield await this.#defaultRouteProvider();
+      const defaultRoute = await this.#defaultRouteProvider();
+      if (!defaultRoute) {
+        throw new Error('defaultRouteProvider returned undefined');
+      }
+      yield defaultRoute;
     }
   }
 }
