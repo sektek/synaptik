@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1](https://github.com/sektek/synaptik/compare/v0.3.0...v0.3.1) (2026-04-18)
+
+### Features
+
+* use utility-belt execution strategies in EventRouter ([#44](https://github.com/sektek/synaptik/issues/44)) ([b0f5ead](https://github.com/sektek/synaptik/commit/b0f5eadbfe6ad824b1422c007fcaf42982ba4729))
+
 ## [0.3.0](https://github.com/sektek/synaptik/compare/v0.2.3...v0.3.0) (2026-04-18)
 
 ### ⚠ BREAKING CHANGES

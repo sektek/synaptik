@@ -1,6 +1,6 @@
 {
   "name": "@sektek/synaptik",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Event library for @sektek projects",
   "author": "Edward Kelly <eddie@sektek.net>",
   "repository": {
