@@ -45,7 +45,7 @@ describe('NamedRoutesProvider', function () {
 
   it('should return the default NullChannel.send when decider misses and no defaultRoute set', async function () {
     const routeDecider = async () => 'missing';
-    const routeProvider = async (_name: string) => undefined;
+    const routeProvider = async () => undefined;
 
     const provider = new NamedRoutesProvider({ routeDecider, routeProvider });
     const event = await EventBuilder.create();
@@ -58,7 +58,7 @@ describe('NamedRoutesProvider', function () {
   it('should return custom defaultRoute when decider misses', async function () {
     const defaultRoute = fake();
     const routeDecider = async () => 'missing';
-    const routeProvider = async (_name: string) => undefined;
+    const routeProvider = async () => undefined;
 
     const provider = new NamedRoutesProvider({
       routeDecider,
@@ -75,7 +75,7 @@ describe('NamedRoutesProvider', function () {
     const defaultRoute = fake();
     const defaultRouteProvider = fake.returns(defaultRoute);
     const routeDecider = async () => 'missing';
-    const routeProvider = async (_name: string) => undefined;
+    const routeProvider = async () => undefined;
 
     const provider = new NamedRoutesProvider({
       routeDecider,

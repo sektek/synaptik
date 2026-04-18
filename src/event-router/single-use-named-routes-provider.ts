@@ -1,20 +1,11 @@
 import { ProviderFn, Store, getComponent } from '@sektek/utility-belt';
 
-import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
-import { NullChannel } from '../channels/null-channel.js';
+import { RouteDeciderFn, RouteFn, RoutesProvider } from './types/index.js';
+import { AbstractEventService } from '../abstract-event-service.js';
 import { Event } from '../types/index.js';
-import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
-import {
-  Route,
-  RouteDecider,
-  RouteDeciderFn,
-  RouteFn,
-  RoutesProvider,
-} from './types/index.js';
 import { NamedRoutesProviderOptions } from './named-routes-provider.js';
+import { NullChannel } from '../channels/null-channel.js';
+import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type SingleUseNamedRoutesProviderOptions<E extends Event = Event> = Omit<
   NamedRoutesProviderOptions<E>,
@@ -37,7 +28,10 @@ export class SingleUseNamedRoutesProvider<E extends Event = Event>
     this.#store = opts.store;
 
     if (opts.defaultRouteProvider) {
-      this.#defaultRouteProvider = getComponent(opts.defaultRouteProvider, 'get');
+      this.#defaultRouteProvider = getComponent(
+        opts.defaultRouteProvider,
+        'get',
+      );
     } else if (opts.defaultRoute) {
       const fn = getEventHandlerComponent(opts.defaultRoute);
       this.#defaultRouteProvider = () => fn;

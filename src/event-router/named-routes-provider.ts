@@ -4,9 +4,6 @@ import {
   AbstractEventService,
   EventServiceOptions,
 } from '../abstract-event-service.js';
-import { NullChannel } from '../channels/null-channel.js';
-import { Event } from '../types/index.js';
-import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 import {
   Route,
   RouteDecider,
@@ -16,15 +13,27 @@ import {
   RouteProviderFn,
   RoutesProvider,
 } from './types/index.js';
+import { Event } from '../types/index.js';
+import { NullChannel } from '../channels/null-channel.js';
+import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type NamedRoutesProviderOptions<E extends Event = Event> =
   EventServiceOptions & {
     routeDecider: RouteDecider<E> | RouteDeciderFn<E>;
     routeProvider: RouteProvider<E, string> | RouteProviderFn<E, string>;
     defaultRoute?: Route<E>;
-    defaultRouteProvider?: RouteProvider<E, void> | ProviderFn<RouteFn<E>, void>;
+    defaultRouteProvider?:
+      | RouteProvider<E, void>
+      | ProviderFn<RouteFn<E>, void>;
   };
 
+/**
+ * Type guard that checks whether an object is a {@link NamedRoutesProviderOptions}.
+ *
+ * @param obj - The value to test.
+ * @returns `true` if `obj` has a `routeDecider` property, indicating it is a
+ *   {@link NamedRoutesProviderOptions} rather than another component type.
+ */
 export function isNamedRoutesProviderOptions<E extends Event = Event>(
   obj: unknown,
 ): obj is NamedRoutesProviderOptions<E> {
@@ -50,7 +59,10 @@ export class NamedRoutesProvider<E extends Event = Event>
     this.#routeProvider = getComponent(opts.routeProvider, 'get');
 
     if (opts.defaultRouteProvider) {
-      this.#defaultRouteProvider = getComponent(opts.defaultRouteProvider, 'get');
+      this.#defaultRouteProvider = getComponent(
+        opts.defaultRouteProvider,
+        'get',
+      );
     } else if (opts.defaultRoute) {
       const fn = getEventHandlerComponent(opts.defaultRoute);
       this.#defaultRouteProvider = () => fn;
