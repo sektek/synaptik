@@ -13,14 +13,11 @@ import {
 } from '../types/index.js';
 import {
   EventRouterOptions,
-  RouteProviderComponent,
-  RouteStoreOptions,
+  NamedRoutesProvider,
+  NamedRoutesProviderOptions,
+  StaticRoutesProvider,
+  isNamedRoutesProviderOptions,
 } from '../event-router/index.js';
-import {
-  RouteStore,
-  isRouteStoreOptions,
-} from '../event-router/route-store.js';
-import { DispatchRouteProvider } from '../event-router/dispatch-route-provider.js';
 import { EventRouter } from '../event-router/event-router.js';
 import { NullHandler } from '../handlers/null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
@@ -193,13 +190,13 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
    */
   dispatch(
     handlers: EventEndpointComponent<T>[],
-    opts: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>> = {},
+    opts: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>> = {},
   ): FlowProvider<T> {
     return this.#setTerminal(createOpts => {
-      const routeProvider = new DispatchRouteProvider<T>({ routes: handlers });
+      const routesProvider = new StaticRoutesProvider<T>({ routes: handlers });
       return new EventRouter<T>({
         ...opts,
-        routeProvider,
+        routesProvider,
         loggerProvider: createOpts.loggerProvider,
       });
     });
@@ -209,20 +206,20 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
    * @inheritDoc
    */
   route(
-    routeProviderOrOptions: RouteProviderComponent<T> | RouteStoreOptions<T>,
-    opts: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>> = {},
+    routerOptions: NamedRoutesProviderOptions<T>,
+    opts: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>> = {},
   ): FlowProvider<T> {
     return this.#setTerminal(createOpts => {
-      const routeProvider = isRouteStoreOptions<T>(routeProviderOrOptions)
-        ? new RouteStore<T>({
-            ...routeProviderOrOptions,
+      const routesProvider = isNamedRoutesProviderOptions<T>(routerOptions)
+        ? new NamedRoutesProvider<T>({
+            ...routerOptions,
             loggerProvider: createOpts.loggerProvider,
           })
-        : routeProviderOrOptions;
+        : routerOptions;
 
       return new EventRouter<T>({
         ...opts,
-        routeProvider,
+        routesProvider,
         loggerProvider: createOpts.loggerProvider,
       });
     });

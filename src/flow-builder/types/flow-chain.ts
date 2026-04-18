@@ -19,8 +19,7 @@ import {
 } from '../../types/index.js';
 import {
   EventRouterOptions,
-  RouteProviderComponent,
-  RouteStoreOptions,
+  NamedRoutesProviderOptions,
 } from '../../event-router/index.js';
 
 /** Options accepted by {@link FlowProvider.create} at flow resolution time. */
@@ -167,7 +166,7 @@ export interface FlowChain<T extends Event = Event> {
    */
   dispatch(
     handlers: EventEndpointComponent<T>[],
-    opts?: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>>,
+    opts?: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>>,
   ): FlowProvider<T>;
 
   /**
@@ -187,28 +186,15 @@ export interface FlowChain<T extends Event = Event> {
   outbound(channel: EventChannelComponent<T>): FlowProvider<T>;
 
   /**
-   * Sets the terminal to an {@link EventRouter} backed by a {@link RouteStore}
-   * constructed from the given options.
+   * Sets the terminal to an {@link EventRouter} backed by a
+   * {@link NamedRoutesProvider} constructed from the given options.
    *
-   * @param routes - Configuration for the RouteStore (routes and decider).
+   * @param routerOptions - Configuration for the NamedRoutesProvider (decider and route provider).
    * @param opts - Additional options for the underlying router.
    * @returns A FlowProvider ready to produce the composed handler.
    */
   route(
-    routes: RouteStoreOptions<T>,
-    opts?: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>>,
-  ): FlowProvider<T>;
-
-  /**
-   * Sets the terminal to an {@link EventRouter} backed by the given route
-   * provider.
-   *
-   * @param routeProvider - Supplies the handler(s) for each incoming event.
-   * @param opts - Additional options for the underlying router.
-   * @returns A FlowProvider ready to produce the composed handler.
-   */
-  route(
-    routeProvider: RouteProviderComponent<T>,
-    opts?: Partial<Omit<EventRouterOptions<T>, 'routeProvider'>>,
+    routerOptions: NamedRoutesProviderOptions<T>,
+    opts?: Partial<Omit<EventRouterOptions<T>, 'routesProvider'>>,
   ): FlowProvider<T>;
 }

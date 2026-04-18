@@ -242,12 +242,13 @@ describe('FlowBuilder', function () {
     });
 
     describe('route', function () {
-      it('should accept RouteStoreOptions and route events', async function () {
+      it('should accept NamedRoutesProviderOptions and route events', async function () {
         const handler = fake();
+        const routes = new Map([['myRoute', handler]]);
 
         const pipeline = new FlowBuilder().route({
           routeDecider: () => Promise.resolve('myRoute'),
-          routes: { myRoute: handler },
+          routeProvider: (name: string) => routes.get(name),
         });
 
         const handlerFn = getEventHandlerComponent(pipeline.get());
