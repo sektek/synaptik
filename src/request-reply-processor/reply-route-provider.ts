@@ -1,23 +1,27 @@
 import { Event, EventHandlerFn } from '../types/index.js';
 import { AbstractEventService } from '../abstract-event-service.js';
 import { PromiseChannel } from '../channels/index.js';
-import { RouteProvider } from '../event-router/index.js';
+import { RoutesProvider } from '../event-router/index.js';
 import { getEventHandlerComponent } from '../util/index.js';
 
 export class ReplyRouteProvider<T extends Event = Event>
   extends AbstractEventService
-  implements RouteProvider<T>
+  implements RoutesProvider<T>
 {
   #channelMap = new Map<string, PromiseChannel<T>>();
 
-  get(event: T): EventHandlerFn<T> {
+  async *values(event: T): AsyncIterable<EventHandlerFn<T>> {
     const replyTo = event.replyTo?.pop();
-    const channel = this.#channelMap.get(replyTo ?? '');
-    if (!channel) {
-      throw new Error(`No channel found for event with id: ${replyTo}`);
+    if (!replyTo) {
+      throw new Error('No channel found for reply event: missing replyTo');
     }
 
-    return getEventHandlerComponent(channel);
+    const channel = this.#channelMap.get(replyTo);
+    if (!channel) {
+      throw new Error(`No channel found for replyTo: ${replyTo}`);
+    }
+
+    yield getEventHandlerComponent(channel);
   }
 
   create(id: string): PromiseChannel<T> {

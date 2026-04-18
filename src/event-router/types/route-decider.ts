@@ -1,3 +1,5 @@
+import { Component } from '@sektek/utility-belt';
+
 import { Event } from '../../types/index.js';
 
 /**
@@ -13,3 +15,8 @@ export type RouteDeciderFn<T extends Event = Event> = (
 export interface RouteDecider<T extends Event = Event> {
   get: RouteDeciderFn<T>;
 }
+
+export type RouteDeciderComponent<T extends Event = Event> = Component<
+  RouteDecider<T>,
+  'get'
+>;
