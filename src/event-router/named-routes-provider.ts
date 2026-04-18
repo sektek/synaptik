@@ -1,4 +1,8 @@
-import { Provider, ProviderFn, getComponent } from '@sektek/utility-belt';
+import {
+  ProviderComponent,
+  ProviderFn,
+  getComponent,
+} from '@sektek/utility-belt';
 
 import {
   AbstractEventService,
@@ -6,7 +10,7 @@ import {
 } from '../abstract-event-service.js';
 import {
   Route,
-  RouteDecider,
+  RouteDeciderComponent,
   RouteDeciderFn,
   RouteFn,
   RouteProvider,
@@ -14,14 +18,15 @@ import {
   RoutesProvider,
 } from './types/index.js';
 import { Event } from '../types/index.js';
-import { resolveDefaultRouteProvider } from './resolve-default-route-provider.js';
+import { NullChannel } from '../channels/null-channel.js';
+import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type NamedRoutesProviderOptions<E extends Event = Event> =
   EventServiceOptions & {
-    routeDecider: RouteDecider<E> | RouteDeciderFn<E>;
+    routeDecider: RouteDeciderComponent<E>;
     routeProvider: RouteProvider<E, string> | RouteProviderFn<E, string>;
     defaultRoute?: Route<E>;
-    defaultRouteProvider?: Provider<RouteFn<E>> | ProviderFn<RouteFn<E>>;
+    defaultRouteProvider?: ProviderComponent<RouteFn<E>>;
   };
 
 /**
@@ -43,14 +48,23 @@ export class NamedRoutesProvider<E extends Event = Event>
 {
   #routeDecider: RouteDeciderFn<E>;
   #routeProvider: RouteProviderFn<E, string>;
-  #defaultRouteProvider: ProviderFn<RouteFn<E>, void>;
+  #defaultRouteProvider: ProviderFn<RouteFn<E>>;
 
   constructor(opts: NamedRoutesProviderOptions<E>) {
     super(opts);
     this.#routeDecider = getComponent(opts.routeDecider, 'get');
     this.#routeProvider = getComponent(opts.routeProvider, 'get');
 
-    this.#defaultRouteProvider = resolveDefaultRouteProvider(opts);
+    const defaultRoute = getEventHandlerComponent(opts.defaultRoute, {
+      default: new NullChannel(),
+    });
+    this.#defaultRouteProvider = getComponent(
+      opts.defaultRouteProvider,
+      'get',
+      {
+        default: () => defaultRoute,
+      },
+    );
   }
 
   async *values(event: E): AsyncIterable<RouteFn<E>> {

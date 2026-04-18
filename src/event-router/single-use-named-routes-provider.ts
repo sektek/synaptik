@@ -4,7 +4,8 @@ import { RouteDeciderFn, RouteFn, RoutesProvider } from './types/index.js';
 import { AbstractEventService } from '../abstract-event-service.js';
 import { Event } from '../types/index.js';
 import { NamedRoutesProviderOptions } from './named-routes-provider.js';
-import { resolveDefaultRouteProvider } from './resolve-default-route-provider.js';
+import { NullChannel } from '../channels/null-channel.js';
+import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type SingleUseNamedRoutesProviderOptions<E extends Event = Event> = Omit<
   NamedRoutesProviderOptions<E>,
@@ -19,14 +20,23 @@ export class SingleUseNamedRoutesProvider<E extends Event = Event>
 {
   #routeDecider: RouteDeciderFn<E>;
   #store: Store<RouteFn<E>, string>;
-  #defaultRouteProvider: ProviderFn<RouteFn<E>, void>;
+  #defaultRouteProvider: ProviderFn<RouteFn<E>>;
 
   constructor(opts: SingleUseNamedRoutesProviderOptions<E>) {
     super(opts);
     this.#routeDecider = getComponent(opts.routeDecider, 'get');
     this.#store = opts.store;
 
-    this.#defaultRouteProvider = resolveDefaultRouteProvider(opts);
+    const defaultRoute = getEventHandlerComponent(opts.defaultRoute, {
+      default: new NullChannel(),
+    });
+    this.#defaultRouteProvider = getComponent(
+      opts.defaultRouteProvider,
+      'get',
+      {
+        default: () => defaultRoute,
+      },
+    );
   }
 
   async *values(event: E): AsyncIterable<RouteFn<E>> {
