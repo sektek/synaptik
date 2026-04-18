@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/sektek/synaptik/compare/v0.2.3...v0.3.0) (2026-04-18)
+
+### ⚠ BREAKING CHANGES
+
+* This removes RouteStore and replaces it with a NamedRoutesProvider
+* This removes SingleUseRouteStore and replaces it with SingleUseRoutesProvider
+* This reworks the interface for the `EventRouter`
+
+### Features
+
+* rework EventRouter / RouteStore ([#43](https://github.com/sektek/synaptik/issues/43)) ([b3df870](https://github.com/sektek/synaptik/commit/b3df87044ddcafc90d664d3c083eb60110fce7ff))
+
 ## [0.2.3](https://github.com/sektek/synaptik/compare/v0.2.2...v0.2.3) (2026-04-18)
 
 ### Features
