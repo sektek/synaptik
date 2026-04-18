@@ -7,25 +7,25 @@ import {
   EventEndpointComponent,
   EventHandlerFn,
 } from '../types/index.js';
-import { RouteProvider } from './types/route-provider.js';
+import { RoutesProvider } from './types/route-provider.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
-export type DispatchRouteProviderOptions<T extends Event = Event> =
+export type StaticRoutesProviderOptions<T extends Event = Event> =
   EventServiceOptions & {
     routes: EventEndpointComponent<T>[];
   };
 
-export class DispatchRouteProvider<T extends Event = Event>
+export class StaticRoutesProvider<T extends Event = Event>
   extends AbstractEventService
-  implements RouteProvider<T>
+  implements RoutesProvider<T>
 {
   #routes: EventHandlerFn<T>[] = [];
 
-  constructor(opts: DispatchRouteProviderOptions<T>) {
+  constructor(opts: StaticRoutesProviderOptions<T>) {
     super(opts);
 
     if (!opts.routes || [opts.routes].flat().length === 0) {
-      throw new Error('DispatchRouteProvider requires at least one route');
+      throw new Error('StaticRoutesProvider requires at least one route');
     }
 
     this.#routes = [opts.routes]
@@ -33,7 +33,7 @@ export class DispatchRouteProvider<T extends Event = Event>
       .map(route => getEventHandlerComponent(route));
   }
 
-  async get(): Promise<EventHandlerFn<T>[]> {
+  async values(): Promise<EventHandlerFn<T>[]> {
     return this.#routes;
   }
 }

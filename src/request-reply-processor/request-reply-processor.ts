@@ -19,7 +19,7 @@ export class RequestReplyProcessor<T extends Event = Event, R extends Event = T>
 
     this.#replyRouteProvider = new ReplyRouteProvider<R>();
     const replyRouter = new EventRouter<R>({
-      routeProvider: this.#replyRouteProvider,
+      routesProvider: this.#replyRouteProvider,
     });
     this.#replyChannel = getEventHandlerComponent(replyRouter);
   }

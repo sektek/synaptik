@@ -17,8 +17,8 @@ describe('ReplyRouteProvider', function () {
     });
   });
 
-  describe('get', function () {
-    it('should return the channel', async function () {
+  describe('values', function () {
+    it('should yield the channel handler', async function () {
       const event = await EventBuilder.create();
       const reply = await new EventBuilder({
         headers: { replyTo: [event.id] },
@@ -26,10 +26,30 @@ describe('ReplyRouteProvider', function () {
       const provider = new ReplyRouteProvider();
       const channel = provider.create(event.id);
 
-      provider.get(reply)(reply);
+      const handlers = [];
+      for await (const handler of provider.values(reply)) {
+        handlers.push(handler);
+      }
+
+      expect(handlers).to.have.length(1);
+
+      handlers[0](reply);
 
       const result = await channel.get();
       expect(result).to.equal(reply);
+    });
+
+    it('should throw if no channel is found for the event', async function () {
+      const event = await EventBuilder.create();
+      const reply = await new EventBuilder({
+        headers: { replyTo: [event.id] },
+      }).create();
+      const provider = new ReplyRouteProvider();
+
+      const iter = provider.values(reply);
+      await expect(iter.next()).to.be.rejectedWith(
+        `No channel found for event with id: ${event.id}`,
+      );
     });
   });
 
@@ -44,7 +64,8 @@ describe('ReplyRouteProvider', function () {
 
       provider.delete(event.id);
 
-      expect(() => provider.get(reply)).to.throw(
+      const iter = provider.values(reply);
+      await expect(iter.next()).to.be.rejectedWith(
         `No channel found for event with id: ${event.id}`,
       );
     });

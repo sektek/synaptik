@@ -10,11 +10,15 @@ import {
   EventServiceOptions,
 } from '../abstract-event-service.js';
 import { Event, EventChannel } from '../types/index.js';
-import { RouteFn, RouteProvider, RouteProviderFn } from './types/index.js';
+import {
+  RouteFn,
+  RoutesProvider,
+  RoutesProviderFn,
+} from './types/index.js';
 
 export type EventRouterOptions<T extends Event = Event> =
   EventServiceOptions & {
-    routeProvider: RouteProvider<T> | RouteProviderFn<T>;
+    routesProvider: RoutesProvider<T> | RoutesProviderFn<T>;
     executionStrategy?: ExecutionStrategyComponent<RouteFn<T>>;
   };
 
@@ -26,12 +30,12 @@ export class EventRouter<T extends Event = Event>
   extends AbstractEventService
   implements EventChannel<T>
 {
-  #routeProvider: RouteProviderFn<T>;
+  #routesProvider: RoutesProviderFn<T>;
   #executionStrategy: ExecutionStrategyFn<RouteFn<T>>;
 
   constructor(options: EventRouterOptions<T>) {
     super(options);
-    this.#routeProvider = getComponent(options.routeProvider, 'get');
+    this.#routesProvider = getComponent(options.routesProvider, 'values');
 
     this.#executionStrategy = getComponent(
       options.executionStrategy,
@@ -45,8 +49,11 @@ export class EventRouter<T extends Event = Event>
 
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
-    const routes = await this.#routeProvider(event);
-    await this.#executionStrategy([routes].flat(), event);
+    const routes: RouteFn<T>[] = [];
+    for await (const route of await this.#routesProvider(event)) {
+      routes.push(route);
+    }
+    await this.#executionStrategy(routes, event);
     this.emit('event:delivered', event);
   }
 }

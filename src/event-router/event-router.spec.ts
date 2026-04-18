@@ -7,10 +7,10 @@ import { EventRouter } from './event-router.js';
 describe('EventRouter', function () {
   it('should route an event to a provided handler', async function () {
     const route = fake();
-    const routeProvider = async () => [route];
+    const routesProvider = async () => [route];
     const event = await new EventBuilder().create();
 
-    const router = new EventRouter({ routeProvider });
+    const router = new EventRouter({ routesProvider });
     await router.send(event);
 
     expect(route.calledOnceWith(event)).to.be.true;
@@ -19,10 +19,10 @@ describe('EventRouter', function () {
   it('should route an event to multiple provided handlers', async function () {
     const route1 = fake();
     const route2 = fake();
-    const routeProvider = async () => [route1, route2];
+    const routesProvider = async () => [route1, route2];
     const event = await new EventBuilder().create();
 
-    const router = new EventRouter({ routeProvider });
+    const router = new EventRouter({ routesProvider });
     await router.send(event);
 
     expect(route1.calledOnceWith(event)).to.be.true;
@@ -30,8 +30,8 @@ describe('EventRouter', function () {
   });
 
   it('should emit an event:received event when sending an event', async function () {
-    const routeProvider = async () => [];
-    const router = new EventRouter({ routeProvider });
+    const routesProvider = async () => [];
+    const router = new EventRouter({ routesProvider });
     const event = await new EventBuilder().create();
 
     router.on('event:received', value => {
@@ -42,8 +42,8 @@ describe('EventRouter', function () {
   });
 
   it('should emit an event:delivered event when sending an event', async function () {
-    const routeProvider = async () => [];
-    const router = new EventRouter({ routeProvider });
+    const routesProvider = async () => [];
+    const router = new EventRouter({ routesProvider });
     const event = await new EventBuilder().create();
 
     router.on('event:delivered', value => {
