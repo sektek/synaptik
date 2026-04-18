@@ -24,6 +24,19 @@ export type RouteStoreOptions<T extends Event = Event> = EventServiceOptions & {
 };
 
 /**
+ * Type guard that checks whether an object is a {@link RouteStoreOptions}.
+ *
+ * @param obj - The value to test.
+ * @returns `true` if `obj` has a `routeDecider` property, indicating it is a
+ *   {@link RouteStoreOptions} rather than a {@link RouteProviderComponent}.
+ */
+export function isRouteStoreOptions<T extends Event = Event>(
+  obj: unknown,
+): obj is RouteStoreOptions<T> {
+  return typeof obj === 'object' && obj !== null && 'routeDecider' in obj;
+}
+
+/**
  * A RouteStore is a RouteProvider that stores routes within a map and returns
  * one or more routes based on the route names provided by the route decider.
  */

@@ -2,6 +2,7 @@ export * from './abstract-event-service.js';
 export * from './channels/index.js';
 export * from './event-builder.js';
 export * from './event-router/index.js';
+export * from './flow-builder/index.js';
 export * from './handlers/index.js';
 export * from './provider-gateway.js';
 export * from './util/index.js';
