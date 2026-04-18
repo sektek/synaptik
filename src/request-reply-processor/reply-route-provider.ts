@@ -12,9 +12,13 @@ export class ReplyRouteProvider<T extends Event = Event>
 
   async *values(event: T): AsyncIterable<EventHandlerFn<T>> {
     const replyTo = event.replyTo?.pop();
-    const channel = this.#channelMap.get(replyTo ?? '');
+    if (!replyTo) {
+      throw new Error('No channel found for reply event: missing replyTo');
+    }
+
+    const channel = this.#channelMap.get(replyTo);
     if (!channel) {
-      throw new Error(`No channel found for event with id: ${replyTo}`);
+      throw new Error(`No channel found for replyTo: ${replyTo}`);
     }
 
     yield getEventHandlerComponent(channel);

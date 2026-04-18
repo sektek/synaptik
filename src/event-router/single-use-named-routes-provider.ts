@@ -36,9 +36,12 @@ export class SingleUseNamedRoutesProvider<E extends Event = Event>
     for (const name of names) {
       const route = await this.#store.get(name);
       if (route) {
-        yield route;
         yielded = true;
-        await this.#store.delete(name);
+        try {
+          yield route;
+        } finally {
+          await this.#store.delete(name);
+        }
       }
     }
 

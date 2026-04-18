@@ -48,7 +48,7 @@ describe('ReplyRouteProvider', function () {
 
       const iter = provider.values(reply);
       await expect(iter.next()).to.be.rejectedWith(
-        `No channel found for event with id: ${event.id}`,
+        `No channel found for replyTo: ${event.id}`,
       );
     });
   });
@@ -66,7 +66,7 @@ describe('ReplyRouteProvider', function () {
 
       const iter = provider.values(reply);
       await expect(iter.next()).to.be.rejectedWith(
-        `No channel found for event with id: ${event.id}`,
+        `No channel found for replyTo: ${event.id}`,
       );
     });
   });
