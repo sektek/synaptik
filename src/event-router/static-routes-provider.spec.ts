@@ -10,10 +10,7 @@ describe('StaticRoutesProvider', function () {
       const route2 = fake();
       const provider = new StaticRoutesProvider({ routes: [route1, route2] });
 
-      const routes = [];
-      for await (const route of await provider.values()) {
-        routes.push(route);
-      }
+      const routes = await provider.values();
 
       expect(routes).to.have.length(2);
       expect(routes[0]).to.equal(route1);

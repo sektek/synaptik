@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { fake } from 'sinon';
 
+import { RouteFn } from './types/index.js';
+
 import { EventBuilder } from '../event-builder.js';
 import { SingleUseNamedRoutesProvider } from './single-use-named-routes-provider.js';
 
@@ -16,7 +18,7 @@ describe('SingleUseNamedRoutesProvider', function () {
   it('should retrieve a route then delete it so second call returns default', async function () {
     const route = fake();
     const defaultRoute = fake();
-    const store = new Map([['route-a', route]]);
+    const store = new Map<string, RouteFn>([['route-a', route]]);
     const routeDecider = async () => 'route-a';
 
     const provider = new SingleUseNamedRoutesProvider({
@@ -36,7 +38,7 @@ describe('SingleUseNamedRoutesProvider', function () {
 
   it('should return the default route when store is empty', async function () {
     const defaultRoute = fake();
-    const store = new Map<string, typeof defaultRoute>();
+    const store = new Map<string, RouteFn>();
     const routeDecider = async () => 'route-a';
 
     const provider = new SingleUseNamedRoutesProvider({

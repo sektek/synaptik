@@ -6,6 +6,14 @@ import { ReplyRouteProvider } from './reply-route-provider.js';
 
 use(chaiAsPromised);
 
+async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
+  const results: T[] = [];
+  for await (const item of iter) {
+    results.push(item);
+  }
+  return results;
+}
+
 describe('ReplyRouteProvider', function () {
   describe('create', function () {
     it('should return a PromiseChannel function', async function () {
@@ -26,10 +34,7 @@ describe('ReplyRouteProvider', function () {
       const provider = new ReplyRouteProvider();
       const channel = provider.create(event.id);
 
-      const handlers = [];
-      for await (const handler of provider.values(reply)) {
-        handlers.push(handler);
-      }
+      const handlers = await collect(provider.values(reply));
 
       expect(handlers).to.have.length(1);
 
@@ -46,8 +51,7 @@ describe('ReplyRouteProvider', function () {
       }).create();
       const provider = new ReplyRouteProvider();
 
-      const iter = provider.values(reply);
-      await expect(iter.next()).to.be.rejectedWith(
+      await expect(collect(provider.values(reply))).to.be.rejectedWith(
         `No channel found for replyTo: ${event.id}`,
       );
     });
@@ -64,8 +68,7 @@ describe('ReplyRouteProvider', function () {
 
       provider.delete(event.id);
 
-      const iter = provider.values(reply);
-      await expect(iter.next()).to.be.rejectedWith(
+      await expect(collect(provider.values(reply))).to.be.rejectedWith(
         `No channel found for replyTo: ${event.id}`,
       );
     });
