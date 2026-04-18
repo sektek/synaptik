@@ -1,0 +1,78 @@
+import { Component, ProviderFn, getComponent } from '@sektek/utility-belt';
+
+import {
+  AbstractEventService,
+  EventServiceOptions,
+} from '../abstract-event-service.js';
+import { NullChannel } from '../channels/null-channel.js';
+import { Event } from '../types/index.js';
+import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
+import {
+  Route,
+  RouteDecider,
+  RouteDeciderFn,
+  RouteFn,
+  RouteProvider,
+  RouteProviderFn,
+  RoutesProvider,
+} from './types/index.js';
+
+export type NamedRoutesProviderOptions<E extends Event = Event> =
+  EventServiceOptions & {
+    routeDecider: RouteDecider<E> | RouteDeciderFn<E>;
+    routeProvider: RouteProvider<E, string> | RouteProviderFn<E, string>;
+    defaultRoute?: Route<E>;
+    defaultRouteProvider?: RouteProvider<E, void> | ProviderFn<RouteFn<E>, void>;
+  };
+
+export function isNamedRoutesProviderOptions<E extends Event = Event>(
+  obj: unknown,
+): obj is NamedRoutesProviderOptions<E> {
+  return typeof obj === 'object' && obj !== null && 'routeDecider' in obj;
+}
+
+export type NamedRoutesProviderComponent<E extends Event = Event> = Component<
+  NamedRoutesProvider<E>,
+  'values'
+>;
+
+export class NamedRoutesProvider<E extends Event = Event>
+  extends AbstractEventService
+  implements RoutesProvider<E, E>
+{
+  #routeDecider: RouteDeciderFn<E>;
+  #routeProvider: RouteProviderFn<E, string>;
+  #defaultRouteProvider: ProviderFn<RouteFn<E>, void>;
+
+  constructor(opts: NamedRoutesProviderOptions<E>) {
+    super(opts);
+    this.#routeDecider = getComponent(opts.routeDecider, 'get');
+    this.#routeProvider = getComponent(opts.routeProvider, 'get');
+
+    if (opts.defaultRouteProvider) {
+      this.#defaultRouteProvider = getComponent(opts.defaultRouteProvider, 'get');
+    } else if (opts.defaultRoute) {
+      const fn = getEventHandlerComponent(opts.defaultRoute);
+      this.#defaultRouteProvider = () => fn;
+    } else {
+      this.#defaultRouteProvider = () => NullChannel.send;
+    }
+  }
+
+  async *values(event: E): AsyncIterable<RouteFn<E>> {
+    const names = [await this.#routeDecider(event)].flat();
+    let yielded = false;
+
+    for (const name of names) {
+      const route = await this.#routeProvider(name);
+      if (route) {
+        yield route;
+        yielded = true;
+      }
+    }
+
+    if (!yielded) {
+      yield await this.#defaultRouteProvider();
+    }
+  }
+}
