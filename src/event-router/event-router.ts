@@ -1,4 +1,9 @@
-import { getComponent } from '@sektek/utility-belt';
+import {
+  ExecutionStrategyComponent,
+  ExecutionStrategyFn,
+  getComponent,
+  parallelExecutionStrategy,
+} from '@sektek/utility-belt';
 
 import {
   AbstractEventService,
@@ -6,18 +11,15 @@ import {
 } from '../abstract-event-service.js';
 import { Event, EventChannel } from '../types/index.js';
 import {
-  ExecutionStrategyComponent,
-  ExecutionStrategyFn,
   RouteFn,
   RoutesProviderComponent,
   RoutesProviderFn,
 } from './types/index.js';
-import { ParallelStrategy } from './execution-strategies/index.js';
 
 export type EventRouterOptions<T extends Event = Event> =
   EventServiceOptions & {
     routesProvider: RoutesProviderComponent<T>;
-    executionStrategy?: ExecutionStrategyComponent<T>;
+    executionStrategy?: ExecutionStrategyComponent;
   };
 
 /**
@@ -29,7 +31,7 @@ export class EventRouter<T extends Event = Event>
   implements EventChannel<T>
 {
   #routesProvider: RoutesProviderFn<T>;
-  #executionStrategy: ExecutionStrategyFn<T>;
+  #executionStrategy: ExecutionStrategyFn;
 
   constructor(options: EventRouterOptions<T>) {
     super(options);
@@ -40,7 +42,7 @@ export class EventRouter<T extends Event = Event>
       'execute',
       {
         name: 'executionStrategy',
-        default: new ParallelStrategy<T>(),
+        default: parallelExecutionStrategy,
       },
     );
   }
@@ -51,7 +53,7 @@ export class EventRouter<T extends Event = Event>
     for await (const route of await this.#routesProvider(event)) {
       routes.push(route);
     }
-    await this.#executionStrategy(event, routes);
+    await this.#executionStrategy(routes.map(route => () => route(event)));
     this.emit('event:delivered', event);
   }
 }
