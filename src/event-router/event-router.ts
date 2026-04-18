@@ -9,7 +9,13 @@ import {
   AbstractEventService,
   EventServiceOptions,
 } from '../abstract-event-service.js';
-import { Event, EventChannel } from '../types/index.js';
+import {
+  EVENT_DELIVERED,
+  EVENT_ERROR,
+  EVENT_RECEIVED,
+  Event,
+  EventChannel,
+} from '../types/index.js';
 import {
   RouteFn,
   RoutesProviderComponent,
@@ -57,10 +63,15 @@ export class EventRouter<T extends Event = Event>
   }
 
   async send(event: T): Promise<void> {
-    this.emit('event:received', event);
-    await this.#executionStrategy(
-      this.#wrapRoutes(await this.#routesProvider(event), event),
-    );
-    this.emit('event:delivered', event);
+    this.emit(EVENT_RECEIVED, event);
+    try {
+      await this.#executionStrategy(
+        this.#wrapRoutes(await this.#routesProvider(event), event),
+      );
+    } catch (error) {
+      this.emit(EVENT_ERROR, error, event);
+      throw error;
+    }
+    this.emit(EVENT_DELIVERED, event);
   }
 }

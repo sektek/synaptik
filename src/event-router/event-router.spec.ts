@@ -52,4 +52,19 @@ describe('EventRouter', function () {
 
     await router.send(event);
   });
+
+  it('should emit an event:error event when a route throws', async function () {
+    const routesProvider = async () => [fake.throws(new Error('route failed'))];
+    const router = new EventRouter({ routesProvider });
+    const event = await new EventBuilder().create();
+
+    let emittedError: unknown;
+    router.on('event:error', (err, evt) => {
+      emittedError = err;
+      expect(evt).to.equal(event);
+    });
+
+    const thrownError = await router.send(event).catch((e: unknown) => e);
+    expect(emittedError).to.equal(thrownError);
+  });
 });
