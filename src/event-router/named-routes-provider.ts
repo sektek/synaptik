@@ -13,7 +13,7 @@ import {
   RouteDeciderComponent,
   RouteDeciderFn,
   RouteFn,
-  RouteProvider,
+  RouteProviderComponent,
   RouteProviderFn,
   RoutesProvider,
 } from './types/index.js';
@@ -24,7 +24,7 @@ import { getEventHandlerComponent } from '../util/get-event-handler-component.js
 export type NamedRoutesProviderOptions<E extends Event = Event> =
   EventServiceOptions & {
     routeDecider: RouteDeciderComponent<E>;
-    routeProvider: RouteProvider<E, string> | RouteProviderFn<E, string>;
+    routeProvider: RouteProviderComponent<E, string>;
     defaultRoute?: Route<E>;
     defaultRouteProvider?: ProviderComponent<RouteFn<E>>;
   };

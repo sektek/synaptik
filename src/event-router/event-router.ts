@@ -9,14 +9,14 @@ import {
   ExecutionStrategyComponent,
   ExecutionStrategyFn,
   RouteFn,
-  RoutesProvider,
+  RoutesProviderComponent,
   RoutesProviderFn,
 } from './types/index.js';
 import { ParallelStrategy } from './execution-strategies/index.js';
 
 export type EventRouterOptions<T extends Event = Event> =
   EventServiceOptions & {
-    routesProvider: RoutesProvider<T> | RoutesProviderFn<T>;
+    routesProvider: RoutesProviderComponent<T>;
     executionStrategy?: ExecutionStrategyComponent<T>;
   };
 
