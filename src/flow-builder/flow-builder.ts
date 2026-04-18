@@ -47,9 +47,11 @@ import {
 } from './builders/index.js';
 
 /**
- * Shared configuration for a {@link FlowBuilder} factory instance.
+ * Shared configuration for a {@link FlowBuilder} factory instance. Extends
+ * {@link FlowCreateOptions} so that any option accepted by `create()` can be
+ * set once on the factory and picked up automatically by `get()`.
  */
-export type FlowBuilderOptions = {
+export type FlowBuilderOptions = FlowCreateOptions & {
   /** Provider used to scope a logger to each flow at resolution time. */
   loggerProvider?: LoggerProvider;
 };
@@ -277,10 +279,11 @@ export class FlowBuilder<T extends Event = Event> implements FlowChain<T> {
 
   #buildCreateOptions(opts: FlowCreateOptions): ChannelBuilderCreateOptions {
     const createOpts: ChannelBuilderCreateOptions = {};
+    const flowName = opts.flowName ?? this.#config.flowName;
 
-    if (this.#config.loggerProvider && opts.flowName) {
+    if (this.#config.loggerProvider && flowName) {
       createOpts.loggerProvider = this.#config.loggerProvider.with({
-        flowName: opts.flowName,
+        flowName,
       });
     } else if (this.#config.loggerProvider) {
       createOpts.loggerProvider = this.#config.loggerProvider;
