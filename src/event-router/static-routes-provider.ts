@@ -7,7 +7,7 @@ import {
   EventEndpointComponent,
   EventHandlerFn,
 } from '../types/index.js';
-import { RoutesProvider } from './types/route-provider.js';
+import { RoutesProvider } from './types/index.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type StaticRoutesProviderOptions<T extends Event = Event> =
