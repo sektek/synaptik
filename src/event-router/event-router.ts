@@ -47,13 +47,20 @@ export class EventRouter<T extends Event = Event>
     );
   }
 
+  async *#wrapRoutes(
+    source: Iterable<RouteFn<T>> | AsyncIterable<RouteFn<T>>,
+    event: T,
+  ) {
+    for await (const route of source) {
+      yield () => route(event);
+    }
+  }
+
   async send(event: T): Promise<void> {
     this.emit('event:received', event);
-    const routes: RouteFn<T>[] = [];
-    for await (const route of await this.#routesProvider(event)) {
-      routes.push(route);
-    }
-    await this.#executionStrategy(routes.map(route => () => route(event)));
+    await this.#executionStrategy(
+      this.#wrapRoutes(await this.#routesProvider(event), event),
+    );
     this.emit('event:delivered', event);
   }
 }
