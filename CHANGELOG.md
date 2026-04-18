@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3](https://github.com/sektek/synaptik/compare/v0.2.2...v0.2.3) (2026-04-18)
+
+### Features
+
+* FlowBuilder for composing event processing pipelines ([#42](https://github.com/sektek/synaptik/issues/42)) ([72edd76](https://github.com/sektek/synaptik/commit/72edd766b44abbdeb9f6dc08ba95111a39b1e323))
+
 ## [0.2.2](https://github.com/sektek/synaptik/compare/v0.2.1...v0.2.2) (2026-03-29)
 
 ### Features
