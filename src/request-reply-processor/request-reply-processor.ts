@@ -8,13 +8,13 @@ import { ReplyRouteProvider } from './reply-route-provider.js';
 import { getEventHandlerComponent } from '../util/index.js';
 
 export class RequestReplyProcessor<T extends Event = Event, R extends Event = T>
-  extends AbstractEventHandlingComponent
+  extends AbstractEventHandlingComponent<T>
   implements EventProcessor<T, R>
 {
   #replyRouteProvider: ReplyRouteProvider<R>;
   #replyChannel: EventHandlerFn<R>;
 
-  constructor(opts: EventHandlingComponentOptions) {
+  constructor(opts: EventHandlingComponentOptions<T>) {
     super(opts);
 
     this.#replyRouteProvider = new ReplyRouteProvider<R>();

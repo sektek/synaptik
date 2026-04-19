@@ -22,7 +22,7 @@ export type ErrorTrapChannelOptions<T extends Event = Event> =
 
 export class ErrorTrapChannel<
   T extends Event = Event,
-> extends AbstractEventHandlingComponent {
+> extends AbstractEventHandlingComponent<T> {
   #errorHandler: EventErrorHandlerFn<T>;
   #rethrow: boolean;
 
