@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/sektek/synaptik/compare/v0.3.2...v0.4.0) (2026-04-19)
+
+### ⚠ BREAKING CHANGES
+
+* AbstractEventService renamed AbstractEventComponent
+* EventServiceOptions renamed EventComponentOptions
+* AbstractEventHandlingService renamed AbstractEventHandlingComponent
+* EventHandlingServiceOptions renamed EventHandlingComponentOptions
+
+### Features
+
+* replace AbstractEventService with AbstractEventComponent ([#46](https://github.com/sektek/synaptik/issues/46)) ([8996d09](https://github.com/sektek/synaptik/commit/8996d09f0e6057f2155a8181327d0b5244121133))
+
 ## [0.3.2](https://github.com/sektek/synaptik/compare/v0.3.1...v0.3.2) (2026-04-19)
 
 ### Features
