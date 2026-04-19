@@ -19,11 +19,12 @@ import { HttpEventService } from './types/http-event-service.js';
  *
  * @template T The type of event to send.
  */
-export type HttpChannelOptions<T extends Event = Event> = EventComponentOptions &
-  HttpOperatorOptions<T> & {
-    /** An optional HttpOperator instance to use. */
-    httpOperator?: HttpOperator<T>;
-  };
+export type HttpChannelOptions<T extends Event = Event> =
+  EventComponentOptions &
+    HttpOperatorOptions<T> & {
+      /** An optional HttpOperator instance to use. */
+      httpOperator?: HttpOperator<T>;
+    };
 
 /**
  * A channel for sending events over HTTP.
