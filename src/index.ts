@@ -1,4 +1,5 @@
-export * from './abstract-event-service.js';
+export * from './abstract-event-component.js';
+export * from './abstract-event-handling-component.js';
 export * from './channels/index.js';
 export * from './event-builder.js';
 export * from './event-router/index.js';

@@ -1,11 +1,11 @@
 import { Event, EventHandlerFn } from '../types/index.js';
-import { AbstractEventService } from '../abstract-event-service.js';
+import { AbstractEventComponent } from '../abstract-event-component.js';
 import { PromiseChannel } from '../channels/index.js';
 import { RoutesProvider } from '../event-router/index.js';
 import { getEventHandlerComponent } from '../util/index.js';
 
 export class ReplyRouteProvider<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements RoutesProvider<T>
 {
   #channelMap = new Map<string, PromiseChannel<T>>();

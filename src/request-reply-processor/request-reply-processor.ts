@@ -1,20 +1,20 @@
 import {
-  AbstractEventHandlingService,
-  EventHandlingServiceOptions,
-} from '../abstract-event-handling-service.js';
+  AbstractEventHandlingComponent,
+  EventHandlingComponentOptions,
+} from '../abstract-event-handling-component.js';
 import { Event, EventHandlerFn, EventProcessor } from '../types/index.js';
 import { EventRouter } from '../event-router/event-router.js';
 import { ReplyRouteProvider } from './reply-route-provider.js';
 import { getEventHandlerComponent } from '../util/index.js';
 
 export class RequestReplyProcessor<T extends Event = Event, R extends Event = T>
-  extends AbstractEventHandlingService
+  extends AbstractEventHandlingComponent<T>
   implements EventProcessor<T, R>
 {
   #replyRouteProvider: ReplyRouteProvider<R>;
   #replyChannel: EventHandlerFn<R>;
 
-  constructor(opts: EventHandlingServiceOptions) {
+  constructor(opts: EventHandlingComponentOptions<T>) {
     super(opts);
 
     this.#replyRouteProvider = new ReplyRouteProvider<R>();

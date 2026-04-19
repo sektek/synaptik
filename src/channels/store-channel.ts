@@ -6,9 +6,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import { Event, EventChannel } from '../types/index.js';
 
 const DEFAULT_KEY_PROVIDER = <T extends Event, K = string>(event: T): K =>
@@ -23,7 +23,7 @@ const DEFAULT_KEY_PROVIDER = <T extends Event, K = string>(event: T): K =>
 export type StoreChannelOptions<
   T extends Event = Event,
   K = string,
-> = EventServiceOptions & {
+> = EventComponentOptions & {
   /** The store to use for storing events. */
   store: Store<T, K>;
   /**
@@ -44,7 +44,7 @@ export type StoreChannelOptions<
  * @template K The type of key to use for storing the event.
  */
 export class StoreChannel<T extends Event = Event, K = string>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventChannel<T>
 {
   #store: Store<T, K>;

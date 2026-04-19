@@ -7,9 +7,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   EVENT_ERROR,
   EVENT_PROCESSED,
@@ -29,7 +29,7 @@ export type HttpProcessorOptions<
   T extends Event,
   R extends Event,
 > = HttpOperatorOptions<T> &
-  EventServiceOptions & {
+  EventComponentOptions & {
     /** An optional HttpOperator instance to use. */
     httpOperator?: HttpOperator<T>;
     /**
@@ -48,7 +48,7 @@ export type HttpProcessorOptions<
  * @template R The type of event to return.
  */
 export class HttpProcessor<T extends Event = Event, R extends Event = T>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventProcessor<T, R>, HttpEventService<T>
 {
   #httpOperator: HttpOperator<T>;

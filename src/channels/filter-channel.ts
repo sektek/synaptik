@@ -1,9 +1,9 @@
 import { EventEmittingService, getComponent } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   EVENT_DELIVERED,
   EVENT_ERROR,
@@ -26,14 +26,14 @@ export type FilterChannelEvents<T extends Event = Event> =
   };
 
 export type FilterChannelOptions<T extends Event = Event> =
-  EventServiceOptions & {
+  EventComponentOptions & {
     filter: EventPredicateComponent<T>;
     handler: EventEndpointComponent<T>;
     rejectionHandler?: EventEndpointComponent<T>;
   };
 
 export class FilterChannel<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventChannel<T>, EventEmittingService<FilterChannelEvents<T>>
 {
   #filter: EventPredicateFn<T>;

@@ -1,9 +1,9 @@
 import { EventEmittingService, getComponent } from '@sektek/utility-belt';
 
 import {
-  AbstractEventHandlingService,
-  EventHandlingServiceOptions,
-} from '../abstract-event-handling-service.js';
+  AbstractEventHandlingComponent,
+  EventHandlingComponentOptions,
+} from '../abstract-event-handling-component.js';
 import {
   EVENT_DELIVERED,
   EVENT_ERROR,
@@ -19,7 +19,7 @@ import { EventBuilder } from '../event-builder.js';
 export type ProcessingChannelOptions<
   T extends Event,
   R extends Event,
-> = EventHandlingServiceOptions<R> & {
+> = EventHandlingComponentOptions<R> & {
   processor: EventProcessor<T, R> | EventProcessorFn<T, R>;
   cloner?: EventProcessor<T, T> | EventProcessorFn<T, T>;
 };
@@ -39,7 +39,7 @@ export type ProcessingChannelEvents<
  * @template R - The type of event that this channel sends.
  */
 export class ProcessingChannel<T extends Event = Event, R extends Event = T>
-  extends AbstractEventHandlingService<R>
+  extends AbstractEventHandlingComponent<R>
   implements EventEmittingService<ProcessingChannelEvents<T, R>>
 {
   #processor: EventProcessorFn<T, R>;

@@ -7,9 +7,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 
 import {
   EVENT_ERROR,
@@ -26,7 +26,7 @@ export type MutatorHandlerOptions<
   T extends Event = Event,
   K = string,
   V = T,
-> = EventServiceOptions & {
+> = EventComponentOptions & {
   /** The mutator component used to set values. */
   mutator: MutatorComponent<V, K>;
   /**
@@ -51,7 +51,7 @@ export type MutatorHandlerOptions<
  * @template V - The type of the value being set by the Mutator.
  */
 export class MutatorHandler<T extends Event = Event, K = string, V = T>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventHandler<T>
 {
   #mutator: MutatorFn<V, K>;

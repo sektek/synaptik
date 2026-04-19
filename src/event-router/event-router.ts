@@ -6,9 +6,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   EVENT_DELIVERED,
   EVENT_ERROR,
@@ -23,7 +23,7 @@ import {
 } from './types/index.js';
 
 export type EventRouterOptions<T extends Event = Event> =
-  EventServiceOptions & {
+  EventComponentOptions & {
     routesProvider: RoutesProviderComponent<T>;
     executionStrategy?: ExecutionStrategyComponent;
   };
@@ -33,7 +33,7 @@ export type EventRouterOptions<T extends Event = Event> =
  * destinations based on the routes provided by the route provider.
  */
 export class EventRouter<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventChannel<T>
 {
   #routesProvider: RoutesProviderFn<T>;

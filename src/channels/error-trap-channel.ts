@@ -10,19 +10,19 @@ import {
 } from '../types/index.js';
 
 import {
-  AbstractEventHandlingService,
-  EventHandlingServiceOptions,
-} from '../abstract-event-handling-service.js';
+  AbstractEventHandlingComponent,
+  EventHandlingComponentOptions,
+} from '../abstract-event-handling-component.js';
 
 export type ErrorTrapChannelOptions<T extends Event = Event> =
-  EventHandlingServiceOptions<T> & {
+  EventHandlingComponentOptions<T> & {
     errorHandler?: EventErrorHandlerComponent<T>;
     rethrow?: boolean;
   };
 
 export class ErrorTrapChannel<
   T extends Event = Event,
-> extends AbstractEventHandlingService {
+> extends AbstractEventHandlingComponent<T> {
   #errorHandler: EventErrorHandlerFn<T>;
   #rethrow: boolean;
 

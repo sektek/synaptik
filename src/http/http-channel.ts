@@ -1,9 +1,9 @@
 import { HttpOperator, HttpOperatorOptions } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   EVENT_DELIVERED,
   EVENT_ERROR,
@@ -19,11 +19,12 @@ import { HttpEventService } from './types/http-event-service.js';
  *
  * @template T The type of event to send.
  */
-export type HttpChannelOptions<T extends Event = Event> = EventServiceOptions &
-  HttpOperatorOptions<T> & {
-    /** An optional HttpOperator instance to use. */
-    httpOperator?: HttpOperator<T>;
-  };
+export type HttpChannelOptions<T extends Event = Event> =
+  EventComponentOptions &
+    HttpOperatorOptions<T> & {
+      /** An optional HttpOperator instance to use. */
+      httpOperator?: HttpOperator<T>;
+    };
 
 /**
  * A channel for sending events over HTTP.
@@ -33,7 +34,7 @@ export type HttpChannelOptions<T extends Event = Event> = EventServiceOptions &
  * @template T The type of event to send.
  */
 export class HttpChannel<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventChannel<T>, HttpEventService<T>
 {
   #httpOperator: HttpOperator<T>;

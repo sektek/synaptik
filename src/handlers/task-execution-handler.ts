@@ -15,12 +15,12 @@ import {
 } from '../types/index.js';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 
 /** Options for configuring the TaskExecutionHandler */
-export type TaskExecutionHandlerOptions<T, C> = EventServiceOptions & {
+export type TaskExecutionHandlerOptions<T, C> = EventComponentOptions & {
   /**
    * The task command component to be executed. If not provided,
    * a taskProvider must be specified to supply the task component.
@@ -52,7 +52,7 @@ export type TaskExecutionHandlerOptions<T, C> = EventServiceOptions & {
  *    Defaults to void if no context is needed.
  */
 export class TaskExecutionHandler<T extends Event = Event, C = void>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventHandler<T>
 {
   #taskProvider: ProviderFn<CommandComponent<C>, T>;
