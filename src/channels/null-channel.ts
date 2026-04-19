@@ -1,5 +1,5 @@
 import { Event, EventChannel, EventService } from '../types/index.js';
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 
 /**
  * An EventChannel class that does nothing but emit events.
