@@ -5,9 +5,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   Route,
   RouteDeciderComponent,
@@ -22,7 +22,7 @@ import { NullChannel } from '../channels/null-channel.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type NamedRoutesProviderOptions<E extends Event = Event> =
-  EventServiceOptions & {
+  EventComponentOptions & {
     routeDecider: RouteDeciderComponent<E>;
     routeProvider: RouteProviderComponent<E, string>;
     defaultRoute?: Route<E>;
@@ -43,7 +43,7 @@ export function isNamedRoutesProviderOptions<E extends Event = Event>(
 }
 
 export class NamedRoutesProvider<E extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements RoutesProvider<E, E>
 {
   #routeDecider: RouteDeciderFn<E>;

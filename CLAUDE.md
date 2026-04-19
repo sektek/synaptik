@@ -31,8 +31,8 @@ src/
     types/                        # ChannelBuilder, FlowChain, FlowProvider, OutputOfComponent
     builders/                     # FilterChannelBuilder, ProcessingChannelBuilder, etc.
     flow-builder.ts               # FlowBuilder class (implements FlowChain)
-  abstract-event-service.ts       # Base class for all services
-  abstract-event-handling-service.ts
+  abstract-event-component.ts      # Base class for all event-emitting components
+  abstract-event-handling-component.ts
   event-builder.ts
   index.ts                        # Public API barrel
 ```
@@ -79,9 +79,9 @@ Channels also emit `event:accepted` / `event:rejected` (FilterChannel), `event:b
 
 ## Abstract base classes
 
-**`AbstractEventService`** — extends `EventEmitter`, implements `EventService`. Auto-generates a unique name (`ClassName#N`); accepts optional `name` in constructor opts.
+**`AbstractEventComponent`** — extends `AbstractComponent` from `@sektek/utility-belt` (which itself extends `EventEmitter`). Implements `EventService`. Auto-generates a unique name (`ClassName#N`); accepts `EventComponentOptions` (alias for `ComponentOptions`).
 
-**`AbstractEventHandlingService<T>`** — extends `AbstractEventService`; resolves a handler from `EventEndpointComponent` via `getEventHandlerComponent()`. All handler-aware classes extend this.
+**`AbstractEventHandlingComponent<T>`** — extends `AbstractEventComponent`; resolves a handler from `EventEndpointComponent` via `getEventHandlerComponent()`. All handler-aware classes extend this.
 
 ## EventBuilder (`src/event-builder.ts`)
 

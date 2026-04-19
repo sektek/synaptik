@@ -15,16 +15,16 @@ import {
 } from '../types/index.js';
 
 import {
-  AbstractEventHandlingService,
-  EventHandlingServiceOptions,
-} from '../abstract-event-handling-service.js';
+  AbstractEventHandlingComponent,
+  EventHandlingComponentOptions,
+} from '../abstract-event-handling-component.js';
 
 const DEFAULT_BATCH_SIZE = 20;
 
 export type SplitterChannelOptions<
   T extends Event = Event,
   R extends Event = T,
-> = EventHandlingServiceOptions<R> & {
+> = EventHandlingComponentOptions<R> & {
   splitter: EventSplitterComponent<T, R>;
   executionStrategy?: ExecutionStrategyComponent;
   batchSize?: number;
@@ -33,7 +33,7 @@ export type SplitterChannelOptions<
 export class SplitterChannel<
   T extends Event = Event,
   R extends Event = T,
-> extends AbstractEventHandlingService<R> {
+> extends AbstractEventHandlingComponent<R> {
   #splitter: EventSplitterFn<T, R>;
   #executionStrategy: ExecutionStrategyFn;
   #batchSize: number;

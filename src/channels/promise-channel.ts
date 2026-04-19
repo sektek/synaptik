@@ -1,9 +1,9 @@
 import { EventEmittingService } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   EVENT_DELIVERED,
   EVENT_ERROR,
@@ -19,7 +19,7 @@ type PromiseChannelEvents<T extends Event = Event> = EventChannelEvents<T> & {
   'channel:stateChange': (state: PromiseState) => void;
 };
 
-export type PromiseChannelOptions = EventServiceOptions & {
+export type PromiseChannelOptions = EventComponentOptions & {
   timeout?: number;
 };
 
@@ -32,7 +32,7 @@ const DEFAULT_TIMEOUT = 0;
  * @template T The type of event to send.
  */
 export class PromiseChannel<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventChannel<T>, EventEmittingService<PromiseChannelEvents<T>>
 {
   #timeout: number;

@@ -1,9 +1,9 @@
 import { Collector } from '@sektek/utility-belt';
 
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import { Event, EventChannel } from '../types/index.js';
 
 /**
@@ -13,7 +13,7 @@ import { Event, EventChannel } from '../types/index.js';
  * @template T The type of event to send.
  */
 export type CollectorChannelOptions<T extends Event = Event> =
-  EventServiceOptions & {
+  EventComponentOptions & {
     /** The collector to use for storing events. */
     collector: Collector<T>;
   };
@@ -25,7 +25,7 @@ export type CollectorChannelOptions<T extends Event = Event> =
  * @template T The type of event to send.
  */
 export class CollectorChannel<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements EventChannel<T>
 {
   #collector: Collector<T>;

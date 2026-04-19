@@ -1,7 +1,7 @@
 import { ProviderFn, Store, getComponent } from '@sektek/utility-belt';
 
 import { RouteDeciderFn, RouteFn, RoutesProvider } from './types/index.js';
-import { AbstractEventService } from '../abstract-event-service.js';
+import { AbstractEventComponent } from '../abstract-event-component.js';
 import { Event } from '../types/index.js';
 import { NamedRoutesProviderOptions } from './named-routes-provider.js';
 import { NullChannel } from '../channels/null-channel.js';
@@ -15,7 +15,7 @@ export type SingleUseNamedRoutesProviderOptions<E extends Event = Event> = Omit<
 };
 
 export class SingleUseNamedRoutesProvider<E extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements RoutesProvider<E, E>
 {
   #routeDecider: RouteDeciderFn<E>;

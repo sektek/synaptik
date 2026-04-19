@@ -1,7 +1,7 @@
 import {
-  AbstractEventService,
-  EventServiceOptions,
-} from '../abstract-event-service.js';
+  AbstractEventComponent,
+  EventComponentOptions,
+} from '../abstract-event-component.js';
 import {
   Event,
   EventEndpointComponent,
@@ -11,12 +11,12 @@ import { RoutesProvider } from './types/index.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type StaticRoutesProviderOptions<T extends Event = Event> =
-  EventServiceOptions & {
+  EventComponentOptions & {
     routes: EventEndpointComponent<T>[];
   };
 
 export class StaticRoutesProvider<T extends Event = Event>
-  extends AbstractEventService
+  extends AbstractEventComponent
   implements RoutesProvider<T>
 {
   #routes: EventHandlerFn<T>[] = [];

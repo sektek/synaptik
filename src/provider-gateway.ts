@@ -16,9 +16,9 @@ import {
 } from '@sektek/utility-belt';
 
 import {
-  AbstractEventHandlingService,
-  EventHandlingServiceOptions,
-} from './abstract-event-handling-service.js';
+  AbstractEventHandlingComponent,
+  EventHandlingComponentOptions,
+} from './abstract-event-handling-component.js';
 import {
   EVENT_ERROR,
   EVENT_PROCESSED,
@@ -29,7 +29,7 @@ import {
 const DEFAULT_FREQUENCY = 60_000;
 
 export type ProviderGatewayOptions<T extends Event = Event> =
-  EventHandlingServiceOptions<T> & {
+  EventHandlingComponentOptions<T> & {
     /** Returns an iterable of events per poll */
     provider: IterableProviderComponent<T>;
     /**
@@ -112,7 +112,7 @@ export type ProviderGatewayOptions<T extends Event = Event> =
  */
 export class ProviderGateway<
   T extends Event = Event,
-> extends AbstractEventHandlingService<T> {
+> extends AbstractEventHandlingComponent<T> {
   #provider: IterableProviderFn<T>;
   #intervalProvider: ProviderFn<number>;
   #executionStrategy: ExecutionStrategyFn;

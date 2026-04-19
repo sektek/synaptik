@@ -1,7 +1,7 @@
 import {
-  AbstractEventHandlingService,
-  EventHandlingServiceOptions,
-} from '../abstract-event-handling-service.js';
+  AbstractEventHandlingComponent,
+  EventHandlingComponentOptions,
+} from '../abstract-event-handling-component.js';
 import {
   EVENT_DELIVERED,
   EVENT_ERROR,
@@ -13,14 +13,14 @@ import {
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
 export type TapChannelOptions<T extends Event = Event> =
-  EventHandlingServiceOptions<T> & {
+  EventHandlingComponentOptions<T> & {
     tapHandler: EventHandlerComponent<T>;
     rethrow?: boolean;
   };
 
 export class TapChannel<
   T extends Event = Event,
-> extends AbstractEventHandlingService<T> {
+> extends AbstractEventHandlingComponent<T> {
   #tapHandler: EventHandlerFn<T>;
   #rethrow: boolean;
 
