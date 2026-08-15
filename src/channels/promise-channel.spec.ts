@@ -120,7 +120,7 @@ describe('PromiseChannel', function () {
       await channel.send(error);
       await expect(promise).to.be.rejectedWith('boom');
 
-      expect(listener.calledWith(error)).to.be.true;
+      expect(listener.calledOnceWith(error)).to.be.true;
     });
 
     it('should not emit an event:delivered event when sending an error', async function () {
@@ -147,7 +147,7 @@ describe('PromiseChannel', function () {
       );
 
       expect(
-        listener.calledWith(
+        listener.calledOnceWith(
           match
             .instanceOf(Error)
             .and(match.has('message', 'Promise already resolved')),

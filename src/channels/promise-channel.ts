@@ -83,7 +83,9 @@ export class PromiseChannel<T extends Event = Event>
    */
   async send(event: T | Error) {
     const eventIsError = isError(event);
-    this.emit(eventIsError ? EVENT_ERROR : EVENT_RECEIVED, event);
+    if (!eventIsError) {
+      this.emit(EVENT_RECEIVED, event);
+    }
 
     if (this.#state !== 'pending') {
       const error = new Error('Promise already resolved');
