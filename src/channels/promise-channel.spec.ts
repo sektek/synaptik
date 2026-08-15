@@ -90,4 +90,70 @@ describe('PromiseChannel', function () {
 
     expect(channel.state).to.equal('rejected');
   });
+
+  describe('sending an error', function () {
+    it('should reject the promise when sending an error', async function () {
+      const channel = new PromiseChannel<Event>();
+      const error = new Error('boom');
+      const promise = channel.get();
+      channel.send(error);
+
+      await expect(promise).to.be.rejectedWith('boom');
+    });
+
+    it('should have a state of rejected after sending an error', async function () {
+      const channel = new PromiseChannel<Event>();
+      const error = new Error('boom');
+      const promise = channel.get();
+      await expect(channel.send(error)).to.not.be.rejected;
+      await expect(promise).to.be.rejectedWith('boom');
+
+      expect(channel.state).to.equal('rejected');
+    });
+
+    it('should emit an event:error event when sending an error', async function () {
+      const listener = fake();
+      const channel = new PromiseChannel<Event>();
+      const error = new Error('boom');
+      const promise = channel.get();
+      channel.on('event:error', listener);
+      await channel.send(error);
+      await expect(promise).to.be.rejectedWith('boom');
+
+      expect(listener.calledOnceWith(error)).to.be.true;
+    });
+
+    it('should not emit an event:delivered event when sending an error', async function () {
+      const listener = fake();
+      const channel = new PromiseChannel<Event>();
+      const error = new Error('boom');
+      const promise = channel.get();
+      channel.on('event:delivered', listener);
+      await channel.send(error);
+      await expect(promise).to.be.rejectedWith('boom');
+
+      expect(listener.called).to.be.false;
+    });
+
+    it('should emit an event:error event when sending an error after the promise has been resolved', async function () {
+      const listener = fake();
+      const channel = new PromiseChannel<Event>();
+      const event = await new EventBuilder().create();
+      const error = new Error('boom');
+      await channel.send(event);
+      channel.on('event:error', listener);
+      await expect(channel.send(error)).to.be.rejectedWith(
+        'Promise already resolved',
+      );
+
+      expect(
+        listener.calledOnceWith(
+          match
+            .instanceOf(Error)
+            .and(match.has('message', 'Promise already resolved')),
+          error,
+        ),
+      ).to.be.true;
+    });
+  });
 });

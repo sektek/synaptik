@@ -1,4 +1,4 @@
-import { EventEmittingService } from '@sektek/utility-belt';
+import { EventEmittingService, isError } from '@sektek/utility-belt';
 
 import {
   AbstractEventComponent,
@@ -51,7 +51,7 @@ export class PromiseChannel<T extends Event = Event>
       };
       this.#reject = (reason?: unknown) => {
         this.#state = 'rejected';
-        if (reason instanceof Error) {
+        if (isError(reason)) {
           this.emit(EVENT_ERROR, reason);
         } else {
           this.emit(EVENT_ERROR, new Error('Promise rejected'));
@@ -75,13 +75,17 @@ export class PromiseChannel<T extends Event = Event>
 
   /**
    * Delivers an event to the promise created with the channel.
-   * The promise will resolve with the event.
+   * The promise will resolve with the event, or reject if an `Error` is
+   * sent instead.
    *
-   * @param event - The event to send.
+   * @param event - The event, or an `Error` to reject the promise with.
    * @throws {Error} If the channel has not been initialized.
    */
-  async send(event: T) {
-    this.emit(EVENT_RECEIVED, event);
+  async send(event: T | Error) {
+    const eventIsError = isError(event);
+    if (!eventIsError) {
+      this.emit(EVENT_RECEIVED, event);
+    }
 
     if (this.#state !== 'pending') {
       const error = new Error('Promise already resolved');
@@ -93,6 +97,11 @@ export class PromiseChannel<T extends Event = Event>
       const error = new Error('Promise not initialized');
       this.emit(EVENT_ERROR, error, event);
       throw error;
+    }
+
+    if (eventIsError) {
+      this.#reject?.(event);
+      return;
     }
 
     this.#resolve(event);
