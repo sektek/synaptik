@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1](https://github.com/sektek/synaptik/compare/v0.4.0...v0.4.1) (2026-08-15)
+
+### Features
+
+* support sending errors to PromiseChannel ([#47](https://github.com/sektek/synaptik/issues/47)) ([9ba9397](https://github.com/sektek/synaptik/commit/9ba9397f6e6cd7111b865dd24dd7f0377a5ad976))
+
 ## [0.4.0](https://github.com/sektek/synaptik/compare/v0.3.2...v0.4.0) (2026-04-19)
 
 ### ⚠ BREAKING CHANGES
