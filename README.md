@@ -104,8 +104,9 @@ always enough:
 
 ```ts
 const channel = new FilterChannel<OrderEvent>({
-  filter: event => event.data.total > 10, // a function…
-  handler: { handle: async event => save(event) }, // …or an object
+  filter: event => event.data.total > 10,
+  handler: (event: OrderEvent) => save(event), // a function…
+  rejectionHandler: otherChannel, // …or any channel, handler or processor
 });
 ```
 
@@ -120,6 +121,10 @@ import { getEventHandlerComponent } from '@sektek/synaptik';
 const deliver = getEventHandlerComponent<OrderEvent>(channel);
 await deliver(order);
 ```
+
+When you pass a function where several endpoint kinds are accepted
+(`handler`, `rejectionHandler`, the routes of a router), annotate its
+parameter, as above: TypeScript can't infer it from the union.
 
 The same event can therefore flow through a channel, a processor or a bare
 function interchangeably. Return values from handlers are ignored when an
@@ -185,23 +190,23 @@ import {
 
 const filtered = new FilterChannel<OrderEvent>({
   filter: event => event.data.total > 10,
-  handler: event => fulfil(event),
-  rejectionHandler: event => discard(event), // optional, defaults to NullHandler
+  handler: (event: OrderEvent) => fulfil(event),
+  rejectionHandler: (event: OrderEvent) => discard(event), // optional, defaults to NullHandler
 });
 
 const doubled = new ProcessingChannel<OrderEvent>({
   processor: event =>
     EventBuilder.from(event).create({ total: event.data.total * 2 }),
-  handler: event => fulfil(event),
+  handler: (event: OrderEvent) => fulfil(event),
 });
 
 const audited = new TapChannel<OrderEvent>({
   tapHandler: event => audit(event),
-  handler: event => fulfil(event),
+  handler: (event: OrderEvent) => fulfil(event),
 });
 
 const safe = new ErrorTrapChannel<OrderEvent>({
-  handler: event => fulfil(event),
+  handler: (event: OrderEvent) => fulfil(event),
   errorHandler: (error, event) => report(error, event),
 });
 ```
@@ -234,12 +239,12 @@ const items = new SplitterChannel<
 >({
   splitter: async function* (event) {
     for (const item of event.data.items) {
-      yield await EventBuilder.with<Event<{ item: string }>>({
-        type: 'item',
-      }).create({ item });
+      yield await EventBuilder.with<Event<{ item: string }>>({ type: 'item' })
+        .from(event)
+        .create({ item });
     }
   },
-  handler: event => process(event),
+  handler: (event: Event<{ item: string }>) => process(event),
   batchSize: 2,
 });
 ```
@@ -301,7 +306,10 @@ import { serialExecutionStrategy } from '@sektek/utility-belt';
 // Fan out to every route
 const fanOut = new EventRouter<OrderEvent>({
   routesProvider: new StaticRoutesProvider({
-    routes: [event => bill(event), event => ship(event)],
+    routes: [
+      (event: OrderEvent) => bill(event),
+      (event: OrderEvent) => ship(event),
+    ],
   }),
 });
 
@@ -334,7 +342,7 @@ const router = new EventRouter<OrderEvent>({
   routesProvider: new NamedRoutesProvider<OrderEvent>({
     routeDecider: async event => (event.data.total > 10 ? 'billing' : 'other'),
     routeProvider: async name => routes.get(name),
-    defaultRoute: event => log(event), // optional
+    defaultRoute: (event: OrderEvent) => log(event), // optional
   }),
 });
 ```
@@ -471,7 +479,7 @@ const gateway = new ProviderGateway<OrderEvent>({
   provider: { values: () => fetchNewOrders() }, // or a plain function
   frequency: 10_000, // poll every 10 s
   concurrency: 4, // at most 4 handlers at once
-  handler: event => fulfil(event),
+  handler: (event: OrderEvent) => fulfil(event),
 });
 
 gateway.on('gateway:started', () => console.log('polling'));
