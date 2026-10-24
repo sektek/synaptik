@@ -395,7 +395,9 @@ instead, and builds the channels for you.
 ```ts
 import { FlowBuilder, getEventHandlerComponent } from '@sektek/synaptik';
 
-const flow = FlowBuilder.with<OrderEvent>({})
+const flowBuilder = new FlowBuilder<OrderEvent>();
+
+const flow = flowBuilder
   .filter(event => event.data.total > 10)
   .tap(event => audit(event))
   .process(event =>
@@ -436,8 +438,9 @@ Things to know:
   after a terminal, so an unfinished flow won't compile.
 - `get()` and `create()` return an `EventHandlerComponent`; wrap it with
   `getEventHandlerComponent` to call it as a function.
-- Every method returns a new builder, so `FlowBuilder.with(...)` makes a
-  reusable factory and the flows hanging off it are independent.
+- Every method returns a new builder and never changes the one it was called
+  on, so a `FlowBuilder` can be created once and reused: the flows hanging
+  off it are independent.
 - Order matters. Each step only sees what is downstream of it, so an
   `errorTrap` catches errors from the steps and terminal after it, not
   before. `filter` swallows errors from everything after it (see
@@ -445,23 +448,23 @@ Things to know:
   covered:
 
   ```ts
-  flow.filter(isValid).errorTrap(report).process(enrich).handle(fulfil);
+  flowBuilder.filter(isValid).errorTrap(report).process(enrich).handle(fulfil);
   ```
 
-- Shared config goes in `with`: a `loggerProvider`, and optionally a default
-  `flowName`. When the factory has a `loggerProvider`,
+- Shared config goes in the constructor: a `loggerProvider`, and optionally a
+  default `flowName`. When the builder has a `loggerProvider`,
   `create({ flowName })` scopes the logger of every channel in the flow to
   that name, overriding any `loggerProvider` set on an individual step.
   Without a `loggerProvider`, `flowName` has no effect.
 
 ```ts
-const orders = FlowBuilder.with<OrderEvent>({ loggerProvider });
+const flowBuilder = new FlowBuilder<OrderEvent>({ loggerProvider });
 
-const intake = orders
+const intake = flowBuilder
   .filter(isValid)
   .handle(store)
   .create({ flowName: 'Intake' });
-const broadcast = orders
+const broadcast = flowBuilder
   .dispatch([notify, index])
   .create({ flowName: 'Broadcast' });
 ```
