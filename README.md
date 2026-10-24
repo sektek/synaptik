@@ -76,7 +76,7 @@ Deriving events keeps their lineage: `parentId` is set to the source event's
 const copy = await EventBuilder.clone(order);
 
 // Start from an existing event and change some data
-const corrected = await EventBuilder.from(order).with({ total: 44 }).create();
+const corrected = await EventBuilder.from(order).create({ total: 44 });
 
 // Set headers
 const request = await EventBuilder.with({ type: 'lookup' })
@@ -191,9 +191,7 @@ const filtered = new FilterChannel<OrderEvent>({
 
 const doubled = new ProcessingChannel<OrderEvent>({
   processor: event =>
-    EventBuilder.from(event)
-      .with({ total: event.data.total * 2 })
-      .create(),
+    EventBuilder.from(event).create({ total: event.data.total * 2 }),
   handler: event => fulfil(event),
 });
 
@@ -393,9 +391,7 @@ const flow = FlowBuilder.with<OrderEvent>({})
   .filter(event => event.data.total > 10)
   .tap(event => audit(event))
   .process(event =>
-    EventBuilder.from(event)
-      .with({ total: event.data.total + 1 })
-      .create(),
+    EventBuilder.from(event).create({ total: event.data.total + 1 }),
   )
   .handle(event => fulfil(event))
   .create();
