@@ -275,21 +275,27 @@ is created; `0` (the default) waits forever. `channel.state` reports
 A handler is an `EventHandler`: you call `handle`. For a plain callback you
 don't need a class; a function is a handler. Two classes cover common cases:
 
-- **`MutatorHandler`** writes each event into a utility-belt `Mutator`: an
-  object with `set(key, value)` (such as a `Store` or a `Map`), or a plain
-  `(key, value)` function. Extract the key and value with `keyExtractor` and
-  `valueExtractor`; they default to the event's `id` and the event itself.
+- **`MutatorHandler`** writes each event into a utility-belt `Mutator`.
+  Extract the key and value with `keyExtractor` and `valueExtractor`; they
+  default to the event's `id` and the event itself.
 - **`NullHandler`** does nothing (but still emits `event:received`). It is the
   Null Object default for optional handler slots such as
   `FilterChannel.rejectionHandler`. `NullHandlerFn` is its function form.
 
 ```ts
+const totals = new Map<string, number>();
+
+// A Map has a `set(key, value)` method, so it can be the mutator directly.
 const remember = new MutatorHandler<OrderEvent, string, number>({
-  mutator: (orderId, total) => totals.set(orderId, total),
+  mutator: totals,
   keyExtractor: event => event.data.orderId,
   valueExtractor: event => event.data.total,
 });
 ```
+
+`MutatorHandler` calls the mutator's `set` method, so any object with a
+compatible `set(key, value)` works: a `Map`, a utility-belt `Store`, or your
+own class. A plain `(key, value)` function does too.
 
 ## Routing
 
