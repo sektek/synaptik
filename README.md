@@ -91,11 +91,11 @@ const request = await EventBuilder.with({ type: 'lookup' })
 Anything that accepts an event is an _endpoint_. There are three flavours,
 distinguished only by the name of the method:
 
-| Interface        | Method                         | Used for                               |
-| ---------------- | ------------------------------ | -------------------------------------- |
-| `EventHandler`   | `handle(event)`                | Doing something in response to an event |
-| `EventChannel`   | `send(event)`                  | Carrying an event to the next component |
-| `EventProcessor` | `process(event)` → `Event`     | Transforming or enriching an event      |
+| Interface        | Method                     | Used for                                |
+| ---------------- | -------------------------- | --------------------------------------- |
+| `EventHandler`   | `handle(event)`            | Doing something in response to an event |
+| `EventChannel`   | `send(event)`              | Carrying an event to the next component |
+| `EventProcessor` | `process(event)` → `Event` | Transforming or enriching an event      |
 
 Each also has a function form (`EventHandlerFn`, `EventChannelFn`,
 `EventProcessorFn`) and a `*Component` type accepting either. Every option in
@@ -127,24 +127,30 @@ endpoint is used as a destination.
 
 ### Lifecycle events
 
-Every component is an `EventEmitter` with a `name` and an optional
-`loggerProvider` (both inherited from `AbstractComponent` in utility-belt).
-Components report what they do through emitted events, so you can observe a
+Every component is an `EventEmitter` with a `name`. Most also take an
+optional `loggerProvider` (both come from `AbstractComponent` in
+utility-belt); the Null Objects, `NullHandler` and `NullChannel`, take no
+options. Components report what they do through emitted events, so you can observe a
 pipeline without changing it:
 
-| Event             | Constant         | Emitted when                                |
-| ----------------- | ---------------- | ------------------------------------------- |
-| `event:received`  | `EVENT_RECEIVED` | The component accepts an event              |
-| `event:processed` | `EVENT_PROCESSED`| A processor or handler finished its work    |
-| `event:delivered` | `EVENT_DELIVERED`| The event was passed on to the next endpoint |
-| `event:error`     | `EVENT_ERROR`    | Something failed; listeners get `(error, event)` |
+| Event             | Constant          | Emitted when                                     |
+| ----------------- | ----------------- | ------------------------------------------------ |
+| `event:received`  | `EVENT_RECEIVED`  | The component accepts an event                   |
+| `event:processed` | `EVENT_PROCESSED` | A processor or handler finished its work         |
+| `event:delivered` | `EVENT_DELIVERED` | The event was passed on to the next endpoint     |
+| `event:error`     | `EVENT_ERROR`     | Something failed; listeners get `(error, event)` |
 
 ```ts
 import { EVENT_ERROR, EVENT_DELIVERED } from '@sektek/synaptik';
 
 channel.on(EVENT_DELIVERED, event => console.log('delivered', event.id));
-channel.on(EVENT_ERROR, (error, event) => console.error(event.id, error));
+channel.on(EVENT_ERROR, (error, event) => console.error(event?.id, error));
 ```
+
+Most components emit `event:error` with `(error, event)`, but failures that
+aren't tied to one event (a gateway's failed poll, a `PromiseChannel`
+timing out) are emitted with the error alone, so treat `event` as optional in
+listeners.
 
 Use the exported constants rather than the raw strings. Some components emit
 additional events; those are listed with each component below.
@@ -154,17 +160,17 @@ additional events; those are listed with each component below.
 A channel is an `EventChannel`: you `send` it an event. Most channels wrap a
 downstream `handler` (any endpoint) and add one behaviour on the way.
 
-| Channel             | What it does                                                                  |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `FilterChannel`     | Passes events matching a `filter` to `handler`, others to `rejectionHandler`  |
-| `ProcessingChannel` | Runs an event through a `processor` and sends the result to `handler`         |
-| `SplitterChannel`   | Splits one event into many with a `splitter` and sends each to `handler`      |
-| `TapChannel`        | Runs a side-effect `tapHandler`, then passes the original event to `handler`  |
-| `ErrorTrapChannel`  | Catches errors thrown by `handler` and passes them to an `errorHandler`       |
-| `CollectorChannel`  | Adds events to a utility-belt `Collector`                                     |
-| `StoreChannel`      | Writes events to a utility-belt `Store`                                       |
-| `PromiseChannel`    | Hands an event to whoever is waiting on `get()`                               |
-| `NullChannel`       | Accepts events and does nothing                                               |
+| Channel             | What it does                                                                 |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `FilterChannel`     | Passes events matching a `filter` to `handler`, others to `rejectionHandler` |
+| `ProcessingChannel` | Runs an event through a `processor` and sends the result to `handler`        |
+| `SplitterChannel`   | Splits one event into many with a `splitter` and sends each to `handler`     |
+| `TapChannel`        | Runs a side-effect `tapHandler`, then passes the original event to `handler` |
+| `ErrorTrapChannel`  | Catches errors thrown by `handler` and passes them to an `errorHandler`      |
+| `CollectorChannel`  | Adds events to a utility-belt `Collector`                                    |
+| `StoreChannel`      | Writes events to a utility-belt `Store`                                      |
+| `PromiseChannel`    | Hands an event to whoever is waiting on `get()`                              |
+| `NullChannel`       | Accepts events and does nothing                                              |
 
 Options not shown below are inherited: `name` and `loggerProvider`.
 
@@ -208,8 +214,9 @@ Behaviours worth knowing:
   either branch are emitted as `event:error` and **not** rethrown.
 - **`ProcessingChannel`** clones the event before processing (so the
   processor can't mutate the caller's copy and the result carries a
-  `parentId`). Supply `cloner` to change how. Errors from the processor are
-  emitted and rethrown.
+  `parentId`, if the processor derives its output from that clone, as
+  `EventBuilder.from` does). Supply `cloner` to change how. Errors from the
+  processor are emitted and rethrown.
 - **`TapChannel`** rethrows tap errors by default, so a failing audit stops
   delivery. Set `rethrow: false` to log and carry on.
 - **`ErrorTrapChannel`** swallows errors by default (`rethrow: false`).
@@ -248,7 +255,7 @@ rejects the promise instead.
 ```ts
 const channel = new PromiseChannel<OrderEvent>({ timeout: 5_000 });
 
-const pending = channel.get(); // rejects with 'Promise timed out' after 5 s
+const pending = channel.get(); // rejects with 'Promise timed out' 5 s from now
 // … elsewhere …
 await channel.send(order);
 
@@ -256,9 +263,9 @@ const received = await pending; // === order
 ```
 
 A second `send` throws `Promise already resolved`. `timeout` is in
-milliseconds; `0` (the default) waits forever. The `channel:stateChange`
-event fires as the state moves between `pending`, `fulfilled` and
-`rejected`, and `channel.state` reports the current one.
+milliseconds and the clock starts when `get()` is called, not when the channel
+is created; `0` (the default) waits forever. `channel.state` reports
+`pending`, `fulfilled` or `rejected`.
 
 ## Handlers
 
@@ -309,11 +316,11 @@ const inOrder = new EventRouter<OrderEvent>({
 
 The provided routes providers:
 
-| Provider                      | Behaviour                                                                  |
-| ----------------------------- | -------------------------------------------------------------------------- |
-| `StaticRoutesProvider`        | Always returns the same routes. Requires at least one.                     |
-| `NamedRoutesProvider`         | A `routeDecider` returns one or more route names; a `routeProvider` resolves each name to a route |
-| `SingleUseNamedRoutesProvider`| Like `NamedRoutesProvider`, but looks routes up in a `Store` and deletes each after use |
+| Provider                       | Behaviour                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `StaticRoutesProvider`         | Always returns the same routes. Requires at least one.                                            |
+| `NamedRoutesProvider`          | A `routeDecider` returns one or more route names; a `routeProvider` resolves each name to a route |
+| `SingleUseNamedRoutesProvider` | Like `NamedRoutesProvider`, but looks routes up in a `Store` and deletes each after use           |
 
 For named routes, an event whose names resolve to nothing goes to
 `defaultRoute` (a `NullChannel` unless you set one), so unknown names are
@@ -360,7 +367,7 @@ request must send its response back with the `replyTo` it received, through
 the processor's `channel` property:
 
 ```ts
-const respond = getEventHandlerComponent<OrderEvent>(requests.channel);
+const respond = requests.channel; // a function: call it with the response
 
 // in the code that handles the request:
 await respond({ ...response, replyTo: request.replyTo });
@@ -390,29 +397,28 @@ const flow = FlowBuilder.with<OrderEvent>({})
       .with({ total: event.data.total + 1 })
       .create(),
   )
-  .errorTrap(error => report(error))
   .handle(event => fulfil(event))
-  .create({ flowName: 'Orders' });
+  .create();
 
 await getEventHandlerComponent<OrderEvent>(flow)(order);
 ```
 
 A flow is a chain of **steps** that ends in exactly one **terminal**:
 
-| Step                 | Builds                                           |
-| -------------------- | ------------------------------------------------ |
-| `filter(predicate)`  | `FilterChannel`                                  |
-| `process(processor)` | `ProcessingChannel` (`transform` is an alias)    |
-| `split(splitter)`    | `SplitterChannel`                                |
-| `tap(handler)`       | `TapChannel`                                     |
-| `errorTrap(handler)` | `ErrorTrapChannel`                               |
+| Step                 | Builds                                        |
+| -------------------- | --------------------------------------------- |
+| `filter(predicate)`  | `FilterChannel`                               |
+| `process(processor)` | `ProcessingChannel` (`transform` is an alias) |
+| `split(splitter)`    | `SplitterChannel`                             |
+| `tap(handler)`       | `TapChannel`                                  |
+| `errorTrap(handler)` | `ErrorTrapChannel`                            |
 
-| Terminal                       | Ends the flow with                                  |
-| ------------------------------ | --------------------------------------------------- |
-| `handle(handler)`              | A handler                                           |
-| `outbound(channel)`            | A channel, typically a transport                    |
-| `dispatch([endpoints])`        | An `EventRouter` sending to every endpoint          |
-| `route(options \| provider)`   | An `EventRouter` over named routes or a routes provider |
+| Terminal                     | Ends the flow with                                      |
+| ---------------------------- | ------------------------------------------------------- |
+| `handle(handler)`            | A handler                                               |
+| `outbound(channel)`          | A channel, typically a transport                        |
+| `dispatch([endpoints])`      | An `EventRouter` sending to every endpoint              |
+| `route(options \| provider)` | An `EventRouter` over named routes or a routes provider |
 
 Each step takes an optional second argument with that channel's own options
 (for example `.tap(audit, { rethrow: false })`). The event type follows the
@@ -428,16 +434,32 @@ Things to know:
   `getEventHandlerComponent` to call it as a function.
 - Every method returns a new builder, so `FlowBuilder.with(...)` makes a
   reusable factory and the flows hanging off it are independent.
+- Order matters. Each step only sees what is downstream of it, so an
+  `errorTrap` catches errors from the steps and terminal after it, not
+  before. `filter` swallows errors from everything after it (see
+  [Channels](#channels)), so place `errorTrap` after any `filter` you want
+  covered:
+
+  ```ts
+  flow.filter(isValid).errorTrap(report).process(enrich).handle(fulfil);
+  ```
+
 - Shared config goes in `with`: a `loggerProvider`, and optionally a default
-  `flowName`. `create({ flowName })` scopes the logger of every channel in
-  the flow to that name, overriding any `loggerProvider` set on an
-  individual step.
+  `flowName`. When the factory has a `loggerProvider`,
+  `create({ flowName })` scopes the logger of every channel in the flow to
+  that name, overriding any `loggerProvider` set on an individual step.
+  Without a `loggerProvider`, `flowName` has no effect.
 
 ```ts
 const orders = FlowBuilder.with<OrderEvent>({ loggerProvider });
 
-const intake = orders.filter(isValid).handle(store).create({ flowName: 'Intake' });
-const broadcast = orders.dispatch([notify, index]).create({ flowName: 'Broadcast' });
+const intake = orders
+  .filter(isValid)
+  .handle(store)
+  .create({ flowName: 'Intake' });
+const broadcast = orders
+  .dispatch([notify, index])
+  .create({ flowName: 'Broadcast' });
 ```
 
 ## Pulling events with `ProviderGateway`
@@ -460,33 +482,35 @@ gateway.on('gateway:started', () => console.log('polling'));
 
 await gateway.start();
 // …
-await gateway.stop(); // stops polling, drains the queue
+await gateway.stop(); // stops polling, finishes queued events
 ```
 
-| Option              | Meaning                                                                         |
-| ------------------- | ------------------------------------------------------------------------------- |
-| `provider`          | Returns an `Iterable` or `AsyncIterable` of events each poll                    |
-| `frequency`         | Milliseconds between polls (default `60000`)                                    |
-| `intervalProvider`  | Returns the delay before each poll; wins over `frequency`                       |
-| `concurrency`       | Maximum handlers in flight: `1` is serial, `Infinity` (the default) unbounded   |
-| `executionStrategy` | A custom strategy; wins over `concurrency`                                      |
-| `queueOptions`      | Options for the internal utility-belt `Queue`                                   |
+| Option              | Meaning                                                                       |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `provider`          | Returns an `Iterable` or `AsyncIterable` of events each poll                  |
+| `frequency`         | Milliseconds between polls (default `60000`)                                  |
+| `intervalProvider`  | Returns the delay before each poll; wins over `frequency`                     |
+| `concurrency`       | Maximum handlers in flight: `1` is serial, `Infinity` (the default) unbounded |
+| `executionStrategy` | A custom strategy; wins over `concurrency`                                    |
+| `queueOptions`      | Options for the internal utility-belt `Queue`                                 |
 
 A failing handler or provider emits `event:error` and the gateway carries on.
-`start()` is idempotent; `stop()` cancels any pending wait, so it returns
-promptly. The gateway emits `gateway:started` and `gateway:stopped`.
+`start()` is idempotent. The first poll happens after one full interval, not
+immediately. `stop()` cancels the wait between polls, but it still waits for a
+poll that is already running and for queued events to be handled before it
+resolves. The gateway emits `gateway:started` and `gateway:stopped`.
 
 ## Transports
 
 Synaptik itself has no transport. Adapter packages translate between a
 transport and `Event`, then hand off to the pipelines described above:
 
-| Package                    | Transport                                         |
-| -------------------------- | ------------------------------------------------- |
-| `@sektek/synaptik-amqp`    | RabbitMQ                                          |
-| `@sektek/synaptik-bullmq`  | BullMQ                                            |
-| `@sektek/synaptik-express` | Express (HTTP gateway)                            |
-| `@sektek/synaptik-ws`      | WebSockets, in the browser and Node               |
+| Package                    | Transport                           |
+| -------------------------- | ----------------------------------- |
+| `@sektek/synaptik-amqp`    | RabbitMQ                            |
+| `@sektek/synaptik-bullmq`  | BullMQ                              |
+| `@sektek/synaptik-express` | Express (HTTP gateway)              |
+| `@sektek/synaptik-ws`      | WebSockets, in the browser and Node |
 
 ## License
 
