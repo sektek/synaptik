@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.2](https://github.com/sektek/synaptik/compare/v0.4.1...v0.4.2) (2026-10-25)
+
+### Features
+
+* **synaptik:** add FieldExtractor and FieldSplitter ([#49](https://github.com/sektek/synaptik/issues/49)) ([5e22c94](https://github.com/sektek/synaptik/commit/5e22c949f4b25a7dde2d283ad4155f4362db43af))
+
 ## [0.4.1](https://github.com/sektek/synaptik/compare/v0.4.0...v0.4.1) (2026-08-15)
 
 ### Features
