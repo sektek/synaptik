@@ -1,4 +1,5 @@
 export * from './event.js';
+export * from './event-based-optional-provider.js';
 export * from './event-based-provider.js';
 export * from './event-based-string-provider.js';
 export * from './event-channel.js';
