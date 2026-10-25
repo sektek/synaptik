@@ -41,7 +41,7 @@ export class FieldExtractor<
    * @returns The value at the field path, or undefined if the path does not
    *          resolve.
    */
-  async get(event: E) {
-    return _.get(event.data, this.#field) as T;
+  async get(event: E): Promise<T | undefined> {
+    return _.get(event.data, this.#field) as T | undefined;
   }
 }

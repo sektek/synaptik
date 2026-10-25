@@ -1,5 +1,7 @@
 import { expect } from 'chai';
 
+import { Event } from './types/index.js';
+
 import { EventBuilder } from './event-builder.js';
 import { FieldExtractor } from './field-extractor.js';
 
@@ -44,5 +46,21 @@ describe('FieldExtractor', function () {
     const extractor = new FieldExtractor<string>({ field: 'missing.field' });
 
     expect(await extractor.get(event)).to.be.undefined;
+  });
+
+  it('should return undefined when a nested path is missing', async function () {
+    const event = await new EventBuilder().create({ customer: {} });
+    const extractor = new FieldExtractor<string>({
+      field: 'customer.address.city',
+    });
+
+    expect(await extractor.get(event)).to.be.undefined;
+  });
+
+  it('should return null when the field is null', async function () {
+    const event: Event = { id: 'e-1', type: 'Event', data: { name: null } };
+    const extractor = new FieldExtractor<string>({ field: 'name' });
+
+    expect(await extractor.get(event)).to.be.null;
   });
 });
