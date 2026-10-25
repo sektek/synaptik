@@ -6,7 +6,10 @@ import { Event, EventBasedOptionalProvider } from './types/index.js';
  * Options for the FieldExtractor.
  */
 export type FieldExtractorOpts = {
-  /** Path of the field within the event data, in lodash `get` notation (e.g. `customer.address.city`). */
+  /**
+   * Path of the field within the event data, in lodash `get` notation (e.g.
+   * `customer.address.city`).
+   */
   field: string;
 };
 
