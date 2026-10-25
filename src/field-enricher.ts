@@ -5,13 +5,7 @@ import {
 } from '@sektek/utility-belt';
 import _ from 'lodash';
 
-import {
-  EVENT_ERROR,
-  EVENT_PROCESSED,
-  EVENT_RECEIVED,
-  Event,
-  EventProcessor,
-} from './types/index.js';
+import { Event, EventProcessor } from './types/index.js';
 
 import {
   AbstractEventComponent,
@@ -31,8 +25,7 @@ export type FieldEnricherOptions<T extends Event = Event> =
      */
     field: string;
     /**
-     * Provider of the value to set. It is called with the event being
-     * enriched.
+     * Provider of the value to set. It is called with the event being enriched.
      */
     provider: ProviderComponent<unknown, T>;
   };
@@ -73,17 +66,9 @@ export class FieldEnricher<T extends Event = Event>
    *         left unmodified in that case.
    */
   async process(event: T): Promise<T> {
-    this.emit(EVENT_RECEIVED, event);
+    const value = await this.#provider(event);
+    _.set(event.data, this.#field, value);
 
-    try {
-      const value = await this.#provider(event);
-      _.set(event.data, this.#field, value);
-      this.emit(EVENT_PROCESSED, event);
-
-      return event;
-    } catch (error) {
-      this.emit(EVENT_ERROR, error, event);
-      throw error;
-    }
+    return event;
   }
 }

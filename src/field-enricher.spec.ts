@@ -1,7 +1,5 @@
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import sinon from 'sinon';
-import sinonChai from 'sinon-chai';
 
 import { Event } from './types/index.js';
 
@@ -9,7 +7,6 @@ import { EventBuilder } from './event-builder.js';
 import { FieldEnricher } from './field-enricher.js';
 
 use(chaiAsPromised);
-use(sinonChai);
 
 describe('FieldEnricher', function () {
   it('should set a top-level field', async function () {
@@ -139,50 +136,5 @@ describe('FieldEnricher', function () {
 
     await expect(enricher.process(event)).to.be.rejectedWith(error);
     expect(event.data).to.deep.equal({ name: 'widget' });
-  });
-
-  it('should emit event:error when the provider rejects', async function () {
-    const event = await EventBuilder.create();
-    const error = new Error('lookup failed');
-    const enricher = new FieldEnricher({
-      field: 'price',
-      provider: async () => {
-        throw error;
-      },
-    });
-    const errorListener = sinon.fake();
-    enricher.on('event:error', errorListener);
-
-    await expect(enricher.process(event)).to.be.rejectedWith(error);
-
-    expect(errorListener).to.have.been.calledOnceWithExactly(error, event);
-  });
-
-  it('should emit event:received when processing an event', async function () {
-    const event = await EventBuilder.create();
-    const enricher = new FieldEnricher({
-      field: 'price',
-      provider: () => 42,
-    });
-    const eventListener = sinon.fake();
-    enricher.on('event:received', eventListener);
-
-    await enricher.process(event);
-
-    expect(eventListener).to.have.been.calledOnceWithExactly(event);
-  });
-
-  it('should emit event:processed after processing an event', async function () {
-    const event = await EventBuilder.create();
-    const enricher = new FieldEnricher({
-      field: 'price',
-      provider: () => 42,
-    });
-    const eventListener = sinon.fake();
-    enricher.on('event:processed', eventListener);
-
-    await enricher.process(event);
-
-    expect(eventListener).to.have.been.calledOnceWithExactly(event);
   });
 });
