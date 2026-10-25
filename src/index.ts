@@ -3,6 +3,7 @@ export * from './abstract-event-handling-component.js';
 export * from './channels/index.js';
 export * from './event-builder.js';
 export * from './event-router/index.js';
+export * from './field-enricher.js';
 export * from './field-extractor.js';
 export * from './field-splitter.js';
 export * from './flow-builder/index.js';
