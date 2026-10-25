@@ -38,7 +38,7 @@ export class FieldSplitter<
   R extends Event = T,
 > implements EventSplitter<T, R> {
   #field: string;
-  #eventBuilder?: EventBuilder<R>;
+  #eventBuilder: { from(event: T): EventBuilder<R> };
 
   /**
    * Creates a new FieldSplitter.
@@ -47,7 +47,9 @@ export class FieldSplitter<
    */
   constructor(opts: FieldSplitterOpts<T, R>) {
     this.#field = opts.field;
-    this.#eventBuilder = opts.eventBuilder;
+    this.#eventBuilder =
+      opts.eventBuilder ??
+      (EventBuilder as { from(event: T): EventBuilder<R> });
   }
 
   /**
@@ -61,9 +63,7 @@ export class FieldSplitter<
     const value = _.get(event.data, this.#field);
     const isArray = Array.isArray(value);
     const values = isArray ? value : [value];
-    const builder =
-      this.#eventBuilder?.from(event) ??
-      (EventBuilder.from(event) as unknown as EventBuilder<R>);
+    const builder = this.#eventBuilder.from(event);
 
     for (const val of values) {
       const newEvent = await builder.create();
