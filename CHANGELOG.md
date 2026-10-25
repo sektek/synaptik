@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.3](https://github.com/sektek/synaptik/compare/v0.4.2...v0.4.3) (2026-10-25)
+
+### Features
+
+* **synaptik:** add FieldEnricher ([#50](https://github.com/sektek/synaptik/issues/50)) ([83759f4](https://github.com/sektek/synaptik/commit/83759f4660dbff7e9f211e58471b1e4ea0effd24))
+
 ## [0.4.2](https://github.com/sektek/synaptik/compare/v0.4.1...v0.4.2) (2026-10-25)
 
 ### Features
