@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.4](https://github.com/sektek/synaptik/compare/v0.4.3...v0.4.4) (2026-10-25)
+
+### Features
+
+* **synaptik:** add IterableProviderSplitter ([#51](https://github.com/sektek/synaptik/issues/51)) ([8395e0c](https://github.com/sektek/synaptik/commit/8395e0c8a580f7ff0a3519cf4c362fe6872c0e8c))
+
 ## [0.4.3](https://github.com/sektek/synaptik/compare/v0.4.2...v0.4.3) (2026-10-25)
 
 ### Features
