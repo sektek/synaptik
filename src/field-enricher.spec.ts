@@ -185,4 +185,34 @@ describe('FieldEnricher', function () {
 
     expect(eventListener).to.have.been.calledOnceWithExactly(event);
   });
+
+  it('should replace an existing primitive along the path', async function () {
+    const event = await EventBuilder.create({ customer: 'anonymous' });
+    const enricher = new FieldEnricher({
+      field: 'customer.name',
+      provider: () => 'Ada',
+    });
+
+    await enricher.process(event);
+
+    expect(event.data).to.deep.equal({ customer: { name: 'Ada' } });
+  });
+
+  it('should reject and emit event:error when a listener throws', async function () {
+    const event = await EventBuilder.create();
+    const error = new Error('listener failed');
+    const enricher = new FieldEnricher({
+      field: 'price',
+      provider: () => 42,
+    });
+    const errorListener = sinon.fake();
+    enricher.on('event:processed', () => {
+      throw error;
+    });
+    enricher.on('event:error', errorListener);
+
+    await expect(enricher.process(event)).to.be.rejectedWith(error);
+
+    expect(errorListener).to.have.been.calledOnceWithExactly(error, event);
+  });
 });
