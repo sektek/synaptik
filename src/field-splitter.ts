@@ -61,12 +61,13 @@ export class FieldSplitter<
    */
   async *split(event: T): AsyncGenerator<R> {
     const value = _.get(event.data, this.#field);
-    const values = Array.isArray(value) ? value.map(val => [val]) : [value];
+    const isArray = Array.isArray(value);
+    const values = isArray ? value : [value];
     const builder = this.#eventBuilder.from(event);
 
     for (const val of values) {
       const newEvent = await builder.create();
-      _.set(newEvent.data, this.#field, val);
+      _.set(newEvent.data, this.#field, isArray ? [val] : val);
       yield newEvent;
     }
   }
