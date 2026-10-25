@@ -1,0 +1,61 @@
+import _ from 'lodash';
+
+import { Event, EventSplitter } from './types/index.js';
+
+import { EventBuilder } from './event-builder.js';
+
+/**
+ * Options for the FieldSplitter.
+ *
+ * @template T The type of event to split. Defaults to Event.
+ */
+export type FieldSplitterOpts<T extends Event = Event> = {
+  /** Path of the field within the event data, in lodash `get` notation (e.g. `order.items`). */
+  field: string;
+  /** Builder used to create each split event. Defaults to `EventBuilder.from(event)`, which copies all of the original's data. */
+  eventBuilder?: EventBuilder<T>;
+};
+
+/**
+ * Splits an event into one event per value of a field. If the field holds an
+ * array each element becomes its own event, otherwise a single event is
+ * produced. Each new event is built from the original, so it carries the
+ * original's data and has its parentId set.
+ *
+ * @template T The type of event to split. Defaults to Event.
+ */
+export class FieldSplitter<
+  T extends Event = Event,
+> implements EventSplitter<T> {
+  #field: string;
+  #eventBuilder?: EventBuilder<T>;
+
+  /**
+   * Creates a new FieldSplitter.
+   *
+   * @param opts The options for the field splitter.
+   */
+  constructor(opts: FieldSplitterOpts<T>) {
+    this.#field = opts.field;
+    this.#eventBuilder = opts.eventBuilder;
+  }
+
+  /**
+   * Splits the event on the configured field.
+   *
+   * @param event The event to split.
+   * @yields {T} The split events, each with the field set to one of the values.
+   */
+  async *split(event: T): AsyncGenerator<T> {
+    const value = _.get(event.data, this.#field);
+    const values = Array.isArray(value) ? value : [value];
+
+    for (const val of values) {
+      const newEvent = await (
+        this.#eventBuilder?.from(event) ?? EventBuilder.from(event)
+      ).create();
+      _.set(newEvent.data, this.#field, val);
+      yield newEvent;
+    }
+  }
+}
