@@ -18,9 +18,10 @@ export type FieldSplitterOpts<T extends Event = Event> = {
 
 /**
  * Splits an event into one event per value of a field. If the field holds an
- * array each element becomes its own event, otherwise a single event is
- * produced. Each new event is built from the original, so it carries the
- * original's data and has its parentId set.
+ * array each element becomes its own event and the field remains an array
+ * holding just that element, otherwise a single event is produced. Each new
+ * event is built from the original, so it carries the original's data and has
+ * its parentId set.
  *
  * @template T The type of event to split. Defaults to Event.
  */
@@ -44,17 +45,19 @@ export class FieldSplitter<
    * Splits the event on the configured field.
    *
    * @param event The event to split.
-   * @yields {T} The split events, each with the field set to one of the values.
+   * @yields {T} The split events, each with the field set to one of the values (wrapped in an array if the
+   *          original field was an array).
    */
   async *split(event: T): AsyncGenerator<T> {
     const value = _.get(event.data, this.#field);
-    const values = Array.isArray(value) ? value : [value];
+    const isArray = Array.isArray(value);
+    const values = isArray ? value : [value];
 
     for (const val of values) {
       const newEvent = await (
         this.#eventBuilder?.from(event) ?? EventBuilder.from(event)
       ).create();
-      _.set(newEvent.data, this.#field, val);
+      _.set(newEvent.data, this.#field, isArray ? [val] : val);
       yield newEvent;
     }
   }

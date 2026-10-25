@@ -15,13 +15,13 @@ const collect = async (events: AsyncGenerator<Event>) => {
 };
 
 describe('FieldSplitter', function () {
-  it('should yield one event per element of an array field', async function () {
+  it('should yield one event per element of an array field, keeping the field an array', async function () {
     const event = await new EventBuilder().create({ items: ['a', 'b', 'c'] });
     const splitter = new FieldSplitter({ field: 'items' });
 
     const results = await collect(splitter.split(event));
 
-    expect(results.map(e => e.data.items)).to.deep.equal(['a', 'b', 'c']);
+    expect(results.map(e => e.data.items)).to.deep.equal([['a'], ['b'], ['c']]);
   });
 
   it('should yield a single event when the field is not an array', async function () {
@@ -60,8 +60,8 @@ describe('FieldSplitter', function () {
     const results = await collect(splitter.split(event));
 
     expect(
-      results.map(e => (e.data.order as { items: number }).items),
-    ).to.deep.equal([1, 2]);
+      results.map(e => (e.data.order as { items: number[] }).items),
+    ).to.deep.equal([[1], [2]]);
   });
 
   it('should preserve the other data of the original event', async function () {
