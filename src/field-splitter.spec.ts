@@ -87,6 +87,21 @@ describe('FieldSplitter', function () {
     expect(results.map(e => e.parentId)).to.deep.equal([event.id, event.id]);
   });
 
+  it('should not share data between the split events', async function () {
+    const event = await new EventBuilder().create({
+      meta: { tags: ['x'] },
+      items: ['a', 'b'],
+    });
+    const splitter = new FieldSplitter({ field: 'items' });
+
+    const results = await collect(splitter.split(event));
+    (results[0].data.meta as { tags: string[] }).tags.push('y');
+
+    expect((results[1].data.meta as { tags: string[] }).tags).to.deep.equal([
+      'x',
+    ]);
+  });
+
   it('should not modify the original event', async function () {
     const event = await new EventBuilder().create({ items: ['a', 'b'] });
     const splitter = new FieldSplitter({ field: 'items' });

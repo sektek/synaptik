@@ -61,11 +61,11 @@ export class FieldSplitter<
     const value = _.get(event.data, this.#field);
     const isArray = Array.isArray(value);
     const values = isArray ? value : [value];
+    const builder =
+      this.#eventBuilder?.from(event) ??
+      (EventBuilder.from(event) as unknown as EventBuilder<R>);
 
     for (const val of values) {
-      const builder =
-        this.#eventBuilder?.from(event) ??
-        (EventBuilder.from(event) as unknown as EventBuilder<R>);
       const newEvent = await builder.create();
       _.set(newEvent.data, this.#field, isArray ? [val] : val);
       yield newEvent;
