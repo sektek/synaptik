@@ -54,12 +54,11 @@ export type FilterChannelOptions<T extends Event = Event> =
   };
 
 /**
- * Routes events to an acceptance or rejection handler based on a predicate.
+ * A channel that filters events using a predicate.
  *
- * Emits a received event before evaluating the filter, then an accepted or
- * rejected event before invoking the corresponding handler. A delivered event
- * is emitted after that handler completes. Errors from the predicate or
- * either handler are emitted as error events and are not rethrown by `send()`.
+ * Events that pass the filter are forwarded to the configured handler.
+ * Rejected events are discarded by default, or can be handled separately
+ * when a rejection handler is configured.
  *
  * @template T - The event type accepted by this channel. Defaults to {@link Event}.
  */
