@@ -19,19 +19,39 @@ import {
 import { NullHandler } from '../handlers/null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
+/** Events indicating the outcome of filtering, alongside standard channel events.
+ * @template T - Event type evaluated by the filter; defaults to {@link Event}.
+ */
 export type FilterChannelEvents<T extends Event = Event> =
   EventChannelEvents<T> & {
+    /** Emitted when an event passes the predicate, before forwarding. */
     'event:accepted': (event: T) => void;
+    /** Emitted when an event fails the predicate, before rejection handling. */
     'event:rejected': (event: T) => void;
   };
 
+/** Configuration for a {@link FilterChannel}.
+ * @template T - Event type accepted by the predicate and handlers; defaults to {@link Event}.
+ */
 export type FilterChannelOptions<T extends Event = Event> =
   EventComponentOptions & {
+    /** Predicate determining which events pass through the channel. */
     filter: EventPredicateComponent<T>;
+    /** Endpoint receiving accepted events. */
     handler: EventEndpointComponent<T>;
+    /** Optional endpoint for rejected events; without one, they are discarded. */
     rejectionHandler?: EventEndpointComponent<T>;
   };
 
+/**
+ * A channel that filters events before forwarding them to a handler.
+ *
+ * Only events satisfying the configured predicate reach the main handler.
+ * Rejected events are discarded by default, or handled separately when a
+ * rejection handler is provided.
+ *
+ * @template T - The event type filtered by this channel; defaults to {@link Event}.
+ */
 export class FilterChannel<T extends Event = Event>
   extends AbstractEventComponent
   implements EventChannel<T>, EventEmittingService<FilterChannelEvents<T>>
@@ -51,6 +71,15 @@ export class FilterChannel<T extends Event = Event>
     });
   }
 
+  /**
+   * Filters an event and passes it to the appropriate handler.
+   *
+   * Errors from the predicate or handlers are emitted as error events rather
+   * than causing this method to reject.
+   *
+   * @param event - The event to filter.
+   * @returns A promise that resolves when processing finishes.
+   */
   async send(event: T): Promise<void> {
     this.emit(EVENT_RECEIVED, event);
     try {
