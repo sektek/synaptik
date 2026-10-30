@@ -4,10 +4,10 @@ Synaptik is a composable, transport-independent event-processing library for Typ
 
 ## A first flow
 
-An order-processing flow can reject irrelevant orders, enrich accepted ones, and pass them to a handler:
+An order-processing flow can reject irrelevant orders, transform accepted ones, and pass them to a handler. A gateway supplies the incoming events:
 
 ```ts
-import { Event, EventBuilder, FlowBuilder, getEventHandlerComponent } from '@sektek/synaptik';
+import { Event, EventBuilder, FlowBuilder, ProviderGateway } from '@sektek/synaptik';
 
 type Order = Event<{ orderId: string; total: number }>;
 
@@ -21,13 +21,22 @@ const flow = new FlowBuilder<Order>()
   })
   .create();
 
-const order = await EventBuilder.with<Order>({ type: 'order.created' })
-  .create({ orderId: 'A-1', total: 42.125 });
+const gateway = new ProviderGateway<Order>({
+  provider: async function* () {
+    yield await EventBuilder.with<Order>({ type: 'order.created' })
+      .create({ orderId: 'A-1', total: 42.125 });
+  },
+  handler: flow,
+  frequency: 10_000,
+});
 
-await getEventHandlerComponent<Order>(flow)(order);
+await gateway.start();
+// The gateway polls the provider and passes events into the flow.
+// When shutting down:
+await gateway.stop();
 ```
 
-The flow describes **what happens** to an event. The component that supplies events and the destination that receives them can change independently. See the [FlowBuilder reference](docs/reference.md#building-pipelines-with-flowbuilder) for steps, terminals, and error behavior.
+The flow describes **what happens** to an event; the gateway determines **where events come from**. Here the provider yields an example order on each poll. In a real application it could poll an API or database, and a different gateway could receive events from a transport without changing the flow. See the [FlowBuilder reference](docs/reference.md#building-pipelines-with-flowbuilder) for steps, terminals, and error behavior.
 
 ## Installation
 
