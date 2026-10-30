@@ -58,18 +58,21 @@ type Event<T = Record<string, unknown>> = {
 builder method returns a new builder, so a configured builder can be shared.
 
 ```ts
+import { randomUUID } from 'node:crypto';
 import { Event, EventBuilder } from '@sektek/synaptik';
 
 type OrderEvent = Event<{ orderId: string; total: number }>;
 
 const orders = EventBuilder.with<OrderEvent>({
   type: 'order.created',
-  defaults: { total: 0 },
+  defaults: { orderId: () => randomUUID(), total: 0 },
 });
 
-const order = await orders.create({ orderId: 'A-1', total: 40 });
-// { id: '52fe…', type: 'order.created', data: { orderId: 'A-1', total: 40 } }
+const order = await orders.create({ total: 40 });
+// { id: '52fe…', type: 'order.created', data: { orderId: '<generated UUID>', total: 40 } }
 ```
+
+Defaults can be values or provider functions. The `orderId` function runs when creating an event, so each new order receives a fresh UUID without requiring callers to supply one.
 
 Deriving events keeps their lineage: `parentId` is set to the source event's
 `id` (or kept, if the source already has one).
