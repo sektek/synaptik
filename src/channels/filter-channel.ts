@@ -19,7 +19,9 @@ import {
 import { NullHandler } from '../handlers/null-handler.js';
 import { getEventHandlerComponent } from '../util/get-event-handler-component.js';
 
-/** Events indicating the outcome of filtering, alongside standard channel events.
+/**
+ * Events indicating the outcome of filtering, alongside standard channel events.
+ *
  * @template T - Event type evaluated by the filter; defaults to {@link Event}.
  */
 export type FilterChannelEvents<T extends Event = Event> =
@@ -30,7 +32,9 @@ export type FilterChannelEvents<T extends Event = Event> =
     'event:rejected': (event: T) => void;
   };
 
-/** Configuration for a {@link FilterChannel}.
+/**
+ * Configuration for a {@link FilterChannel}.
+ *
  * @template T - Event type accepted by the predicate and handlers; defaults to {@link Event}.
  */
 export type FilterChannelOptions<T extends Event = Event> =
