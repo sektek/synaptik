@@ -1,69 +1,73 @@
 # Understanding event processing in Synaptik
 
-Synaptik treats event processing as a composition of small, independently useful endpoints. To understand a flow, it helps to separate three questions: **what information is moving**, **what happens to it at each step**, and **where it goes next**.
+The key to composing a Synaptik flow is that **each component decides what to do locally, then hands events to another endpoint without depending on its concrete type**. Filtering, transforming, and choosing destinations can therefore be combined without building a component that knows the entire workflow.
 
-This explanation focuses on those relationships. For API signatures, available components, and usage examples, see the [README](../README.md).
+This page explains that model. For concrete constructors, options, and usage examples, see the [README](../../README.md).
 
-## Events carry information; endpoints provide behavior
+## Events and the components that receive them
 
-An [`Event`](../src/types/event.ts) carries an identifier, a type, and typed data. It can also carry lineage and reply-address headers. An event does not prescribe how it will be handled: different endpoints can receive the same event and perform different work.
+An [`Event`](../../src/types/event.ts) is the information moving through a flow: an identifier, type, data, and optional headers for lineage or replies. The event itself does not select a processing path.
 
-An *endpoint* is something that can receive an event. Synaptik recognizes three related contracts:
+The receiving side has three related contracts:
 
-- A **handler** reacts to an event through `handle`.
-- A **channel** accepts an event through `send` and typically controls how it moves onward.
-- A **processor** receives an event through `process` and returns a result, which can be another event.
+- An **event handler** reacts to an event. Its result is not used when it serves as a downstream destination.
+- An **event channel** accepts an event and may forward it, redirect it, or perform another delivery-related action.
+- An **event processor** accepts an event and returns an event, typically transformed or enriched.
 
-These are distinct contracts, but they can occupy the same **destination role** in a flow. Synaptik accepts a function or an appropriate endpoint object in many destination slots. When used as a destination, the endpoint's return value is not treated as the next event in the flow.
+Although their methods differ (`handle`, `send`, and `process`), Synaptik lets a function or an appropriate component satisfy a downstream endpoint slot. A channel can therefore forward to another channel, a handler, or a processor without coupling itself to the receiver's implementation.
 
-This distinction matters: a processor's returned event is meaningful when a component explicitly uses it, as `ProcessingChannel` does. Merely placing a processor in a handler slot does not turn its return value into the next message.
+There is an important distinction between **calling a processor to obtain its output** and **using a processor as a destination**. A `ProcessingChannel` explicitly takes a processor's returned event and forwards that result. A processor used simply as a downstream endpoint does not automatically replace the event in the surrounding flow with its return value.
 
-## A channel owns one decision, then hands off
+## Composition works through downstream handoff
 
-A channel generally adds one behavior between receiving an event and forwarding it. Consider a sequence that first filters orders and then enriches accepted orders:
+Consider an order event that must pass a minimum-value check, be enriched, and then reach a destination:
 
 ```text
-incoming order
-     |
-     v
-FilterChannel -- rejected --> optional rejection destination
-     |
+order event
+    |
+    v
+FilterChannel -------- rejected ------> rejection destination
+    |
   accepted
-     v
-ProcessingChannel -- processed event --> destination
+    v
+ProcessingChannel
+    |  (event returned by processor)
+    v
+downstream destination
 ```
 
-The filter decides **whether an event proceeds on the accepted path**. It does not transform the event, and its optional rejection destination does not make it a general-purpose router.
+Each stage needs to know only its own task and the endpoint to call next:
 
-The processing channel decides **how an accepted event changes**. It clones its input before invoking its processor and forwards the processor's result to its configured downstream destination. The filter and processing channel therefore have different responsibilities even though both accept events through `send`.
+- The filter evaluates a predicate and forwards accepted events. Rejected events may go to a separate destination.
+- The processing channel invokes a processor and forwards the returned event.
+- The final destination reacts to or carries onward the event it receives.
 
-A `handler` option on a channel names that downstream recipient; it does **not** mean the recipient performs the channel's filtering or transformation. In Synaptik, “handler” can also mean the general `EventHandler` contract or an implementation of that contract. Context determines which meaning is intended.
+Neither channel needs to know whether its next recipient is another channel, a handler object, or a compatible function. That is what makes these behaviors composable.
 
-## Routing is about choosing destinations
+In channel configuration, `handler` commonly names the **downstream endpoint**, not the function that performs the channel's own work. The same word also appears in the general `EventHandler` contract; the role depends on context.
 
-Filtering answers whether an event passes a predicate. **Routing** answers which destinations should receive an event.
+## Choosing where events go is a separate concern
 
-An [`EventRouter`](../src/event-router/event-router.ts) obtains routes from a routes provider, then invokes those routes using an execution strategy. Depending on the provider, the set of destinations may be fixed or chosen for each event. A router can deliver to multiple destinations; its execution strategy determines how route invocations are scheduled.
+A processing step determines **what event comes out**. A destination-selection step determines **who receives it**.
 
-This separates *destination selection* from *destination execution*. A routes provider determines where an event should go; the router coordinates delivery to those destinations. A filter with a rejection handler still has only a predicate and two outcomes, rather than an open-ended route-selection model.
+An [`EventRouter`](../../src/event-router/event-router.ts) asks a routes provider which destinations apply to an event. It then invokes those routes using an execution strategy. The routes provider owns selection; the router coordinates invocation. This allows one event to reach multiple destinations without making the preceding processing stages responsible for those choices.
 
-## A flow is a composition, not a new processing primitive
+For example, after an order has been enriched, routing might send it to both fulfillment and audit destinations. The enrichment step need not know that there are two recipients. Conversely, the routing step need not know how the order was enriched.
 
-[`FlowBuilder`](../src/flow-builder/flow-builder.ts) provides a way to declare a chain of behaviors without manually wiring each downstream endpoint. Its intermediate steps correspond to channel behaviors such as filtering, processing, splitting, and tapping. Terminal operations supply the eventual destination or routing behavior.
+## Declaring a flow versus receiving events
 
-A flow declaration is distinct from a resolved flow. The builder accumulates descriptions of steps; resolving it constructs a connected endpoint chain, working backward from the terminal destination. The resulting endpoint can then receive events.
+You can connect endpoints directly, or use [`FlowBuilder`](../../src/flow-builder/flow-builder.ts) to describe a sequence of behaviors and its terminal destination.
 
-That separation makes the same composition model available whether you construct channels directly or use a builder: **each component owns its local behavior and forwards to the next recipient**.
+The builder is a way to **assemble** the composition, not a different event-processing model. A declaration describes steps; resolving it produces an endpoint that can receive events. The resulting flow still consists of components performing local work and handing off to downstream endpoints.
 
-## What this model helps you decide
+This distinction is useful when deciding where to place behavior. Put a transformation in a processor, a conditional acceptance decision in a filter, and destination selection in a router. Use a builder when expressing their composition is clearer than wiring them individually.
 
-When designing an event flow, first ask whether the requirement concerns the **event**, its **processing**, or its **destination**.
+## Reading a flow
 
-- If the event needs different data, use a processor in a context that forwards its result.
-- If an event should continue only when a condition holds, use filtering.
-- If destinations vary or an event must fan out, use routing.
-- If the problem is how to assemble several such behaviors, consider a flow builder.
+When looking at an unfamiliar Synaptik flow, follow three questions:
 
-The point is not to prefer a particular class for every use case. It is to keep transformations, acceptance decisions, destination selection, and composition separate enough that each can be understood and changed independently.
+1. **What event is entering this component?** A processor may produce a different event for subsequent stages.
+2. **What decision or action belongs to this component?** Filtering, processing, routing, and final handling are different responsibilities.
+3. **Which endpoint receives the event next?** The destination may itself be another composed component.
 
-For the concrete APIs and their edge cases—including event notifications, error propagation, and configuration—consult the [README](../README.md) and the corresponding public declarations.
+Those questions expose the flow's behavior without requiring knowledge of every concrete class involved. For component-specific behavior, configuration, event notifications, and failure handling, consult the [README](../../README.md) and the public API contracts.
