@@ -9,7 +9,9 @@ import {
 } from './types/index.js';
 import { getEventHandlerComponent } from './util/get-event-handler-component.js';
 
-/** Options shared by event components that delegate to a handler.
+/**
+ * Options shared by event components that delegate to a handler.
+ *
  * @template T - Event type accepted by the handler; defaults to {@link Event}.
  */
 export type EventHandlingComponentOptions<T extends Event = Event> =
