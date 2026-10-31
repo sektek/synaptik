@@ -82,11 +82,10 @@ export class FilterChannel<T extends Event = Event>
   /**
    * Evaluates an event against the filter and processes it accordingly.
    *
-   * Errors from the predicate or handlers are emitted as error events. The
-   * current implementation does not propagate those errors to the caller.
+   * Emits an error event if the predicate or either handler fails.
    *
    * @param event - The event to filter.
-   * @returns A promise that resolves after processing or error notification.
+   * @returns A promise that resolves when event processing completes.
    */
   async send(event: T): Promise<void> {
     this.emit(EVENT_RECEIVED, event);
