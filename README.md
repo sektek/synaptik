@@ -37,6 +37,9 @@ loggers used throughout.
 
 ## Core concepts
 
+For the mental model behind composing channels, processors, and destinations, see [Understanding event processing](docs/concepts/event-processing.md).
+
+
 ### Events and `EventBuilder`
 
 An `Event` is a plain object with a few headers and a typed `data` payload:
