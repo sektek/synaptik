@@ -10,21 +10,21 @@ import {
 import { getEventHandlerComponent } from './util/get-event-handler-component.js';
 
 /**
- * Options for event components that delegate processing to a handler.
+ * Options for event components that forward events to a downstream endpoint.
  *
  * @template T - The event type accepted by the handler. Defaults to {@link Event}.
  */
 export type EventHandlingComponentOptions<T extends Event = Event> =
   EventComponentOptions & {
-    /** Endpoint responsible for handling events passed to the component. */
+    /** Downstream endpoint to receive events forwarded by the component. */
     handler: EventEndpointComponent<T>;
   };
 
 /**
- * Base class for event components that delegate processing to a handler.
+ * Base class for event components that forward events to a downstream endpoint.
  *
- * Makes the configured endpoint available to subclasses as a handler function,
- * without requiring each subclass to resolve the endpoint itself.
+ * Resolves the configured downstream endpoint and exposes it to subclasses as
+ * a handler function. Each subclass determines when to forward an event.
  *
  * See {@link EventHandlingComponentOptions} for handler configuration.
  *
@@ -41,9 +41,9 @@ export abstract class AbstractEventHandlingComponent<
   }
 
   /**
-   * Provides the configured handler to derived components.
+   * Provides the configured downstream event handler to derived components.
    *
-   * @returns The resolved event handler function.
+   * @returns The function used to forward events to the configured endpoint.
    */
   protected get handler(): EventHandlerFn<T> {
     return this.#handler;
