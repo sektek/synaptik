@@ -19,15 +19,21 @@ type PromiseChannelEvents<T extends Event = Event> = EventChannelEvents<T> & {
   'channel:stateChange': (state: PromiseState) => void;
 };
 
+/** Options for a one-shot channel that exposes its received event as a promise. */
 export type PromiseChannelOptions = EventComponentOptions & {
+  /** Milliseconds before a pending `get()` rejects; zero disables the timeout. */
   timeout?: number;
 };
 
 const DEFAULT_TIMEOUT = 0;
 
 /**
- * An EventChannel class that resolves a promise when an event is sent to it.
- * A PromiseChannel can only be sent to once.
+ * A one-shot event channel that exposes its first received event through a promise.
+ *
+ * Call `get()` to await the event, and `send()` to fulfill it. Sending an Error
+ * rejects the promise instead. After fulfillment or rejection, subsequent
+ * sends fail. A positive timeout applies when `get()` is called; it rejects
+ * the promise if the channel remains pending.
  *
  * @template T The type of event to send.
  */
@@ -41,6 +47,7 @@ export class PromiseChannel<T extends Event = Event>
   #resolve?: (value: T | PromiseLike<T>) => void;
   #reject?: (reason?: unknown) => void;
 
+  /** @param opts - Optional timeout and base component configuration. */
   constructor(opts: PromiseChannelOptions = { timeout: DEFAULT_TIMEOUT }) {
     super(opts);
     this.#timeout = opts.timeout ?? DEFAULT_TIMEOUT;
@@ -61,6 +68,14 @@ export class PromiseChannel<T extends Event = Event>
     });
   }
 
+  /**
+   * Returns the channel's shared promise, scheduling a timeout if configured.
+   * Repeated calls return the same outcome; each call while pending can
+   * schedule another timeout check.
+   *
+   * @returns The first event sent to the channel.
+   * @throws If an Error is sent or the configured timeout expires.
+   */
   async get(): Promise<T> {
     if (this.#timeout > 0) {
       setTimeout(() => {
@@ -79,7 +94,10 @@ export class PromiseChannel<T extends Event = Event>
    * sent instead.
    *
    * @param event - The event, or an `Error` to reject the promise with.
-   * @throws {Error} If the channel has not been initialized.
+   * Only the first send can settle the promise. A later send rejects with
+   * `Promise already resolved`.
+   *
+   * @throws If the channel has already been fulfilled or rejected.
    */
   async send(event: T | Error) {
     const eventIsError = isError(event);
@@ -108,10 +126,17 @@ export class PromiseChannel<T extends Event = Event>
     this.emit(EVENT_DELIVERED, event);
   }
 
+  /** Current settlement state of the channel's promise. */
   get state(): PromiseState {
     return this.#state;
   }
 
+  /**
+   * Sets the reported state while pending and emits `channel:stateChange`.
+   * This does not itself fulfill or reject the underlying promise.
+   *
+   * @throws If the channel is no longer pending.
+   */
   set state(state: PromiseState) {
     if (this.#state !== 'pending') {
       throw new Error('Promise already resolved');
