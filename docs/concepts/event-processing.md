@@ -1,68 +1,60 @@
 # Understanding event processing in Synaptik
 
-Synaptik connects event handlers, channels, and processors to build event-processing flows. Each has a different responsibility, but all can be used as endpoints that receive events. This lets a flow combine filtering, transformation, and delivery without requiring each component to know how the next one is implemented.
+A Synaptik flow connects components that receive events, perform a particular operation, and optionally pass events onward. A channel might filter an incoming event, another might transform it, and a final destination might deliver it to a transport. The connections determine the path an event takes; the individual components supply the behavior at each stage.
 
-This page explains how those pieces fit together. For constructors, configuration, and usage examples, see the [README](../../README.md).
+This page explains how those responsibilities fit together. For configuration and code examples, see the [README](../../README.md).
 
-## Events and endpoints
+## Follow the event, not the component names
 
-An [`Event`](../../src/types/event.ts) carries an identifier, type, data, and optional headers for lineage and replies. It does not specify where it should go.
-
-Synaptik defines three kinds of event-processing components:
-
-- An **event handler** performs an action in response to an event through `handle`.
-- An **event channel** carries an event onward through `send`. Channels can also filter, process, or otherwise control delivery.
-- An **event processor** returns an event through `process`, usually after transforming or enriching the input.
-
-Each contract also accepts a compatible function in place of a component object. When a channel is configured with a downstream `handler`, that option identifies the **recipient** of the event; it does not necessarily refer to an object implementing `EventHandler`.
-
-The receiving component must still accept the event type being sent. Interchangeable endpoints do not mean that unrelated event types can be connected arbitrarily.
-
-## Connecting processing stages
-
-Consider an order event that must pass a minimum-value check before being enriched and delivered:
+Consider a flow that accepts orders above a minimum value, enriches them, then sends them for fulfillment:
 
 ```text
 order event
     |
     v
-FilterChannel
+FilterChannel -- rejected --> discard or alternate destination
     |
-    | accepted
+    | accepted order
     v
 ProcessingChannel
     |
-    | processed event
+    | enriched order
     v
-destination
+fulfillment destination
 ```
 
-The filter applies its predicate and forwards accepted events. The processing channel invokes its processor and forwards the returned event. The destination receives that event and performs its own work.
+The filter evaluates the incoming order and passes accepted events to its downstream destination. The processing channel calls a processor and forwards the event it returns. Fulfillment receives the resulting event without needing to know which stages preceded it.
 
-The filter only needs a compatible downstream endpoint. It could forward to the processing channel shown here, a different channel, or a handler function. Changing that destination does not require changing how the filter evaluates events.
+These are separate responsibilities. Replacing fulfillment with an HTTP-backed channel does not change the filter or processor. Replacing the processor may change the event type that fulfillment receives, so the downstream endpoint must still accept that type.
 
-A processor's return value matters when a component explicitly uses it, as `ProcessingChannel` does. When a processor is used merely as a downstream destination, its returned event is not automatically forwarded to another stage. This distinction separates **processing an event** from **delivering an event to an endpoint**.
+The distinction also matters when reading unfamiliar code: a **processor** returns an event, while a **channel** controls what happens to an event on its way to a destination. A processor used directly as a downstream endpoint does not automatically forward its return value. A component such as `ProcessingChannel` must explicitly use that result.
 
-## Routing events to multiple destinations
+## What counts as a destination?
 
-Processing changes the event that subsequent stages receive. Routing selects which destinations receive an event.
+Synaptik has three related contracts: an [event handler](../../src/types/event-handler.ts) handles an event, an [event channel](../../src/types/event-channel.ts) sends an event, and an [event processor](../../src/types/event-processor.ts) processes an event and returns one. Their methods are named `handle`, `send`, and `process`, respectively.
 
-An [`EventRouter`](../../src/event-router/event-router.ts) obtains destinations from a routes provider and invokes them using an execution strategy. For example, an enriched order could be sent to both fulfillment and audit handlers. The processor does not need to know which destinations are selected, and the router does not need to know how the event was enriched.
+Many downstream options accept any compatible endpoint, including a function. For example, a channel's `handler` option names the recipient of its output; it does not require an `EventHandler` instance. Synaptik adapts these endpoint forms to a callable function when connecting components.
 
-Routing and filtering serve different purposes: a filter controls whether an event continues along a path; a router selects recipients. A filter may also send rejected events to a separate endpoint, but that does not make it responsible for general route selection.
+This flexibility concerns *how* an event is received, not *which* events are valid. Type compatibility still applies across the connection, and the receiving endpoint's return value is not necessarily used.
 
-## Assembling a flow
+## When one destination is not enough
 
-Endpoints can be connected directly. [`FlowBuilder`](../../src/flow-builder/flow-builder.ts) offers a declarative way to compose the same kinds of components: describe processing stages and a terminal destination, then resolve the declaration into an endpoint that accepts events.
+A processing stage determines the event passed onward. Routing determines **where** an event is delivered.
 
-The builder assembles the flow; it does not introduce a separate event-processing mechanism. Once assembled, the constituent components still receive events, perform their responsibilities, and pass events to compatible endpoints.
+An [`EventRouter`](../../src/event-router/event-router.ts) asks a routes provider for destinations and invokes the selected routes using an execution strategy. An enriched order might go to both fulfillment and audit, or to one destination selected from its contents. Neither the enrichment processor nor the selected destinations need to implement the routing logic.
 
-## Reading a flow
+A filter and a router can both affect delivery, but answer different questions: *should this event continue along this path?* versus *which destinations should receive it?*
 
-To understand an unfamiliar flow, trace the event through its stages:
+## Building and reasoning about flows
 
-1. **Input:** What event type does each stage receive?
-2. **Behavior:** Does it filter, transform, select destinations, or handle the event?
-3. **Handoff:** Which endpoint receives the event next, and is it receiving the original event or a processor's result?
+Components can be connected directly. [`FlowBuilder`](../../src/flow-builder/flow-builder.ts) lets you describe a sequence of processing stages followed by a terminal destination in the order events will encounter them. It assembles the corresponding components into an endpoint; it does not change their event-processing contracts.
 
-These distinctions help explain how a flow behaves without needing to inspect every component's implementation. For detailed configuration and lifecycle behavior, consult the [README](../../README.md) and public API declarations.
+When reading or designing a flow, trace three things:
+
+1. **Event shape:** What event does each stage accept, and does it forward the same event or a result?
+2. **Destination:** Which endpoint receives the output, and can it accept that event type?
+3. **Boundary:** Which stage filters, transforms, routes, or handles the event? Where would a failure affect downstream delivery?
+
+The last question matters because composition does not imply uniform error handling. For example, [`FilterChannel`](../../src/channels/filter-channel.ts) emits an error when its predicate or destination fails but does not rethrow it, whereas [`ProcessingChannel`](../../src/channels/processing-channel.ts) rethrows processing errors. The position of a stage can therefore affect how failures propagate.
+
+For specific channel behavior, routing configuration, and runnable examples, consult the [README](../../README.md).
