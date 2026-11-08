@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.5](https://github.com/sektek/synaptik/compare/v0.4.4...v0.4.5) (2026-11-08)
+
+### Bug Fixes
+
+* **synaptik:** rethrow errors from FilterChannel.send() after emitting event:error ([#58](https://github.com/sektek/synaptik/issues/58)) ([baa8b04](https://github.com/sektek/synaptik/commit/baa8b044ad08e44b0f3c3d70cdb598b7554b58f9))
+
 ## [0.4.4](https://github.com/sektek/synaptik/compare/v0.4.3...v0.4.4) (2026-10-25)
 
 ### Features
