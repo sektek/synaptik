@@ -456,12 +456,12 @@ Things to know:
   off it are independent.
 - Order matters. Each step only sees what is downstream of it, so an
   `errorTrap` catches errors from the steps and terminal after it, not
-  before. `filter` swallows errors from everything after it (see
-  [Channels](#channels)), so place `errorTrap` after any `filter` you want
+  before. `filter` emits and rethrows errors from everything after it (see
+  [Channels](#channels)), so place `errorTrap` before any `filter` you want
   covered:
 
   ```ts
-  flowBuilder.filter(isValid).errorTrap(report).process(enrich).handle(fulfil);
+  flowBuilder.errorTrap(report).filter(isValid).process(enrich).handle(fulfil);
   ```
 
 - Shared config goes in the constructor: a `loggerProvider`, and optionally a
