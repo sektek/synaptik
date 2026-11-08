@@ -1,10 +1,14 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { fake } from 'sinon';
 
+import { EVENT_DELIVERED, EVENT_ERROR } from '../types/index.js';
 import { EventBuilder } from '../event-builder.js';
 import { FilterChannel } from './filter-channel.js';
 
 import { ALLOW_ALL, DENY_ALL } from '../types/event-predicate.js';
+
+use(chaiAsPromised);
 
 describe('FilterChannel', function () {
   it('should send the event to the event handler when the filter returns true', async function () {
@@ -90,18 +94,100 @@ describe('FilterChannel', function () {
     expect(callback.calledOnceWith(event)).to.be.true;
   });
 
-  it('should emit an event:error event when the handler throws an error', async function () {
-    const event = await new EventBuilder().create();
+  describe('when processing fails', function () {
     const error = new Error('test');
-    const handler = fake.throws(error);
-    const callback = fake();
-    const channel = new FilterChannel({ filter: ALLOW_ALL, handler }).on(
-      'event:error',
-      callback,
-    );
 
-    await channel.send(event);
+    it('should emit event:error and reject when the filter throws', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: fake.throws(error),
+        handler: fake(),
+      }).on(EVENT_ERROR, callback);
 
-    expect(callback.calledOnceWith(error, event)).to.be.true;
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.calledOnceWith(error, event)).to.be.true;
+    });
+
+    it('should emit event:error and reject when the filter rejects', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: fake.rejects(error),
+        handler: fake(),
+      }).on(EVENT_ERROR, callback);
+
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.calledOnceWith(error, event)).to.be.true;
+    });
+
+    it('should emit event:error and reject when the handler throws', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: ALLOW_ALL,
+        handler: fake.throws(error),
+      }).on(EVENT_ERROR, callback);
+
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.calledOnceWith(error, event)).to.be.true;
+    });
+
+    it('should emit event:error and reject when the handler rejects', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: ALLOW_ALL,
+        handler: fake.rejects(error),
+      }).on(EVENT_ERROR, callback);
+
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.calledOnceWith(error, event)).to.be.true;
+    });
+
+    it('should emit event:error and reject when the rejection handler throws', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: DENY_ALL,
+        handler: fake(),
+        rejectionHandler: fake.throws(error),
+      }).on(EVENT_ERROR, callback);
+
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.calledOnceWith(error, event)).to.be.true;
+    });
+
+    it('should emit event:error and reject when the rejection handler rejects', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: DENY_ALL,
+        handler: fake(),
+        rejectionHandler: fake.rejects(error),
+      }).on(EVENT_ERROR, callback);
+
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.calledOnceWith(error, event)).to.be.true;
+    });
+
+    it('should not emit event:delivered when processing fails', async function () {
+      const event = await new EventBuilder().create();
+      const callback = fake();
+      const channel = new FilterChannel({
+        filter: ALLOW_ALL,
+        handler: fake.throws(error),
+      }).on(EVENT_DELIVERED, callback);
+
+      await expect(channel.send(event)).to.be.rejectedWith(error);
+
+      expect(callback.called).to.be.false;
+    });
   });
 });
