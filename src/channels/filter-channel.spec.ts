@@ -2,6 +2,7 @@ import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { fake } from 'sinon';
 
+import { EVENT_DELIVERED, EVENT_ERROR } from '../types/index.js';
 import { EventBuilder } from '../event-builder.js';
 import { FilterChannel } from './filter-channel.js';
 
@@ -102,7 +103,7 @@ describe('FilterChannel', function () {
       const channel = new FilterChannel({
         filter: fake.throws(error),
         handler: fake(),
-      }).on('event:error', callback);
+      }).on(EVENT_ERROR, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
@@ -115,7 +116,7 @@ describe('FilterChannel', function () {
       const channel = new FilterChannel({
         filter: fake.rejects(error),
         handler: fake(),
-      }).on('event:error', callback);
+      }).on(EVENT_ERROR, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
@@ -128,7 +129,7 @@ describe('FilterChannel', function () {
       const channel = new FilterChannel({
         filter: ALLOW_ALL,
         handler: fake.throws(error),
-      }).on('event:error', callback);
+      }).on(EVENT_ERROR, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
@@ -141,7 +142,7 @@ describe('FilterChannel', function () {
       const channel = new FilterChannel({
         filter: ALLOW_ALL,
         handler: fake.rejects(error),
-      }).on('event:error', callback);
+      }).on(EVENT_ERROR, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
@@ -155,7 +156,7 @@ describe('FilterChannel', function () {
         filter: DENY_ALL,
         handler: fake(),
         rejectionHandler: fake.throws(error),
-      }).on('event:error', callback);
+      }).on(EVENT_ERROR, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
@@ -169,7 +170,7 @@ describe('FilterChannel', function () {
         filter: DENY_ALL,
         handler: fake(),
         rejectionHandler: fake.rejects(error),
-      }).on('event:error', callback);
+      }).on(EVENT_ERROR, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
@@ -182,7 +183,7 @@ describe('FilterChannel', function () {
       const channel = new FilterChannel({
         filter: ALLOW_ALL,
         handler: fake.throws(error),
-      }).on('event:delivered', callback);
+      }).on(EVENT_DELIVERED, callback);
 
       await expect(channel.send(event)).to.be.rejectedWith(error);
 
