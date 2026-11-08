@@ -71,7 +71,7 @@ Synaptik favors small, independently understandable components with explicit con
 | Wait for a reply | [Request/reply](docs/reference.md#requestreply) |
 | Poll a source for new events | [ProviderGateway](docs/reference.md#pulling-events-with-providergateway) |
 
-**Error boundaries matter:** a `FilterChannel` emits errors from either branch instead of rethrowing them. In a flow, an `errorTrap` catches downstream errors, not upstream ones; put it after a filter when it must catch errors from subsequent processing. See [channel behavior](docs/reference.md#channels) and [flow ordering](docs/reference.md#building-pipelines-with-flowbuilder) before relying on an error boundary.
+**Error boundaries matter:** a `FilterChannel` emits errors from either branch as `event:error` and then rethrows them. In a flow, an `errorTrap` catches downstream errors, not upstream ones; put it after a filter when it must catch errors from subsequent processing. See [channel behavior](docs/reference.md#channels) and [flow ordering](docs/reference.md#building-pipelines-with-flowbuilder) before relying on an error boundary.
 
 ## Transports
 

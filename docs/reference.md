@@ -220,7 +220,8 @@ const safe = new ErrorTrapChannel<OrderEvent>({
 Behaviours worth knowing:
 
 - **`FilterChannel`** emits `event:accepted` or `event:rejected`. Errors from
-  either branch are emitted as `event:error` and **not** rethrown.
+  either branch (including the predicate) are emitted as `event:error` and
+  then rethrown.
 - **`ProcessingChannel`** clones the event before processing (so the
   processor can't mutate the caller's copy and the result carries a
   `parentId`, if the processor derives its output from that clone, as
