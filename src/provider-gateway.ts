@@ -1,5 +1,6 @@
 import {
   CancellableSleep,
+  EventEmittingService,
   ExecutionStrategyComponent,
   ExecutionStrategyFn,
   IterableProviderComponent,
@@ -9,7 +10,13 @@ import {
   ProviderFn,
   Queue,
   QueueOptions,
+  SERVICE_STARTED,
+  SERVICE_START_ERROR,
+  SERVICE_STOPPED,
+  SERVICE_STOP_ERROR,
+  ServiceEvents,
   getComponent,
+  isError,
   parallelExecutionStrategy,
   serialExecutionStrategy,
   sleep,
@@ -24,6 +31,7 @@ import {
   EVENT_PROCESSED,
   EVENT_RECEIVED,
   Event,
+  EventHandlerEvents,
 } from './types/index.js';
 
 const DEFAULT_FREQUENCY = 60_000;
@@ -59,6 +67,18 @@ export type ProviderGatewayOptions<T extends Event = Event> =
   };
 
 /**
+ * Events emitted by a {@link ProviderGateway}.
+ *
+ * @template T The event type handled by the gateway.
+ */
+export type ProviderGatewayEvents<T extends Event = Event> =
+  EventHandlerEvents<T> &
+    ServiceEvents & {
+      'gateway:started': () => void;
+      'gateway:stopped': () => void;
+    };
+
+/**
  * A pull-based gateway that periodically retrieves events from a provider and
  * dispatches them to a handler.
  *
@@ -74,6 +94,16 @@ export type ProviderGatewayOptions<T extends Event = Event> =
  *
  * Provider errors are caught, emitted as `event:error`, and the polling loop
  * continues — the gateway does not stop on transient fetch failures.
+ *
+ * **Lifecycle events** — `start()` and `stop()` emit the generic service
+ * lifecycle events (`service:started`, `service:startError`,
+ * `service:stopped`, `service:stopError`) alongside the gateway-specific
+ * `gateway:started` and `gateway:stopped`, in the same way that
+ * `event:received` accompanies a gateway's own receive event. On success the
+ * gateway-specific event is emitted first, immediately followed by its
+ * service counterpart. On failure only the matching `service:*Error` event
+ * is emitted, carrying an `Error`, and the original thrown value is rethrown
+ * unchanged.
  *
  * **Interval resolution** (first match wins):
  * 1. `intervalProvider` — dynamic ms-per-poll provider
@@ -110,9 +140,10 @@ export type ProviderGatewayOptions<T extends Event = Event> =
  * await gateway.stop();
  * ```
  */
-export class ProviderGateway<
-  T extends Event = Event,
-> extends AbstractEventHandlingComponent<T> {
+export class ProviderGateway<T extends Event = Event>
+  extends AbstractEventHandlingComponent<T>
+  implements EventEmittingService<ProviderGatewayEvents<T>>
+{
   #provider: IterableProviderFn<T>;
   #intervalProvider: ProviderFn<number>;
   #executionStrategy: ExecutionStrategyFn;
@@ -134,15 +165,22 @@ export class ProviderGateway<
    * Starts the polling and consumer loops. Idempotent — calling `start()`
    * on an already-running gateway has no effect.
    *
-   * Emits `gateway:started` once the loops are running.
+   * Emits `gateway:started` followed by `service:started` once the loops are
+   * running. If starting fails, emits `service:startError` and rethrows.
    */
   async start(): Promise<void> {
     if (this.#running) return;
-    this.#running = true;
-    this.#queue.start();
-    this.#consumerLoopPromise = this.#startConsumerLoop();
-    this.#pollingLoopPromise = this.#startPollingLoop();
+    try {
+      this.#running = true;
+      this.#queue.start();
+      this.#consumerLoopPromise = this.#startConsumerLoop();
+      this.#pollingLoopPromise = this.#startPollingLoop();
+    } catch (err) {
+      this.emit(SERVICE_START_ERROR, toError(err));
+      throw err;
+    }
     this.emit('gateway:started');
+    this.emit(SERVICE_STARTED);
   }
 
   /**
@@ -151,15 +189,23 @@ export class ProviderGateway<
    * immediately so the gateway shuts down without waiting for the next poll to
    * be due.
    *
-   * Emits `gateway:stopped` after both loops have fully exited.
+   * Emits `gateway:stopped` followed by `service:stopped` after both loops
+   * have fully exited. If stopping fails, emits `service:stopError` and
+   * rethrows.
    */
   async stop(): Promise<void> {
-    this.#running = false;
-    this.#currentSleep?.cancel();
-    await this.#pollingLoopPromise;
-    await this.#queue.stop();
-    await this.#consumerLoopPromise;
+    try {
+      this.#running = false;
+      this.#currentSleep?.cancel();
+      await this.#pollingLoopPromise;
+      await this.#queue.stop();
+      await this.#consumerLoopPromise;
+    } catch (err) {
+      this.emit(SERVICE_STOP_ERROR, toError(err));
+      throw err;
+    }
     this.emit('gateway:stopped');
+    this.emit(SERVICE_STOPPED);
   }
 
   async #startConsumerLoop(): Promise<void> {
@@ -271,4 +317,16 @@ function resolveExecutionStrategy<T extends Event>(
     return strategy.execute.bind(strategy);
   }
   return parallelExecutionStrategy;
+}
+
+/**
+ * Normalizes a thrown value to an `Error` for lifecycle error events.
+ *
+ * @param thrown - The value that was thrown.
+ * @returns `thrown` if it is an `Error`, otherwise an `Error` wrapping it as `cause`.
+ */
+function toError(thrown: unknown): Error {
+  return isError(thrown)
+    ? thrown
+    : new Error(String(thrown), { cause: thrown });
 }

@@ -1,9 +1,23 @@
-import { parallelExecutionStrategy, sleep } from '@sektek/utility-belt';
-import { expect } from 'chai';
-import { fake } from 'sinon';
+import {
+  ProcessManager,
+  Queue,
+  SERVICE_STARTED,
+  SERVICE_START_ERROR,
+  SERVICE_STOPPED,
+  SERVICE_STOP_ERROR,
+  isStartable,
+  isStoppable,
+  parallelExecutionStrategy,
+  sleep,
+} from '@sektek/utility-belt';
+import { expect, use } from 'chai';
+import { fake, restore, stub } from 'sinon';
+import chaiAsPromised from 'chai-as-promised';
 
 import { EventBuilder } from './event-builder.js';
 import { ProviderGateway } from './provider-gateway.js';
+
+use(chaiAsPromised);
 
 const DEFAULT_PROVIDER_GATEWAY_OPTS = {
   intervalProvider: () => 10,
@@ -38,6 +52,174 @@ describe('ProviderGateway', function () {
       await gateway.stop();
 
       expect(callback.calledOnce).to.be.true;
+    });
+
+    it('should emit service:started and service:stopped once each', async function () {
+      const startedCallback = fake();
+      const stoppedCallback = fake();
+      const gateway = new ProviderGateway({
+        ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+        provider: () => [],
+        handler: fake(),
+      })
+        .on(SERVICE_STARTED, startedCallback)
+        .on(SERVICE_STOPPED, stoppedCallback);
+
+      await gateway.start();
+      await gateway.stop();
+
+      expect(startedCallback.calledOnce).to.be.true;
+      expect(stoppedCallback.calledOnce).to.be.true;
+      expect(startedCallback.calledBefore(stoppedCallback)).to.be.true;
+    });
+
+    it('should emit gateway:started before service:started', async function () {
+      const gatewayCallback = fake();
+      const serviceCallback = fake();
+      const gateway = new ProviderGateway({
+        ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+        provider: () => [],
+        handler: fake(),
+      })
+        .on('gateway:started', gatewayCallback)
+        .on(SERVICE_STARTED, serviceCallback);
+
+      await gateway.start();
+      await gateway.stop();
+
+      expect(gatewayCallback.calledBefore(serviceCallback)).to.be.true;
+    });
+
+    it('should emit gateway:stopped before service:stopped', async function () {
+      const gatewayCallback = fake();
+      const serviceCallback = fake();
+      const gateway = new ProviderGateway({
+        ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+        provider: () => [],
+        handler: fake(),
+      })
+        .on('gateway:stopped', gatewayCallback)
+        .on(SERVICE_STOPPED, serviceCallback);
+
+      await gateway.start();
+      await gateway.stop();
+
+      expect(gatewayCallback.calledBefore(serviceCallback)).to.be.true;
+    });
+
+    it('should not emit service:started again on an idempotent start()', async function () {
+      const callback = fake();
+      const gateway = new ProviderGateway({
+        ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+        provider: () => [],
+        handler: fake(),
+      }).on(SERVICE_STARTED, callback);
+
+      await gateway.start();
+      await gateway.start();
+      await gateway.stop();
+
+      expect(callback.calledOnce).to.be.true;
+    });
+
+    it('should be startable and stoppable', function () {
+      const gateway = new ProviderGateway({
+        provider: () => [],
+        handler: fake(),
+      });
+
+      expect(isStartable(gateway)).to.be.true;
+      expect(isStoppable(gateway)).to.be.true;
+    });
+
+    it('should be managed by a ProcessManager', async function () {
+      const startedCallback = fake();
+      const stoppedCallback = fake();
+      const gateway = new ProviderGateway({
+        ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+        provider: () => [],
+        handler: fake(),
+      })
+        .on(SERVICE_STARTED, startedCallback)
+        .on(SERVICE_STOPPED, stoppedCallback);
+      const manager = new ProcessManager({});
+      manager.add(gateway);
+
+      await manager.start();
+      await manager.stop();
+
+      expect(startedCallback.calledOnce).to.be.true;
+      expect(stoppedCallback.calledOnce).to.be.true;
+    });
+
+    describe('failures', function () {
+      afterEach(function () {
+        restore();
+      });
+
+      it('should emit service:startError and reject with the same error when start() fails', async function () {
+        const error = new Error('start failed');
+        stub(Queue.prototype, 'start').throws(error);
+        const errorCallback = fake();
+        const startedCallback = fake();
+        const gatewayCallback = fake();
+        const gateway = new ProviderGateway({
+          provider: () => [],
+          handler: fake(),
+        })
+          .on(SERVICE_START_ERROR, errorCallback)
+          .on(SERVICE_STARTED, startedCallback)
+          .on('gateway:started', gatewayCallback);
+
+        await expect(gateway.start()).to.be.rejectedWith(error);
+
+        expect(errorCallback.calledOnceWithExactly(error)).to.be.true;
+        expect(startedCallback.called).to.be.false;
+        expect(gatewayCallback.called).to.be.false;
+      });
+
+      it('should emit service:stopError and reject with the same error when stop() fails', async function () {
+        const error = new Error('stop failed');
+        stub(Queue.prototype, 'stop').rejects(error);
+        const errorCallback = fake();
+        const stoppedCallback = fake();
+        const gatewayCallback = fake();
+        const gateway = new ProviderGateway({
+          ...DEFAULT_PROVIDER_GATEWAY_OPTS,
+          provider: () => [],
+          handler: fake(),
+        })
+          .on(SERVICE_STOP_ERROR, errorCallback)
+          .on(SERVICE_STOPPED, stoppedCallback)
+          .on('gateway:stopped', gatewayCallback);
+
+        await gateway.start();
+        await expect(gateway.stop()).to.be.rejectedWith(error);
+
+        expect(errorCallback.calledOnceWithExactly(error)).to.be.true;
+        expect(stoppedCallback.called).to.be.false;
+        expect(gatewayCallback.called).to.be.false;
+
+        restore();
+        await gateway.stop();
+      });
+
+      it('should wrap a non-Error failure for the event and rethrow the original value', async function () {
+        const thrown = { reason: 'boom' };
+        stub(Queue.prototype, 'start').throws(thrown);
+        const errorCallback = fake();
+        const gateway = new ProviderGateway({
+          provider: () => [],
+          handler: fake(),
+        }).on(SERVICE_START_ERROR, errorCallback);
+
+        const rejection = await gateway.start().catch((err: unknown) => err);
+
+        expect(rejection).to.equal(thrown);
+        const [emitted] = errorCallback.firstCall.args;
+        expect(emitted).to.be.instanceOf(Error);
+        expect(emitted.cause).to.equal(thrown);
+      });
     });
 
     it('should stop promptly even when mid-sleep on a long interval', async function () {
