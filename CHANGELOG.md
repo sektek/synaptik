@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0](https://github.com/sektek/synaptik/compare/v0.4.5...v0.5.0) (2026-11-23)
+
+### ⚠ BREAKING CHANGES
+
+* **synaptik:** emit lifecycle events from ProviderGateway (#59)
+
+### Features
+
+* **synaptik:** emit lifecycle events from ProviderGateway ([#59](https://github.com/sektek/synaptik/issues/59)) ([0e606e1](https://github.com/sektek/synaptik/commit/0e606e151f37187622e3c75dd9783e162f93bc29))
+
 ## [0.4.5](https://github.com/sektek/synaptik/compare/v0.4.4...v0.4.5) (2026-11-08)
 
 ### Bug Fixes
