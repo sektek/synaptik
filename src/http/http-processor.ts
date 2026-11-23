@@ -30,19 +30,23 @@ export type HttpProcessorOptions<
   R extends Event,
 > = HttpOperatorOptions<T> &
   EventComponentOptions & {
-    /** An optional HttpOperator instance to use. */
+    /** Optional HTTP operator to reuse instead of constructing one from the request options. */
     httpOperator?: HttpOperator<T>;
     /**
-     * An optional response deserializer component to use for processing the
-     * HTTP response.
+     * Converts the HTTP response into the returned event. Defaults to parsing
+     * the response body as JSON; the default does not validate the event shape.
      */
     responseDeserializer?: ResponseDeserializerComponent<R>;
   };
 
 /**
- * A processor for handling HTTP events.
- * This class uses an HttpOperator to perform HTTP requests based on the
- * provided event and deserializes the response using a response deserializer.
+ * Performs an HTTP request for an input event and returns the deserialized
+ * response as an event.
+ *
+ * Uses a supplied HTTP operator or creates one from the request options,
+ * defaulting the HTTP method to POST. The response deserializer defaults to
+ * JSON parsing; callers requiring a different format or runtime validation
+ * can supply their own deserializer.
  *
  * @template T The type of event to process.
  * @template R The type of event to return.
@@ -55,9 +59,9 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
   #responseDeserializer: ResponseDeserializerFn<R>;
 
   /**
-   * Creates an instance of HttpProcessor.
+   * Configures HTTP request execution and response deserialization.
    *
-   * @param opts The options for the processor.
+   * @param opts - HTTP request options, optional operator, and deserializer.
    *
    * @throws {Error} If neither httpOperator, url, nor urlProvider is provided.
    */
@@ -100,11 +104,12 @@ export class HttpProcessor<T extends Event = Event, R extends Event = T>
   }
 
   /**
-   * Processes the given event by performing an HTTP request and deserializing
-   * the response.
+   * Executes the configured HTTP request and converts its response into an event.
+   * Emits processing lifecycle events; failures are emitted and rethrown.
    *
-   * @param event The event to process.
-   * @returns A promise that resolves to the processed event.
+   * @param event - Input event used to construct the request.
+   * @returns The event produced by the response deserializer.
+   * @throws If the HTTP operation or response deserializer fails.
    */
   async process(event: T): Promise<R> {
     this.emit(EVENT_RECEIVED, event);
