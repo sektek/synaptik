@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.1](https://github.com/sektek/synaptik/compare/v0.5.0...v0.5.1) (2026-11-24)
+
+### Bug Fixes
+
+* **synaptik:** require utility-belt 0.4.1 and use shared toError ([#60](https://github.com/sektek/synaptik/issues/60)) ([731707e](https://github.com/sektek/synaptik/commit/731707e9d5b282a4ff51f306e1aab4d959fecc61))
+
 ## [0.5.0](https://github.com/sektek/synaptik/compare/v0.4.5...v0.5.0) (2026-11-23)
 
 ### ⚠ BREAKING CHANGES
