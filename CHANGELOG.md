@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.2](https://github.com/sektek/synaptik/compare/v0.5.1...v0.5.2) (2026-11-28)
+
+### Features
+
+* **synaptik:** add isEvent type guard ([#61](https://github.com/sektek/synaptik/issues/61)) ([5c2ddde](https://github.com/sektek/synaptik/commit/5c2dddef1f19d625208df26c846564cce6095dce))
+
 ## [0.5.1](https://github.com/sektek/synaptik/compare/v0.5.0...v0.5.1) (2026-11-24)
 
 ### Bug Fixes
