@@ -7,6 +7,7 @@ export * from './field-enricher.js';
 export * from './field-extractor.js';
 export * from './field-splitter.js';
 export * from './flow-builder/index.js';
+export * from './guards/index.js';
 export * from './handlers/index.js';
 export * from './iterable-provider-splitter.js';
 export * from './provider-gateway.js';
