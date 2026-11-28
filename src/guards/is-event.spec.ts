@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
-import { Event, isEvent } from './event.js';
+import { Event } from '../types/index.js';
+import { isEvent } from './is-event.js';
 
 describe('isEvent', function () {
   const valid: Event = { id: 'e1', type: 'Test', data: { value: 1 } };
